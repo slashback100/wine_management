@@ -1,0 +1,6 @@
+#!/bin/bash
+#sed -Ei 's/"insert/insert/' wine.sql 
+#sed -Ei 's/\);"/);/' wine.sql 
+#mysql -uroot -p wine_management < wine.sql
+mysql -uroot -p wine_management < cepage.sql
+

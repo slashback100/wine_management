@@ -1,0 +1,23 @@
+# vim: encoding=utf-8
+ vi -p a b c #open in tabs
+gt, gT, igt pour se déplacer
+:tabedit pour ouvrir dans un onglet
+
+:mksession session.vim
+vim -S session.vig
+
+Ctrl+n pour complétion
+
+:Explore pour parcourir les fichiers
+ou :Ex
+
+
+:split filename  - split window horizontally and load filename
+:vsplit file     - vertical split and open file
+ctrl-w up arrow  - move cursor up a window
+ctrl-w ctrl-w    - move cursor to another window (cycle)
+ctrl-w _         - maximize current window vertically
+ctrl-w |         - maximize current window horizontally
+ctrl-w =         - make all equal size
+:sview file      - same as split, but readonly
+:close           - close current window
