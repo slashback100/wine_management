@@ -9,46 +9,46 @@ insert into wine_cepage (wine_id, cepage_id, percentage) values (106, (select id
 insert into wine_cepage (wine_id, cepage_id, percentage) values (107, (select id from cepage where label  = 'Melon de Bourogne'), NULL);                    
 insert into wine_cepage (wine_id, cepage_id, percentage) values (108, (select id from cepage where label  = 'Romorantin'), NULL);                   
 insert into wine_cepage (wine_id, cepage_id, percentage) values (109, (select id from cepage where label  = 'Pinot noir'), NULL);   insert into wine_cepage (wine_id, cepage_id, percentage) values (109, (select id from cepage where label  = 'Gamay'), NULL);    insert into wine_cepage (wine_id, cepage_id, percentage) values (109, (select id from cepage where label  = 'Côt'), NULL);         
-#VALUE! #VALUE! #VALUE!         
+insert into wine_cepage (wine_id, cepage_id, percentage) values (110, (select id from cepage where label  = 'Sauvignon gris'), 60); insert into wine_cepage (wine_id, cepage_id, percentage) values (110, (select id from cepage where label  = 'Sémillon'), 30);  insert into wine_cepage (wine_id, cepage_id, percentage) values (110, (select id from cepage where label  = 'Muscadelle'), 10);         
 insert into wine_cepage (wine_id, cepage_id, percentage) values (111, (select id from cepage where label  = 'Cabernet franc'), NULL);   insert into wine_cepage (wine_id, cepage_id, percentage) values (111, (select id from cepage where label  = 'Cabernet sauvignon'), NULL);   insert into wine_cepage (wine_id, cepage_id, percentage) values (111, (select id from cepage where label  = 'Merlot'), NULL);           
-#VALUE! #VALUE! #VALUE!         
-#VALUE! #VALUE!             
+insert into wine_cepage (wine_id, cepage_id, percentage) values (112, (select id from cepage where label  = 'Merlot'), 70); insert into wine_cepage (wine_id, cepage_id, percentage) values (112, (select id from cepage where label  = 'Cabernet franc'), 25); insert into wine_cepage (wine_id, cepage_id, percentage) values (112, (select id from cepage where label  = 'Cabernet sauvignon'), 5);          
+insert into wine_cepage (wine_id, cepage_id, percentage) values (113, (select id from cepage where label  = 'Cabernet sauvignon'), 50); insert into wine_cepage (wine_id, cepage_id, percentage) values (113, (select id from cepage where label  = 'Merlot'), 50);             
 insert into wine_cepage (wine_id, cepage_id, percentage) values (114, (select id from cepage where label  = 'Merlot'), NULL);                   
-#VALUE! #VALUE! #VALUE!         
-#VALUE! #VALUE! #VALUE!         
+insert into wine_cepage (wine_id, cepage_id, percentage) values (115, (select id from cepage where label  = 'Merlot'), 80); insert into wine_cepage (wine_id, cepage_id, percentage) values (115, (select id from cepage where label  = 'Cabernet sauvignon'), 15); insert into wine_cepage (wine_id, cepage_id, percentage) values (115, (select id from cepage where label  = 'Cabernet franc'), 5);          
+insert into wine_cepage (wine_id, cepage_id, percentage) values (116, (select id from cepage where label  = 'Merlot'), 80); insert into wine_cepage (wine_id, cepage_id, percentage) values (116, (select id from cepage where label  = 'Cabernet sauvignon'), 15); insert into wine_cepage (wine_id, cepage_id, percentage) values (116, (select id from cepage where label  = 'Cabernet franc'), 5);          
                     
-#VALUE! insert into wine_cepage (wine_id, cepage_id, percentage) values (118, (select id from cepage where label  = 'Carmenère'), NULL);               
-#VALUE!                 
-#VALUE! #VALUE! #VALUE! #VALUE!     
+insert into wine_cepage (wine_id, cepage_id, percentage) values (118, (select id from cepage where label  = 'Merlot'), 85); insert into wine_cepage (wine_id, cepage_id, percentage) values (118, (select id from cepage where label  = 'Carmenère'), NULL);               
+insert into wine_cepage (wine_id, cepage_id, percentage) values (119, (select id from cepage where label  = 'Merlot 1'), 100);                  
+insert into wine_cepage (wine_id, cepage_id, percentage) values (120, (select id from cepage where label  = 'Merlot'), 50); insert into wine_cepage (wine_id, cepage_id, percentage) values (120, (select id from cepage where label  = 'Malbec'), 20); insert into wine_cepage (wine_id, cepage_id, percentage) values (120, (select id from cepage where label  = 'Cabernet franc'), 15); insert into wine_cepage (wine_id, cepage_id, percentage) values (120, (select id from cepage where label  = 'Cabernet sauvignon'), 15);     
 insert into wine_cepage (wine_id, cepage_id, percentage) values (121, (select id from cepage where label  = 'Cabernet sauvignon'), NULL);   insert into wine_cepage (wine_id, cepage_id, percentage) values (121, (select id from cepage where label  = 'Médoc'), NULL);   insert into wine_cepage (wine_id, cepage_id, percentage) values (121, (select id from cepage where label  = 'Cabernet franc'), NULL);   insert into wine_cepage (wine_id, cepage_id, percentage) values (121, (select id from cepage where label  = 'Peti verdot'), NULL);      
-#VALUE! #VALUE!             
+insert into wine_cepage (wine_id, cepage_id, percentage) values (122, (select id from cepage where label  = 'Cabernet sauvignon'), 70); insert into wine_cepage (wine_id, cepage_id, percentage) values (122, (select id from cepage where label  = 'Merlot'), 30);             
                     
                     
                     
 insert into wine_cepage (wine_id, cepage_id, percentage) values (126, (select id from cepage where label  = 'Cabernet Franc'), NULL);   insert into wine_cepage (wine_id, cepage_id, percentage) values (126, (select id from cepage where label  = 'Merlot'), NULL);               
                     
-#VALUE! #VALUE! #VALUE!         
+insert into wine_cepage (wine_id, cepage_id, percentage) values (128, (select id from cepage where label  = 'Cabernet sauvignon'), 53); insert into wine_cepage (wine_id, cepage_id, percentage) values (128, (select id from cepage where label  = 'Merlot'), 43); insert into wine_cepage (wine_id, cepage_id, percentage) values (128, (select id from cepage where label  = 'Cabernet franc'), 4);          
 insert into wine_cepage (wine_id, cepage_id, percentage) values (129, (select id from cepage where label  = 'Pinot noir'), NULL);   insert into wine_cepage (wine_id, cepage_id, percentage) values (129, (select id from cepage where label  = 'Gamay'), NULL);    insert into wine_cepage (wine_id, cepage_id, percentage) values (129, (select id from cepage where label  = 'Côt'), NULL);         
 insert into wine_cepage (wine_id, cepage_id, percentage) values (130, (select id from cepage where label  = 'Carignan (à/c)'), NULL); insert into wine_cepage (wine_id, cepage_id, percentage) values (130, (select id from cepage where label  = 'Grenache noir (à/c)'), NULL);    insert into wine_cepage (wine_id, cepage_id, percentage) values (130, (select id from cepage where label  = 'Mourvèdre (à/c)'), NULL);           
-#VALUE! #VALUE!             
+insert into wine_cepage (wine_id, cepage_id, percentage) values (131, (select id from cepage where label  = 'Malbec'), 90); insert into wine_cepage (wine_id, cepage_id, percentage) values (131, (select id from cepage where label  = 'Merlot'), 10);             
 insert into wine_cepage (wine_id, cepage_id, percentage) values (132, (select id from cepage where label  = 'Cabernet sauvignon'), NULL);   insert into wine_cepage (wine_id, cepage_id, percentage) values (132, (select id from cepage where label  = 'Merlot'), NULL);   insert into wine_cepage (wine_id, cepage_id, percentage) values (132, (select id from cepage where label  = 'Cabernet franc'), NULL);   insert into wine_cepage (wine_id, cepage_id, percentage) values (132, (select id from cepage where label  = 'Malbec'), NULL);   insert into wine_cepage (wine_id, cepage_id, percentage) values (132, (select id from cepage where label  = 'fer-servadou'), NULL); 
 insert into wine_cepage (wine_id, cepage_id, percentage) values (133, (select id from cepage where label  = 'Carignan'), NULL);                 
 insert into wine_cepage (wine_id, cepage_id, percentage) values (134, (select id from cepage where label  = 'Grenache'), NULL); insert into wine_cepage (wine_id, cepage_id, percentage) values (134, (select id from cepage where label  = 'Carignan'), NULL);             
 insert into wine_cepage (wine_id, cepage_id, percentage) values (135, (select id from cepage where label  = 'Syrah'), NULL);    insert into wine_cepage (wine_id, cepage_id, percentage) values (135, (select id from cepage where label  = 'Grenache'), NULL);             
 insert into wine_cepage (wine_id, cepage_id, percentage) values (136, (select id from cepage where label  = 'Cabernet sauvignon'), NULL);   insert into wine_cepage (wine_id, cepage_id, percentage) values (136, (select id from cepage where label  = 'Merlot'), NULL);   insert into wine_cepage (wine_id, cepage_id, percentage) values (136, (select id from cepage where label  = 'Syrah'), NULL);            
-insert into wine_cepage (wine_id, cepage_id, percentage) values (137, (select id from cepage where label  = 'Grenache'), 45);   insert into wine_cepage (wine_id, cepage_id, percentage) values (137, (select id from cepage where label  = 'Syrah'), 10);  #VALUE!         
-#VALUE!                 
-#VALUE! #VALUE! #VALUE! #VALUE! #VALUE! #VALUE!
-#VALUE! #VALUE!             
+insert into wine_cepage (wine_id, cepage_id, percentage) values (137, (select id from cepage where label  = 'Grenache'), 55);   insert into wine_cepage (wine_id, cepage_id, percentage) values (137, (select id from cepage where label  = 'Syrah'), 34);  insert into wine_cepage (wine_id, cepage_id, percentage) values (137, (select id from cepage where label  = 'Cinsault'), 11);           
+insert into wine_cepage (wine_id, cepage_id, percentage) values (138, (select id from cepage where label  = 'Grenache noir 1'), 100);                   
+insert into wine_cepage (wine_id, cepage_id, percentage) values (139, (select id from cepage where label  = 'Merlot'), 35); insert into wine_cepage (wine_id, cepage_id, percentage) values (139, (select id from cepage where label  = 'Carignan'), 25);   insert into wine_cepage (wine_id, cepage_id, percentage) values (139, (select id from cepage where label  = 'Syrah'), 15);  insert into wine_cepage (wine_id, cepage_id, percentage) values (139, (select id from cepage where label  = 'Cabernet franc'), 11); insert into wine_cepage (wine_id, cepage_id, percentage) values (139, (select id from cepage where label  = 'Cabernet sauvignon'), 9);  insert into wine_cepage (wine_id, cepage_id, percentage) values (139, (select id from cepage where label  = 'Grenache noir'), 5);
+insert into wine_cepage (wine_id, cepage_id, percentage) values (140, (select id from cepage where label  = 'Syrah'), 70);  insert into wine_cepage (wine_id, cepage_id, percentage) values (140, (select id from cepage where label  = 'Grenache Noir'), 30);              
 insert into wine_cepage (wine_id, cepage_id, percentage) values (141, (select id from cepage where label  = 'Marsanne'), NULL); insert into wine_cepage (wine_id, cepage_id, percentage) values (141, (select id from cepage where label  = 'Roussanne'), NULL);                
 insert into wine_cepage (wine_id, cepage_id, percentage) values (142, (select id from cepage where label  = 'Cabernet sauvignon'), NULL);   insert into wine_cepage (wine_id, cepage_id, percentage) values (142, (select id from cepage where label  = 'Merlot'), NULL);               
 insert into wine_cepage (wine_id, cepage_id, percentage) values (143, (select id from cepage where label  = 'Petit manseng'), NULL);                    
 insert into wine_cepage (wine_id, cepage_id, percentage) values (144, (select id from cepage where label  = 'Muscat petit grain'), NULL);                   
-#VALUE! #VALUE!             
+insert into wine_cepage (wine_id, cepage_id, percentage) values (145, (select id from cepage where label  = 'Grenache blanc'), 70); insert into wine_cepage (wine_id, cepage_id, percentage) values (145, (select id from cepage where label  = 'Viognier'), 30);               
                     
-#VALUE! #VALUE! #VALUE!         
+insert into wine_cepage (wine_id, cepage_id, percentage) values (147, (select id from cepage where label  = 'Chardonnay'), 40); insert into wine_cepage (wine_id, cepage_id, percentage) values (147, (select id from cepage where label  = 'Riesling'), 40);   insert into wine_cepage (wine_id, cepage_id, percentage) values (147, (select id from cepage where label  = 'Pinot blanc'), 20);            
                     
-#VALUE! #VALUE!             
+insert into wine_cepage (wine_id, cepage_id, percentage) values (149, (select id from cepage where label  = 'Pinot noir'), 60); insert into wine_cepage (wine_id, cepage_id, percentage) values (149, (select id from cepage where label  = 'Pinot meunier'), 40);              
                     
                     
                     
@@ -61,11 +61,11 @@ insert into wine_cepage (wine_id, cepage_id, percentage) values (144, (select id
 insert into wine_cepage (wine_id, cepage_id, percentage) values (159, (select id from cepage where label  = 'Gamay noir'), NULL);                   
                     
 insert into wine_cepage (wine_id, cepage_id, percentage) values (161, (select id from cepage where label  = 'Cinsault'), NULL); insert into wine_cepage (wine_id, cepage_id, percentage) values (161, (select id from cepage where label  = 'Grenache noir'), NULL);    insert into wine_cepage (wine_id, cepage_id, percentage) values (161, (select id from cepage where label  = 'Syrah'), NULL);            
-#VALUE! #VALUE!             
-#VALUE! #VALUE!             
-#VALUE! #VALUE! #VALUE!         
-#VALUE! #VALUE! #VALUE!         
-#VALUE! #VALUE!             
+insert into wine_cepage (wine_id, cepage_id, percentage) values (162, (select id from cepage where label  = 'Grenache'), 60);   insert into wine_cepage (wine_id, cepage_id, percentage) values (162, (select id from cepage where label  = 'Mourvèdre'), 40);             
+insert into wine_cepage (wine_id, cepage_id, percentage) values (163, (select id from cepage where label  = 'Grenache'), 60);   insert into wine_cepage (wine_id, cepage_id, percentage) values (163, (select id from cepage where label  = 'Mourvèdre'), 40);             
+insert into wine_cepage (wine_id, cepage_id, percentage) values (164, (select id from cepage where label  = 'Grenache'), 70);   insert into wine_cepage (wine_id, cepage_id, percentage) values (164, (select id from cepage where label  = 'Syrah'), 15);  insert into wine_cepage (wine_id, cepage_id, percentage) values (164, (select id from cepage where label  = 'Cinsault'), 15);           
+insert into wine_cepage (wine_id, cepage_id, percentage) values (165, (select id from cepage where label  = 'Grenache'), 70);   insert into wine_cepage (wine_id, cepage_id, percentage) values (165, (select id from cepage where label  = 'Syrah'), 15);  insert into wine_cepage (wine_id, cepage_id, percentage) values (165, (select id from cepage where label  = 'Cinsault'), 15);           
+insert into wine_cepage (wine_id, cepage_id, percentage) values (166, (select id from cepage where label  = 'Syrah'), 95);  insert into wine_cepage (wine_id, cepage_id, percentage) values (166, (select id from cepage where label  = 'Vieux grenache'), 5);              
 insert into wine_cepage (wine_id, cepage_id, percentage) values (167, (select id from cepage where label  = 'Grenache'), NULL); insert into wine_cepage (wine_id, cepage_id, percentage) values (167, (select id from cepage where label  = 'Syrah'), NULL);    insert into wine_cepage (wine_id, cepage_id, percentage) values (167, (select id from cepage where label  = 'Cinsault'), NULL);         
 insert into wine_cepage (wine_id, cepage_id, percentage) values (168, (select id from cepage where label  = 'Grenache blanc'), NULL);   insert into wine_cepage (wine_id, cepage_id, percentage) values (168, (select id from cepage where label  = 'Roussane'), NULL); insert into wine_cepage (wine_id, cepage_id, percentage) values (168, (select id from cepage where label  = 'Viogner'), NULL);          
 insert into wine_cepage (wine_id, cepage_id, percentage) values (169, (select id from cepage where label  = 'Grenache'), NULL); insert into wine_cepage (wine_id, cepage_id, percentage) values (169, (select id from cepage where label  = 'Syrah'), NULL);    insert into wine_cepage (wine_id, cepage_id, percentage) values (169, (select id from cepage where label  = 'Bieule'), NULL);           
@@ -84,26 +84,26 @@ insert into wine_cepage (wine_id, cepage_id, percentage) values (181, (select id
 insert into wine_cepage (wine_id, cepage_id, percentage) values (182, (select id from cepage where label  = 'Traminer'), NULL);                 
 insert into wine_cepage (wine_id, cepage_id, percentage) values (183, (select id from cepage where label  = 'Cannonau (Grenache)'), NULL);                  
 insert into wine_cepage (wine_id, cepage_id, percentage) values (184, (select id from cepage where label  = 'Sangiovese grosso'), NULL);                    
-#VALUE! #VALUE! #VALUE!         
+insert into wine_cepage (wine_id, cepage_id, percentage) values (185, (select id from cepage where label  = 'Merlot'), 55); insert into wine_cepage (wine_id, cepage_id, percentage) values (185, (select id from cepage where label  = 'Cabernet Sauvignon'), 25); insert into wine_cepage (wine_id, cepage_id, percentage) values (185, (select id from cepage where label  = 'Tannat'), 20);         
 insert into wine_cepage (wine_id, cepage_id, percentage) values (186, (select id from cepage where label  = 'Syrah'), NULL);    insert into wine_cepage (wine_id, cepage_id, percentage) values (186, (select id from cepage where label  = 'Carignan'), NULL); insert into wine_cepage (wine_id, cepage_id, percentage) values (186, (select id from cepage where label  = 'Grenache'), NULL);         
 insert into wine_cepage (wine_id, cepage_id, percentage) values (187, (select id from cepage where label  = 'Chenin'), NULL);                   
 insert into wine_cepage (wine_id, cepage_id, percentage) values (188, (select id from cepage where label  = 'Torrontes'), NULL);    insert into wine_cepage (wine_id, cepage_id, percentage) values (188, (select id from cepage where label  = 'Sauvignon blanc'), NULL);              
 insert into wine_cepage (wine_id, cepage_id, percentage) values (189, (select id from cepage where label  = 'Carmenère'), NULL);                   
 insert into wine_cepage (wine_id, cepage_id, percentage) values (190, (select id from cepage where label  = 'Syrah'), NULL);                    
 insert into wine_cepage (wine_id, cepage_id, percentage) values (191, (select id from cepage where label  = 'Malbec'), NULL);                   
-#VALUE! #VALUE! #VALUE! #VALUE! #VALUE! 
-#VALUE! #VALUE!             
+insert into wine_cepage (wine_id, cepage_id, percentage) values (192, (select id from cepage where label  = 'Cinsault'), 20);   insert into wine_cepage (wine_id, cepage_id, percentage) values (192, (select id from cepage where label  = 'Carignan'), 20);   insert into wine_cepage (wine_id, cepage_id, percentage) values (192, (select id from cepage where label  = 'Mourvèdre'), 20); insert into wine_cepage (wine_id, cepage_id, percentage) values (192, (select id from cepage where label  = 'Grenache'), 20);   insert into wine_cepage (wine_id, cepage_id, percentage) values (192, (select id from cepage where label  = 'Syrah'), 20);  
+insert into wine_cepage (wine_id, cepage_id, percentage) values (193, (select id from cepage where label  = 'Sauvignon'), 80);  insert into wine_cepage (wine_id, cepage_id, percentage) values (193, (select id from cepage where label  = 'Garganega'), 20);              
 insert into wine_cepage (wine_id, cepage_id, percentage) values (194, (select id from cepage where label  = 'Cabernet sauvignon'), NULL);   insert into wine_cepage (wine_id, cepage_id, percentage) values (194, (select id from cepage where label  = 'Merlot'), NULL);               
 insert into wine_cepage (wine_id, cepage_id, percentage) values (195, (select id from cepage where label  = 'Viognier'), NULL);                 
 insert into wine_cepage (wine_id, cepage_id, percentage) values (196, (select id from cepage where label  = 'Cabernet sauvignon'), NULL);                   
 insert into wine_cepage (wine_id, cepage_id, percentage) values (197, (select id from cepage where label  = 'Chardonnay'), NULL);                   
-#VALUE! #VALUE!             
-#VALUE! #VALUE!             
-#VALUE! #VALUE! #VALUE!         
-#VALUE! #VALUE! #VALUE!         
-#VALUE! #VALUE! #VALUE!         
-#VALUE! #VALUE!             
-#VALUE! #VALUE!             
+insert into wine_cepage (wine_id, cepage_id, percentage) values (198, (select id from cepage where label  = 'Pinot noir'), 60); insert into wine_cepage (wine_id, cepage_id, percentage) values (198, (select id from cepage where label  = 'Pinot meunier'), 40);              
+insert into wine_cepage (wine_id, cepage_id, percentage) values (199, (select id from cepage where label  = 'Chardonnay'), 80); insert into wine_cepage (wine_id, cepage_id, percentage) values (199, (select id from cepage where label  = 'Pinot noir'), 20);             
+insert into wine_cepage (wine_id, cepage_id, percentage) values (200, (select id from cepage where label  = 'Chardonnay'), 33); insert into wine_cepage (wine_id, cepage_id, percentage) values (200, (select id from cepage where label  = 'Pinot noir'), 33); insert into wine_cepage (wine_id, cepage_id, percentage) values (200, (select id from cepage where label  = 'Pinot meunier'), 33);          
+insert into wine_cepage (wine_id, cepage_id, percentage) values (201, (select id from cepage where label  = 'Riesling'), 48);   insert into wine_cepage (wine_id, cepage_id, percentage) values (201, (select id from cepage where label  = 'Pinot Blanc'), 49);    insert into wine_cepage (wine_id, cepage_id, percentage) values (201, (select id from cepage where label  = 'Auxerrois'), 3);           
+insert into wine_cepage (wine_id, cepage_id, percentage) values (202, (select id from cepage where label  = 'Riesling'), 40);   insert into wine_cepage (wine_id, cepage_id, percentage) values (202, (select id from cepage where label  = 'Chardonnay'), 40); insert into wine_cepage (wine_id, cepage_id, percentage) values (202, (select id from cepage where label  = 'Pinot blanc'), 20);            
+insert into wine_cepage (wine_id, cepage_id, percentage) values (203, (select id from cepage where label  = 'Moscato'), 50);    insert into wine_cepage (wine_id, cepage_id, percentage) values (203, (select id from cepage where label  = 'Malvasia'), 50);               
+insert into wine_cepage (wine_id, cepage_id, percentage) values (204, (select id from cepage where label  = 'Marzemino'), 50);  insert into wine_cepage (wine_id, cepage_id, percentage) values (204, (select id from cepage where label  = 'Raboso'), 50);             
 insert into wine_cepage (wine_id, cepage_id, percentage) values (205, (select id from cepage where label  = 'Glera'), NULL);                    
 insert into wine_cepage (wine_id, cepage_id, percentage) values (206, (select id from cepage where label  = 'Grenache'), NULL); insert into wine_cepage (wine_id, cepage_id, percentage) values (206, (select id from cepage where label  = 'Mourvèdre'), NULL);   insert into wine_cepage (wine_id, cepage_id, percentage) values (206, (select id from cepage where label  = 'Syrah'), NULL);            
                     
@@ -123,17 +123,17 @@ insert into wine_cepage (wine_id, cepage_id, percentage) values (220, (select id
 insert into wine_cepage (wine_id, cepage_id, percentage) values (221, (select id from cepage where label  = 'Chardonnay'), NULL);                   
 insert into wine_cepage (wine_id, cepage_id, percentage) values (222, (select id from cepage where label  = 'Chardonnay'), NULL);                   
 insert into wine_cepage (wine_id, cepage_id, percentage) values (223, (select id from cepage where label  = 'Pinot noir'), NULL);                   
-#VALUE! #VALUE!             
-#VALUE! #VALUE!             
+insert into wine_cepage (wine_id, cepage_id, percentage) values (224, (select id from cepage where label  = 'Grenache'), 50);   insert into wine_cepage (wine_id, cepage_id, percentage) values (224, (select id from cepage where label  = 'Syrah'), 50);              
+insert into wine_cepage (wine_id, cepage_id, percentage) values (225, (select id from cepage where label  = 'Grenache'), 50);   insert into wine_cepage (wine_id, cepage_id, percentage) values (225, (select id from cepage where label  = 'Syrah'), 50);              
 insert into wine_cepage (wine_id, cepage_id, percentage) values (226, (select id from cepage where label  = 'Chardonnay'), NULL);                   
 insert into wine_cepage (wine_id, cepage_id, percentage) values (227, (select id from cepage where label  = 'Pinot Noir'), NULL);                   
 insert into wine_cepage (wine_id, cepage_id, percentage) values (228, (select id from cepage where label  = 'Pinot Noir'), NULL);                   
 insert into wine_cepage (wine_id, cepage_id, percentage) values (229, (select id from cepage where label  = 'Pinot Noir'), NULL);                   
 insert into wine_cepage (wine_id, cepage_id, percentage) values (230, (select id from cepage where label  = 'Pinot Noir'), NULL);                   
-#VALUE! #VALUE! #VALUE! #VALUE!     
-#VALUE! #VALUE! #VALUE! #VALUE!     
-#VALUE! #VALUE! #VALUE! #VALUE!     
-#VALUE! #VALUE!             
+insert into wine_cepage (wine_id, cepage_id, percentage) values (231, (select id from cepage where label  = 'Syrah'), 50);  insert into wine_cepage (wine_id, cepage_id, percentage) values (231, (select id from cepage where label  = 'Grenache'), 20);   insert into wine_cepage (wine_id, cepage_id, percentage) values (231, (select id from cepage where label  = 'Mourvèdre'), 20); insert into wine_cepage (wine_id, cepage_id, percentage) values (231, (select id from cepage where label  = 'Vieux Carignan'), 10);     
+insert into wine_cepage (wine_id, cepage_id, percentage) values (232, (select id from cepage where label  = 'Syrah'), 50);  insert into wine_cepage (wine_id, cepage_id, percentage) values (232, (select id from cepage where label  = 'Grenache'), 20);   insert into wine_cepage (wine_id, cepage_id, percentage) values (232, (select id from cepage where label  = 'Mourvèdre'), 20); insert into wine_cepage (wine_id, cepage_id, percentage) values (232, (select id from cepage where label  = 'Vieux Carignan'), 10);     
+insert into wine_cepage (wine_id, cepage_id, percentage) values (233, (select id from cepage where label  = 'Syrah'), 50);  insert into wine_cepage (wine_id, cepage_id, percentage) values (233, (select id from cepage where label  = 'Grenache'), 20);   insert into wine_cepage (wine_id, cepage_id, percentage) values (233, (select id from cepage where label  = 'Mourvèdre'), 20); insert into wine_cepage (wine_id, cepage_id, percentage) values (233, (select id from cepage where label  = 'Vieux Carignan'), 10);     
+insert into wine_cepage (wine_id, cepage_id, percentage) values (234, (select id from cepage where label  = 'Muscat Petits Grains'), 70);   insert into wine_cepage (wine_id, cepage_id, percentage) values (234, (select id from cepage where label  = 'Muscat d''Alexandrie'), 30);               
                     
 insert into wine_cepage (wine_id, cepage_id, percentage) values (236, (select id from cepage where label  = 'Malbec'), NULL);                   
 insert into wine_cepage (wine_id, cepage_id, percentage) values (237, (select id from cepage where label  = 'Chardonnay'), NULL);                   
@@ -142,7 +142,7 @@ insert into wine_cepage (wine_id, cepage_id, percentage) values (238, (select id
 insert into wine_cepage (wine_id, cepage_id, percentage) values (240, (select id from cepage where label  = 'Grenache'), NULL); insert into wine_cepage (wine_id, cepage_id, percentage) values (240, (select id from cepage where label  = 'Syrah'), NULL);    insert into wine_cepage (wine_id, cepage_id, percentage) values (240, (select id from cepage where label  = 'Mouvèdre'), NULL);            
 insert into wine_cepage (wine_id, cepage_id, percentage) values (241, (select id from cepage where label  = 'Nero d''avola'), NULL);                    
                     
-insert into wine_cepage (wine_id, cepage_id, percentage) values (243, (select id from cepage where label  = 'Grenache'), NULL); insert into wine_cepage (wine_id, cepage_id, percentage) values (243, (select id from cepage where label  = 'Syrah'), NULL);    #VALUE!         
+insert into wine_cepage (wine_id, cepage_id, percentage) values (243, (select id from cepage where label  = 'Grenache'), NULL); insert into wine_cepage (wine_id, cepage_id, percentage) values (243, (select id from cepage where label  = 'Syrah'), NULL);    insert into wine_cepage (wine_id, cepage_id, percentage) values (243, (select id from cepage where label  = 'Cabernet sauvignon'), 5);          
 insert into wine_cepage (wine_id, cepage_id, percentage) values (244, (select id from cepage where label  = 'Barbera'), NULL);                  
 insert into wine_cepage (wine_id, cepage_id, percentage) values (245, (select id from cepage where label  = 'Arneis'), NULL);                   
 insert into wine_cepage (wine_id, cepage_id, percentage) values (246, (select id from cepage where label  = 'Syrah'), NULL);    insert into wine_cepage (wine_id, cepage_id, percentage) values (246, (select id from cepage where label  = 'Tbd?'), NULL); insert into wine_cepage (wine_id, cepage_id, percentage) values (246, (select id from cepage where label  = 'Tbd?'), NULL);         
@@ -150,24 +150,24 @@ insert into wine_cepage (wine_id, cepage_id, percentage) values (247, (select id
                     
 insert into wine_cepage (wine_id, cepage_id, percentage) values (249, (select id from cepage where label  = 'Syrah'), NULL);    insert into wine_cepage (wine_id, cepage_id, percentage) values (249, (select id from cepage where label  = 'Grenache'), NULL);             
                     
-#VALUE! #VALUE! #VALUE!         
+insert into wine_cepage (wine_id, cepage_id, percentage) values (251, (select id from cepage where label  = 'Merlot'), 82); insert into wine_cepage (wine_id, cepage_id, percentage) values (251, (select id from cepage where label  = 'Cabernet Franc'), 9);  insert into wine_cepage (wine_id, cepage_id, percentage) values (251, (select id from cepage where label  = 'Cabernet sauvignon'), 9);          
                     
-#VALUE! #VALUE!             
-#VALUE! #VALUE! #VALUE!         
-#VALUE! #VALUE! #VALUE!         
+insert into wine_cepage (wine_id, cepage_id, percentage) values (253, (select id from cepage where label  = 'Cabernet Sauvignon'), 55); insert into wine_cepage (wine_id, cepage_id, percentage) values (253, (select id from cepage where label  = 'Merlot'), 45);             
+insert into wine_cepage (wine_id, cepage_id, percentage) values (254, (select id from cepage where label  = 'Merlot'), 85); insert into wine_cepage (wine_id, cepage_id, percentage) values (254, (select id from cepage where label  = 'Cabernet Franc'), 10); insert into wine_cepage (wine_id, cepage_id, percentage) values (254, (select id from cepage where label  = 'Cabernet sauvignon'), 5);          
+insert into wine_cepage (wine_id, cepage_id, percentage) values (255, (select id from cepage where label  = 'Merlot'), 74); insert into wine_cepage (wine_id, cepage_id, percentage) values (255, (select id from cepage where label  = 'Cabernet Sauvignon'), 20); insert into wine_cepage (wine_id, cepage_id, percentage) values (255, (select id from cepage where label  = 'Petit Verdot'), 6);            
 insert into wine_cepage (wine_id, cepage_id, percentage) values (256, (select id from cepage where label  = 'Merlot'), NULL);   insert into wine_cepage (wine_id, cepage_id, percentage) values (256, (select id from cepage where label  = 'Cabernet Sauvignon'), NULL);   insert into wine_cepage (wine_id, cepage_id, percentage) values (256, (select id from cepage where label  = 'Petit Verdot'), NULL);         
 insert into wine_cepage (wine_id, cepage_id, percentage) values (257, (select id from cepage where label  = 'Cabernet Sauvignon'), NULL);                   
                     
-#VALUE! #VALUE!             
+insert into wine_cepage (wine_id, cepage_id, percentage) values (259, (select id from cepage where label  = 'Merlot'), 70); insert into wine_cepage (wine_id, cepage_id, percentage) values (259, (select id from cepage where label  = 'Cabernet Sauvignon'), 30);             
 insert into wine_cepage (wine_id, cepage_id, percentage) values (260, (select id from cepage where label  = 'Chardonnay'), NULL);                   
 insert into wine_cepage (wine_id, cepage_id, percentage) values (261, (select id from cepage where label  = 'Grenache'), NULL);                 
-#VALUE! #VALUE! #VALUE!         
+insert into wine_cepage (wine_id, cepage_id, percentage) values (262, (select id from cepage where label  = 'Chardonnay'), 75); insert into wine_cepage (wine_id, cepage_id, percentage) values (262, (select id from cepage where label  = 'Chenin'), 20); insert into wine_cepage (wine_id, cepage_id, percentage) values (262, (select id from cepage where label  = 'Mauzac'), 5);          
 insert into wine_cepage (wine_id, cepage_id, percentage) values (263, (select id from cepage where label  = 'Sémillon'), NULL);    insert into wine_cepage (wine_id, cepage_id, percentage) values (263, (select id from cepage where label  = 'Sauvignon blanc'), NULL);              
 insert into wine_cepage (wine_id, cepage_id, percentage) values (264, (select id from cepage where label  = 'Chenin'), NULL);                   
-#VALUE! #VALUE!             
+insert into wine_cepage (wine_id, cepage_id, percentage) values (265, (select id from cepage where label  = 'Nero d''avola'), 60);  insert into wine_cepage (wine_id, cepage_id, percentage) values (265, (select id from cepage where label  = 'Frappato'), 40);               
 insert into wine_cepage (wine_id, cepage_id, percentage) values (266, (select id from cepage where label  = 'Chenin'), NULL);                   
-#VALUE! #VALUE!             
-#VALUE! insert into wine_cepage (wine_id, cepage_id, percentage) values (268, (select id from cepage where label  = 'Grenache'), NULL); insert into wine_cepage (wine_id, cepage_id, percentage) values (268, (select id from cepage where label  = 'Carignan'), NULL);         
+insert into wine_cepage (wine_id, cepage_id, percentage) values (267, (select id from cepage where label  = 'Marsanne'), 80);   insert into wine_cepage (wine_id, cepage_id, percentage) values (267, (select id from cepage where label  = 'Roussane'), 20);               
+insert into wine_cepage (wine_id, cepage_id, percentage) values (268, (select id from cepage where label  = 'Syrah'), 70);  insert into wine_cepage (wine_id, cepage_id, percentage) values (268, (select id from cepage where label  = 'Grenache'), NULL); insert into wine_cepage (wine_id, cepage_id, percentage) values (268, (select id from cepage where label  = 'Carignan'), NULL);         
 insert into wine_cepage (wine_id, cepage_id, percentage) values (269, (select id from cepage where label  = 'Chenin Blanc'), NULL);                 
 insert into wine_cepage (wine_id, cepage_id, percentage) values (270, (select id from cepage where label  = 'Chenin Blanc'), NULL); insert into wine_cepage (wine_id, cepage_id, percentage) values (270, (select id from cepage where label  = 'Viogner'), NULL);  insert into wine_cepage (wine_id, cepage_id, percentage) values (270, (select id from cepage where label  = 'Chardonnay'), NULL);           
 insert into wine_cepage (wine_id, cepage_id, percentage) values (271, (select id from cepage where label  = 'Sauvignon Blanc'), NULL);  insert into wine_cepage (wine_id, cepage_id, percentage) values (271, (select id from cepage where label  = 'Sémillon'), NULL);                
@@ -194,11 +194,11 @@ insert into wine_cepage (wine_id, cepage_id, percentage) values (291, (select id
                     
 insert into wine_cepage (wine_id, cepage_id, percentage) values (293, (select id from cepage where label  = 'Carignan'), NULL);                 
 insert into wine_cepage (wine_id, cepage_id, percentage) values (294, (select id from cepage where label  = 'Prosecco'), NULL);                 
-#VALUE! #VALUE!             
-#VALUE! #VALUE! #VALUE!         
+insert into wine_cepage (wine_id, cepage_id, percentage) values (295, (select id from cepage where label  = 'Grenache blanc'), 80); insert into wine_cepage (wine_id, cepage_id, percentage) values (295, (select id from cepage where label  = 'Vermentino'), 20);             
+insert into wine_cepage (wine_id, cepage_id, percentage) values (296, (select id from cepage where label  = 'Carignan'), 45);   insert into wine_cepage (wine_id, cepage_id, percentage) values (296, (select id from cepage where label  = 'Syrah'), 40);  insert into wine_cepage (wine_id, cepage_id, percentage) values (296, (select id from cepage where label  = 'Grenache noir'), 15);          
 insert into wine_cepage (wine_id, cepage_id, percentage) values (297, (select id from cepage where label  = 'Carignan'), NULL);                 
-#VALUE! #VALUE! #VALUE!         
-#VALUE! #VALUE! #VALUE!         
+insert into wine_cepage (wine_id, cepage_id, percentage) values (298, (select id from cepage where label  = 'Carignan'), 35);   insert into wine_cepage (wine_id, cepage_id, percentage) values (298, (select id from cepage where label  = 'Syrah'), 55);  insert into wine_cepage (wine_id, cepage_id, percentage) values (298, (select id from cepage where label  = 'Grenache noir'), 10);          
+insert into wine_cepage (wine_id, cepage_id, percentage) values (299, (select id from cepage where label  = 'Carignan'), 45);   insert into wine_cepage (wine_id, cepage_id, percentage) values (299, (select id from cepage where label  = 'Syrah'), 45);  insert into wine_cepage (wine_id, cepage_id, percentage) values (299, (select id from cepage where label  = 'Grenache noir'), 10);          
 insert into wine_cepage (wine_id, cepage_id, percentage) values (300, (select id from cepage where label  = 'Syrah'), NULL);    insert into wine_cepage (wine_id, cepage_id, percentage) values (300, (select id from cepage where label  = 'Grenache'), NULL); insert into wine_cepage (wine_id, cepage_id, percentage) values (300, (select id from cepage where label  = 'Carignan'), NULL);         
 insert into wine_cepage (wine_id, cepage_id, percentage) values (301, (select id from cepage where label  = 'Marsanne'), NULL); insert into wine_cepage (wine_id, cepage_id, percentage) values (301, (select id from cepage where label  = 'Roussanne'), NULL);                
 insert into wine_cepage (wine_id, cepage_id, percentage) values (302, (select id from cepage where label  = 'Syrah'), NULL);    insert into wine_cepage (wine_id, cepage_id, percentage) values (302, (select id from cepage where label  = 'Grenache'), NULL); insert into wine_cepage (wine_id, cepage_id, percentage) values (302, (select id from cepage where label  = 'Carignan'), NULL);         
@@ -213,7 +213,7 @@ insert into wine_cepage (wine_id, cepage_id, percentage) values (310, (select id
 insert into wine_cepage (wine_id, cepage_id, percentage) values (311, (select id from cepage where label  = 'Petit Manseng'), NULL);    insert into wine_cepage (wine_id, cepage_id, percentage) values (311, (select id from cepage where label  = 'Gros'), NULL); insert into wine_cepage (wine_id, cepage_id, percentage) values (311, (select id from cepage where label  = 'Courbu'), NULL);           
 insert into wine_cepage (wine_id, cepage_id, percentage) values (312, (select id from cepage where label  = 'Tannat'), NULL);                   
 insert into wine_cepage (wine_id, cepage_id, percentage) values (313, (select id from cepage where label  = 'Sangiovese'), NULL);                   
-#VALUE! #VALUE!             
+insert into wine_cepage (wine_id, cepage_id, percentage) values (314, (select id from cepage where label  = 'Merlot'), 85); insert into wine_cepage (wine_id, cepage_id, percentage) values (314, (select id from cepage where label  = 'Cabernet sauvignon'), 15);             
 insert into wine_cepage (wine_id, cepage_id, percentage) values (315, (select id from cepage where label  = 'Merlot'), NULL);   insert into wine_cepage (wine_id, cepage_id, percentage) values (315, (select id from cepage where label  = 'Cabernet Franc'), NULL);   insert into wine_cepage (wine_id, cepage_id, percentage) values (315, (select id from cepage where label  = 'Cabernet sauvignon'), NULL);           
 insert into wine_cepage (wine_id, cepage_id, percentage) values (316, (select id from cepage where label  = 'Syrah'), NULL);    insert into wine_cepage (wine_id, cepage_id, percentage) values (316, (select id from cepage where label  = 'Carignan'), NULL); insert into wine_cepage (wine_id, cepage_id, percentage) values (316, (select id from cepage where label  = 'Vieux Grenache'), NULL);           
                     
