@@ -1,0 +1,260 @@
+delete from position_cave where wine_id >= 100;
+
+
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (102, 3, 'east', 'wall42', 12);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (103, 3, 'east', 'wall22', 1);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (104, 3, 'east', 'wall22', 4);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (105, 3, 'east', 'wall42', 12);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (106, 3, 'east', 'wall22', 1);
+
+
+
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (110, 3, 'north', 'wall44', 4);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (111, 3, 'north', 'wall44', 6);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (112, 3, 'north', 'wall44', 3);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (113, 3, 'north', 'wall44', 6);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (114, 3, 'north', 'wall44', 2);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (115, 3, 'north', 'wall44', 5);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (116, 3, 'north', 'wall44', 6);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (117, 3, 'north', 'wall34', 1);
+
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (119, 3, 'north', 'wall34', 1);
+
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (121, 3, 'north', 'wall34', 1);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (122, 3, 'north', 'wall34', 1);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (123, 3, 'north', 'wall34', 1);
+
+
+
+
+
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (129, 3, 'east', 'wall42', 6);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (130, 3, 'north', 'wall45', 14);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (131, 3, 'north', 'wall45', 4);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (132, 3, 'north', 'wall45', 4);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (133, 3, 'north', 'wall35', 6);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (134, 3, 'north', 'wall35', 5);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (135, 3, 'north', 'wall35', 1);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (136, 3, 'north', 'wall35', 6);
+
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (138, 3, 'north', 'wall25', 1);
+
+
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (141, 3, 'north', 'wall25', 1);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (142, 3, 'north', 'wall25', 1);
+
+
+
+
+
+
+
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (150, 3, 'east', 'wall31', 9);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (151, 3, 'east', 'wall31', 6);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (152, 3, 'east', 'wall31', 6);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (153, 3, 'east', 'wall21', 1);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (154, 3, 'east', 'wall31', 3);
+
+
+
+
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (159, 3, 'north', 'wall13', 1);
+
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (161, 3, 'east', 'wall43', 1);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (162, 3, 'east', 'wall43', 12);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (163, 3, 'east', 'wall23', 6);
+
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (165, 3, 'east', 'wall23', 1);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (166, 3, 'east', 'wall23', 1);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (167, 3, 'east', 'wall23', 4);
+
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (169, 3, 'east', 'wall43', 12);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (170, 3, 'south', 'wall11', 6);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (171, 3, 'south', 'wall11', 5);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (172, 3, 'south', 'wall11', 1);
+
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (174, 3, 'south', 'wall33', 1);
+
+
+
+
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (179, 3, 'south', 'wall11', 1);
+
+
+
+
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (184, 3, 'south', 'wall21', 4);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (185, 3, 'north', 'wall45', 6);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (186, 3, 'north', 'wall25', 2);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (187, 3, 'south', 'wall33', 12);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (188, 3, 'south', 'wall43', 12);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (189, 3, 'south', 'wall33', 6);
+
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (191, 3, 'south', 'wall11', 5);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (192, 3, 'north', 'wall45', 6);
+
+
+
+
+
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (198, 3, 'east', 'wall41', 12);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (199, 3, 'east', 'wall11', 17);
+
+
+
+
+
+
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (206, 3, 'east', 'wall43', 1);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (207, 3, 'north', 'wall34', 1);
+
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (209, 3, 'north', 'wall34', 2);
+
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (211, 3, 'east', 'wall22', 12);
+
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (213, 3, 'north', 'wall13', 1);
+
+
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (216, 3, 'east', 'wall32', 7);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (217, 3, 'east', 'wall32', 12);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (218, 3, 'east', 'wall32', 15);
+
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (220, 3, 'north', 'wall13', 4);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (221, 3, 'north', 'wall13', 4);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (222, 3, 'north', 'wall13', 2);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (223, 3, 'north', 'wall23', 1);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (224, 3, 'east', 'wall33', 12);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (225, 3, 'east', 'wall43', 4);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (226, 3, 'north', 'wall13', 3);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (227, 3, 'north', 'wall13', 9);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (228, 3, 'north', 'wall33', 11);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (229, 3, 'north', 'wall43', 2);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (230, 3, 'north', 'wall23', 1);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (231, 3, 'north', 'wall35', 11);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (232, 3, 'north', 'wall35', 2);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (233, 3, 'north', 'wall45', 4);
+
+
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (236, 3, 'south', 'wall21', 1);
+
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (238, 3, 'east', 'wall13', 1);
+
+
+
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (242, 3, 'south', 'wall12', 20);
+
+
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (245, 3, 'south', 'wall21', 4);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (246, 3, 'north', 'wall45', 1);
+
+
+
+
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (251, 3, 'north', 'wall24', 2);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (252, 3, 'north', 'wall34', 6);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (253, 3, 'north', 'wall34', 3);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (254, 3, 'north', 'wall34', 6);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (255, 3, 'north', 'wall34', 5);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (256, 3, 'north', 'wall34', 6);
+
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (258, 3, 'north', 'wall25', 1);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (259, 3, 'north', 'wall24', 5);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (260, 3, 'north', 'wall25', 1);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (261, 3, 'north', 'wall25', 2);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (262, 3, 'north', 'wall25', 1);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (263, 3, 'north', 'wall35', 6);
+
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (265, 3, 'south', 'wall41', 2);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (266, 3, 'east', 'wall42', 6);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (267, 3, 'north', 'wall25', 1);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (268, 3, 'north', 'wall25', 5);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (269, 3, 'south', 'wall13', 6);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (270, 3, 'south', 'wall23', 6);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (271, 3, 'south', 'wall13', 6);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (272, 3, 'south', 'wall23', 6);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (273, 3, 'north', 'wall43', 6);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (274, 3, 'north', 'wall43', 6);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (275, 3, 'north', 'wall43', 6);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (276, 3, 'north', 'wall43', 6);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (277, 3, 'north', 'wall43', 2);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (278, 3, 'north', 'wall43', 8);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (279, 3, 'north', 'wall33', 12);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (280, 3, 'north', 'wall43', 3);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (281, 3, 'north', 'wall33', 1);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (282, 3, 'north', 'wall33', 10);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (283, 3, 'north', 'wall23', 2);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (284, 3, 'north', 'wall23', 2);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (285, 3, 'north', 'wall23', 1);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (286, 3, 'north', 'wall23', 6);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (287, 3, 'north', 'wall23', 5);
+
+
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (290, 3, 'north', 'wall43', 1);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (291, 3, 'north', 'wall33', 5);
+
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (293, 3, 'north', 'wall15', 1);
+
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (295, 3, 'north', 'wall15', 1);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (296, 3, 'north', 'wall15', 1);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (297, 3, 'north', 'wall15', 4);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (298, 3, 'north', 'wall15', 1);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (299, 3, 'north', 'wall15', 1);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (300, 3, 'north', 'wall15', 5);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (301, 3, 'north', 'wall15', 2);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (302, 3, 'north', 'wall15', 5);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (303, 3, 'north', 'wall15', 3);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (304, 3, 'south', 'wall41', 6);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (305, 3, 'north', 'wall25', 3);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (306, 3, 'north', 'wall35', 3);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (307, 3, 'south', 'wall41', 1);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (308, 3, 'south', 'wall41', 1);
+
+
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (311, 3, 'north', 'wall25', 1);
+
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (313, 3, 'south', 'wall41', 1);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (314, 3, 'north', 'wall34', 1);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (315, 3, 'north', 'wall34', 1);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (316, 3, 'north', 'wall45', 1);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (317, 3, 'south', 'wall22', 2);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (318, 3, 'south', 'wall32', 12);
+
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (320, 3, 'south', 'wall41', 2);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (321, 3, 'south', 'wall41', 1);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (322, 3, 'south', 'wall41', 3);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (323, 3, 'south', 'wall41', 3);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (324, 3, 'south', 'wall41', 3);
+
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (326, 3, 'south', 'wall31', 18);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (327, 3, 'south', 'wall41', 1);
+
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (329, 3, 'north', 'wall34', 1);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (330, 3, 'south', 'wall21', 2);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (331, 3, 'north', 'wall33', 1);
+
+
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (334, 3, 'east', 'wall33', 1);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (335, 3, 'north', 'wall25', 1);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (336, 3, 'north', 'wall23', 6);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (337, 3, 'east', 'wall23', 12);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (338, 3, 'east', 'wall33', 12);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (339, 3, 'east', 'wall43', 6);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (340, 3, 'east', 'wall33', 1);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (341, 3, 'south', 'wall11', 6);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (342, 3, 'south', 'wall21', 2);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (343, 3, 'south', 'wall41', 6);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (344, 3, 'south', 'wall21', 4);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (345, 3, 'east', 'wall41', 6);
+insert into position_cave (wine_id, size_id, wall, casier, quantity) values (346, 3, 'south', 'wall21', 6);
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,6 +1,11 @@
 #!/bin/bash
+read -s -p "Mysql pass: " pass
+echo
 #sed -Ei 's/"insert/insert/' wine.sql 
 #sed -Ei 's/\);"/);/' wine.sql 
-#mysql -uroot -p wine_management < wine.sql
-mysql -uroot -p wine_management < cepage.sql
+mysql -uroot -p$pass wine_management < purge.sql
+mysql -uroot -p$pass wine_management < wine.sql
+mysql -uroot -p$pass wine_management < cepage.sql
+mysql -uroot -p$pass wine_management < positionCave.sql
+mysql -uroot -p$pass wine_management < buy.sql
 

@@ -1,7 +1,18 @@
-- filtre < > <= >= sur les optimum/fin optimum. Ou une coche 'optimum auj'
 - gérer les erreurs dans la création
-g ajouter un sablier lors des création / sauvegarde
+- ajouter un sablier lors des création / sauvegarde
 - Afficher le nbr de résultat
-- prob avec l'affichage des détail parfois
-- cépage et encodage. Quid %?
-- Les perruches 2010 -> met = Onglet à l
+
+
+? région, si sélection d'une région, pas de filtre auto
+
+
+- mobile
+-- sortie de bouteille
+-- recherche de # de bouteille (par région, par appellation...)
+-- prix des achat d'un tel vin
+-- est ce que j'ai déjà du 2016
+
+
+Ajouter bouton 'Afficher tout'
+Permettre encodage par '.' ou ','
+décocher 'afficher les vin à ranger' su sauvegarde dans mettre les détails de l'achat

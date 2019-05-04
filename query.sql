@@ -31,10 +31,12 @@ create table    position_cave   (id int  AUTO_INCREMENT PRIMARY KEY, wine_id int
 create table    wine_cepage (id int AUTO_INCREMENT PRIMARY KEY, wine_id int, cepage_id int, percentage int, FOREIGN KEY (wine_id) REFERENCES wine(id), FOREIGN KEY (cepage_id) REFERENCES cepage(id));
 create table    stock   (id int  AUTO_INCREMENT PRIMARY KEY, wine_id int, size_id int, quantity int, FOREIGN KEY (wine_id) REFERENCES wine(id), FOREIGN KEY (size_id) REFERENCES size(id));
 
-create table    buy (id int  AUTO_INCREMENT PRIMARY KEY, wine_id int, size_id int, location varchar(50), buy_date date, quantity int, unit_price decimal, FOREIGN KEY (wine_id) REFERENCES wine(id), FOREIGN KEY (size_id) REFERENCES size(id));
+create table    buy (id int  AUTO_INCREMENT PRIMARY KEY, wine_id int, size_id int, location varchar(50), buy_date date, quantity int, unit_price decimal(5,2), FOREIGN KEY (wine_id) REFERENCES wine(id), FOREIGN KEY (size_id) REFERENCES size(id));
 create table    out_record  (id int AUTO_INCREMENT PRIMARY KEY, wine_id int, size_id int, quantity int, out_date date, foreign key (size_id) references size(id), foreign key (wine_id) references wine(id));
 create table    casier_capacity (id int auto_increment primary key, wall varchar(6), casier varchar(6), capacity int);
 
+create view stock_sub as select quantity, size_id, wine_id from buy union all select -quantity, size_id, wine_id from out_record;
+create view stock_view as select sum(quantity) quantity, size_id, wine_id from stock_sub t group by t.size_id, t.wine_id;
 
 --config
 insert into country (id, label) values (1,'Afrique du Sud');
