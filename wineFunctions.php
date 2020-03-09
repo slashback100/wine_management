@@ -8,7 +8,7 @@ $db = new PDO('mysql:host='.$db_config['host'].';dbname='.$db_config['database']
 if(isset($_REQUEST['searchType'])){
     if($_REQUEST['searchType'] == "millesime"){
         $query = "select millesime.note, millesime.year, country.label country, region.label region, coalesce(color.label,'') color, coalesce(category.label, '') category, coalesce(apellation.label, '') appellation, coalesce(apellation.sub_division, '') sub_division from millesime join region on region.id = millesime.region_id join country on country.id = region.country_id  left outer join color on color.id = millesime.color_id left outer join category on category.id = millesime.category_id left outer join apellation on apellation.id = millesime.apellation_id order by country.label, region.label, apellation.sub_division, apellation.label, color.label, category.label, millesime.year";
-        error_log($query);
+        //error_log($query);
         $result = $db->query($query);
         $i=0;
         $list = array();
@@ -198,12 +198,14 @@ if(isset($_REQUEST['searchType'])){
         echo json_encode($list);
     } elseif($_REQUEST['searchType'] == "basementAvailability"){
         $wall = getPost('wall');
+	error_log("wall ".$wall);
         if($wall != ""){
             $qWall = "where t.wall = ".$wall;
         } else {
             $qWall = "";
         }
-        $q = "select wall, casier, sum(quantity) quantity, sum(bottle) bottle from (select wall, casier, -quantity quantity, quantity bottle from position_cave union all select wall, casier, capacity quantity, 0 bottle from casier_capacity) t ".$qWall." group by wall, casier";
+        $q = "select wall, casier, sum(quantity) quantity, sum(bottle) bottle from (select wall, casier, -quantity quantity, quantity bottle from position_cave where casier != '' union all select wall, casier, capacity quantity, 0 bottle from casier_capacity) t ".$qWall." group by wall, casier";
+	error_log("basement availability ".$q);
         $result = $db->query($q);
         $i=0;
         $list = array();
@@ -215,19 +217,21 @@ if(isset($_REQUEST['searchType'])){
             $list[$i]['bottle']=$row['bottle'];
             $i++;
         }
+        error_log(json_encode($list));
         echo json_encode($list);
     } elseif($_REQUEST['searchType'] == "wineCount"){
-        error_log($uniqId." ".time()." wineCount");
+        //error_log($uniqId." ".time()." wineCount");
         $f = " join stock_view stock_count on w.id = stock_count.wine_id ";
         $fw = getFromWhere($db, $f);
         $q = "select count(w.id) nbWine, coalesce(sum(stock_count.quantity),0) nbBottle ".$fw;
-        error_log($uniqId." ".time()." ".$q);
+	error_log($uniqId." ".$q);
         $stmt = $db->query($q);
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        error_log($uniqId." ".time()." ended");
+        //error_log($uniqId." ".time()." ended");
         $ret = array();
         $ret['nbWine'] = $result['nbWine'];
         $ret['nbBottle'] = $result['nbBottle'];
+	error_log($result['nbBottle']);
         echo json_encode($ret);
     } elseif($_REQUEST['searchType'] == "wine"){
         $s = "select distinct w.id ";
@@ -242,7 +246,7 @@ if(isset($_REQUEST['searchType'])){
         
         error_log($uniqId." ".$q);
         $result = $db->query($q);
-        error_log($uniqId." end query");
+        //error_log($uniqId." end query");
         $i=0;
         $data = array();
         $rowRes = $result->fetchAll(PDO::FETCH_ASSOC);
@@ -281,7 +285,7 @@ if(isset($_REQUEST['searchType'])){
             $wineQ .= "left outer join to_keep on to_keep.id = w.to_keep_id ";
             $wineQ .= "left outer join (select sum(t.quantity) quantity, wine_id from (select quantity, wine_id from buy union all select -quantity quantity, wine_id from out_record) t group by wine_id) stock on stock.wine_id = w.id ";
             $wineQ .= "where w.id = ".$id;
-            error_log($wineQ);
+            //error_log($wineQ);
             $stmt = $db->query($wineQ);
             $wine = $stmt->fetch(PDO::FETCH_ASSOC);
             $data[$i]['id'] = $wine['id'];
@@ -326,7 +330,7 @@ if(isset($_REQUEST['searchType'])){
                 $millesime .= "order by millesime.priority asc ";
                 $millesime .= "limit 1";
                 $noteQuery = $db->query($millesime);
-                error_log($millesime);
+                //error_log($millesime);
                 if($noteQuery->rowCount() > 0){ 
                     $note = $noteQuery->fetch(PDO::FETCH_ASSOC)['note'];
                 }
@@ -335,7 +339,7 @@ if(isset($_REQUEST['searchType'])){
 
             $i++;
         }
-        error_log($uniqId." result detail");
+        //error_log($uniqId." result detail");
         echo json_encode($data);
     } elseif($_REQUEST['searchType'] == 'positionDetail'){
         $id = getPost('id');
@@ -383,7 +387,7 @@ if(isset($_REQUEST['searchType'])){
     } elseif($_REQUEST['searchType'] == 'buyDetail'){
         $id = getPost('id');
         $q = "select buy.id, buy.quantity, coalesce(buy.location, '') location, coalesce(buy.buy_date, '') buy_date, coalesce(buy.unit_price, '') unit_price, size.label size from buy join size on size.id = buy.size_id where buy.wine_id = ".$id." order by buy.buy_date desc";
-    error_log($q);
+        //error_log($q);
         $result = $db->query($q);
         $i=0;
         $data = array();
@@ -488,7 +492,7 @@ if(isset($_REQUEST['searchType'])){
         $result = $db->query($q);
         $sizeId = $result->fetch(PDO::FETCH_ASSOC)['id'];
         $q = "update buy set quantity = ".$quantityBuyEdit.", location= ".q($db,$locationBuyEdit).", size_id = ".$sizeId.", buy_date = '".$dateBuyEdit."', unit_price = ".str_replace(',', '.', $priceBuyEdit)." where id = ".$idBuyEdit;
-        error_log($q);
+        error_log('MAJ: '.$q);
         $db->query($q);
 
     }
@@ -500,8 +504,8 @@ if(isset($_REQUEST['searchType'])){
         $q = "select id from size where label = '".$sizeBuy."'";
         $result = $db->query($q);
         $sizeId = $result->fetch(PDO::FETCH_ASSOC)['id'];
-        error_log('location'.q($db,$locationBuy));
         $q = "insert into buy (wine_id, quantity, location, size_id, buy_date, unit_price) values (".$wineId.", ".$quantityBuy.", ".q($db,$locationBuy).", ".$sizeId.", '".$dateBuy."', ".str_replace(',', '.', $priceBuy).")";
+        error_log('CREATION: '.$q);
         $db->query($q);
     }
     $cols = "";
@@ -512,7 +516,7 @@ if(isset($_REQUEST['searchType'])){
     if($taste != ""){$cols .= ",taste=".q($db,$taste); }
     if($comment != ""){$cols .= ",comment=".q($db,$comment); }
     if($myNote != ""){$cols .= ",my_note=".$myNote; }
-    if($meal != ""){$cols .= ",meal=".$meal; }
+    if($meal != ""){$cols .= ",meal=".q($db,$meal); }
     if($dateOptimum != ""){$cols .= ",date_optimum='".$dateOptimum."'"; }
     if($endOptimum != ""){$cols .= ",end_optimum='".$endOptimum."'"; }
     if($toKeep != ""){$cols .= ",to_keep_id = (select id from to_keep where label = '".$toKeep."')"; }
@@ -860,10 +864,9 @@ if(isset($_REQUEST['searchType'])){
         echo json_encode($data);
     }elseif($_POST['stats'] == "stock"){
         $q = "select sum(quantity) qty from (select quantity from buy union all select -quantity from out_record) t";
-        $stock = $db->query($q->fetch(PDO::FETCH_ASSOC))['qty'];
+        $stock = $db->query($q)->fetch(PDO::FETCH_ASSOC)['qty'];
         $q = "select sum(capacity) qty from casier_capacity";
-        $db->query($q);
-        $available = $db->query($q->fetch(PDO::FETCH_ASSOC))['qty'];
+        $available = $db->query($q)->fetch(PDO::FETCH_ASSOC)['qty'];
         $data = array();
         $data[0][0] = "Etat du stock";
         $data[0][1] = "Stock actuel";
@@ -882,12 +885,14 @@ if(isset($_REQUEST['searchType'])){
     for($i = 0; $i < sizeof($notes); $i++){
         $m = $notes[$i];
         $q="select millesime.id from millesime join region on region.id = millesime.region_id left outer join color on color.id = millesime.color_id left outer join category on category.id = millesime.category_id left outer join apellation on apellation.id = millesime.apellation_id  where millesime.year = ".$m['year']." and region.label = ".q($db,$m['region'])." and coalesce(color.label, '') = '".$m['color']."' and coalesce(category.label, '') = '".$m['category']."' and coalesce(apellation.label, '') = ".q($db,$m['appellation']);
-        error_log($q);
+        //error_log($q);
         $res=$db->query($q);
         if($res->rowCount() == 0){
             $db->query("insert into millesime (year, region_id, color_id, category_id, apellation_id, note) values (".$m['year'].", (select id from region where label = ".q($db,$m['region'])."), (select id from color where label = '".$m['color']."'), (select id from category where label = '".$m['category']."'), (select id from apellation where label = ".q($db,$m['appellation'])."), ".$m['note'].")") or error_log("error row ".$i);
+	    error_log("CREATION: ".$q);
         } else {
             $milId = $res->fetch(PDO::FETCH_ASSOC)['id'];
+	    error_log("MAJ: ".$q);
             $db->query("update millesime set note = ".$m['note']." where id = ".$milId);
         }
 
@@ -896,6 +901,36 @@ if(isset($_REQUEST['searchType'])){
     $data = array();
     $data['status'] = "ok";
     echo json_encode($data);
+}elseif(isset($_POST['updateWine'])){
+    if ($_POST['updateWine'] == "nameClimat"){
+        $q="update wine set name_climat = ".q($db, $_POST['nameClimat'])." where id = ".$_POST['wineId'];
+	$db->query($q);
+    }elseif ($_POST['updateWine'] == "millesime"){
+        $q="update wine set year = ".q($db, $_POST['millesime'])." where id = ".$_POST['wineId'];
+	$db->query($q);
+    }elseif ($_POST['updateWine'] == "propriete"){
+        $q="update wine set propriete = ".q($db, $_POST['propriete'])." where id = ".$_POST['wineId'];
+	$db->query($q);
+    }elseif ($_POST['updateWine'] == "producer"){
+        $q="update wine set producer = ".q($db, $_POST['producer'])." where id = ".$_POST['wineId'];
+	$db->query($q);
+    }elseif ($_POST['updateWine'] == "country"){
+        $q="update wine set country_id = ".$_POST['country']." where id = ".$_POST['wineId'];
+	$db->query($q);
+    }elseif ($_POST['updateWine'] == "region"){
+        $q="update wine set region_id = ".$_POST['region']." where id = ".$_POST['wineId'];
+	$db->query($q);
+    }elseif ($_POST['updateWine'] == "category"){
+        $q="update wine set category_id = ".$_POST['category']." where id = ".$_POST['wineId'];
+	$db->query($q);
+    }elseif ($_POST['updateWine'] == "color"){
+        $q="update wine set color_id = ".$_POST['color']." where id = ".$_POST['wineId'];
+	$db->query($q);
+    }elseif ($_POST['updateWine'] == "apellation"){
+        $q="update wine set apellation_id = ".$_POST['apellation']." where id = ".$_POST['wineId'];
+	$db->query($q);
+    }
+    error_log("MAJ: ".$q);
 }
 function getPost($var){
     if(isset($_POST[$var])){
@@ -927,6 +962,7 @@ function getFromWhere($db, $from){
         $cepage5 = getPost('cepage5');
         $cepage6 = getPost('cepage6');
         $size = getPost('size');
+        $location = getPost('location');
         $plan = getPost('plan');
         $wall = getPost('wall');
         $meal = getPost('meal');
@@ -991,6 +1027,10 @@ function getFromWhere($db, $from){
         }
         if($size != ""){
             $f .= "join stock_view s on w.id = s.wine_id and s.quantity > 0 and s.size_id = ".$size." ";
+        }
+        if($location != ""){
+	    $f .= "join buy on buy.wine_id = w.id ";
+	    $w .= "and buy.location like ".q($db, "%".$location."%")." ";
         }
         if($toKeep != ""){
             $w .= "and w.to_keep_id = ".$toKeep." ";
