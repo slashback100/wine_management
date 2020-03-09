@@ -1,5 +1,4 @@
 <?php $title = 'Wine';
-    include 'check.php';
 // vim: foldmethod=indent
 // --> vim= encoding=utf-8
 //    $origin = "wine";
@@ -31,7 +30,7 @@
     </td><td>
     <p><u>Détail de l'achat</u></p>
     <label>*Type de bouteille</label><input type="text" name="size" size="12" id="sizeSearch" /><div style='display: inline' id='sizeLabel'></div><br/>
-    <label>Achat/offert par</label><input type="text" name="location" id="locationSearch" /><br/>
+    <label>*Achat/offert par</label><input type="text" name="location" id="locationSearch" /><br/>
     <label>Date de l'achat</label><input type="date" placeholder="DD-MM-YYYY" name="buyDate" id="buyDate"/><br/>
     <!--<input type="date" id="location" required pattern="[0-9]{4}-[0-9]{2}-[0-9]{2}"/><br/>-->
     <label>Quantité</label><input type="text" name="quantity" id="quantity" /><br/>
@@ -643,6 +642,7 @@ function searchLimit(limit){
             cepage5: $('#cepageSearch5').attr("data-id"),
             cepage6: $('#cepageSearch6').attr("data-id"),
             size: $('#sizeSearch').attr("data-id"),
+	    location: $('#locationSearch').val(),
             plan: $('#planField').val(),
             wall: $('#wallField').val(),
             myNote: $('#myNote').val(),
@@ -749,14 +749,18 @@ function refreshTable(data){
     $('#wines')[0].innerHTML = table;
     $('.wineRow').click(function(){
         $('.wineDetail').remove();
+        //var wineId = $('#'+$(this)[0].id).attr('data-wineid'); 
+        var wineId = $('#'+rowSelected).attr('data-wineid'); 
+        makeRowUneditable(wineId);
+        wineId = $('#'+$(this)[0].id).attr('data-wineid'); 
         if(rowSelected != $(this)[0].id){
-            var wineId = $('#'+$(this)[0].id).attr('data-wineid'); 
             $('<tr style="opacity: 0" class="wineDetail" data-wineid="'+wineId+'"><td class="withBorder" colspan="15"></td></tr>').insertAfter('#'+$(this)[0].id);
             rowSelected = $(this)[0].id;
             var det = '<table width="100%"><td width="30%" id="positionDetail"></td><td width="30%"><div id="buyDetail"></div><div id="outDetail"></div><div id="buyInput"></div></td><td id="tastingDetail" width="45%"></td></table>';
 
             $('.wineDetail > td').html(det);
             $('.wineDetail').animate({opacity: '1'}, "slow");
+            makeRowEditable(wineId);
             fillDetails(wineId);
         } else {
             rowSelected = null;
@@ -781,6 +785,306 @@ function refreshTable(data){
         searchLimit(0);
     });
     $("body").css("cursor", "default");
+}
+function makeRowUneditable(wineId){
+    //$("#row"+wineId+" :nth-child(1)").html($("#row"+wineId+" :nth-child(1)").html()+"<button/>");
+    $("#row"+wineId+" > td > input").remove();
+}
+function makeRowEditable(wineId){
+    //$("#row"+wineId+" :nth-child(1)").html($("#row"+wineId+" :nth-child(1)").html()+"<button/>");
+    $("#row"+wineId+" > td").each(function(index){
+        var countryVal;
+        var regionVal;
+        if(index <= 8) {
+            if(index == 4){
+                countryVal = $(this).html();
+            } else if(index == 5){
+                regionVal = $(this).html();
+            }
+            $(this).html($(this).html()+"<input type='image' height='10px' src='icon/edit-black.png'/>");
+            $(this).children("input").click(function(event){
+                var parent = $(this).parent();
+                $(parent).children("input").remove();
+                $(parent).html("<input type='text' value='"+$(parent).html()+"'/><input type='image' height='10px' src='icon/save.png'/>");
+                var txtField = $(parent).children("input")[0];
+                $(txtField).click(function(){
+                    return false;
+                });
+                var button = $(parent).children("input")[1];
+                if(index == 0){
+                    $(txtField).attr("id","nameClimatUpdate");
+                    //$('#nameClimatSearch').autocomplete({
+                    $(txtField).autocomplete({
+                        source: function(request, response){
+                            $.ajax({
+                                url : 'wineFunctions.php', // on appelle le script JSON
+                                dataType : 'json', 
+                                data: {searchType: 'nameClimat', nameClimat: request.term},
+                                success : function(list,b){
+                                    response($.map(list, function(obj){return obj;}));
+                                } 
+                            });
+                        },
+                        select : function(event, ui){
+                            $('#nameClimatUpdate').val(ui.item.label);
+                        }
+                    });
+
+                    $(button).click(function(){
+                        var parent = $(this).parent();
+                        var newVal = $(parent).children("input")[0].value;
+                        $.ajax({
+                            type : "POST",
+                            url : 'wineFunctions.php', // on appelle le script JSON
+                            dataType : 'json', 
+                            data: {updateWine: 'nameClimat', nameClimat: newVal, wineId: wineId}
+                        });
+                        $(parent).html(newVal);
+                        return false;
+                    });
+                } else if(index == 1){
+                    $(button).click(function(){
+                        var parent = $(this).parent();
+                        var newVal = $(parent).children("input")[0].value;
+                        $.ajax({
+                            type : "POST",
+                            url : 'wineFunctions.php', // on appelle le script JSON
+                            dataType : 'json', 
+                            data: {updateWine: 'millesime', millesime: newVal, wineId: wineId}
+                        });
+                        $(parent).html(newVal);
+                        return false;
+                    });
+                }else if(index == 2){
+                    $(txtField).attr("id","proprieteUpdate");
+                    $(txtField).autocomplete({
+                        source: function(request, response){
+                            $.ajax({
+                                url : 'wineFunctions.php', // on appelle le script JSON
+                                dataType : 'json', 
+                                data: {searchType: 'propriete', propriete: request.term},
+                                success : function(list,b){
+                                    response($.map(list, function(obj){return obj;}));
+                                } 
+                            });
+                        },
+                        select : function(event, ui){
+                            $('#proprieteUpdate').val(ui.item.label);
+                        }
+                    });
+
+                    $(button).click(function(){
+                        var parent = $(this).parent();
+                        var newVal = $(parent).children("input")[0].value;
+                        $.ajax({
+                            type : "POST",
+                            url : 'wineFunctions.php', // on appelle le script JSON
+                            dataType : 'json', 
+                            data: {updateWine: 'propriete', propriete: newVal, wineId: wineId}
+                        });
+                        $(parent).html(newVal);
+                        return false;
+                    });
+                }else if(index == 3){
+                    $(txtField).attr("id","producerUpdate");
+                    $(txtField).autocomplete({
+                        source: function(request, response){
+                            $.ajax({
+                                url : 'wineFunctions.php', // on appelle le script JSON
+                                dataType : 'json', 
+                                data: {searchType: 'producer', producer: request.term},
+                                success : function(list,b){
+                                    response($.map(list, function(obj){return obj;}));
+                                } 
+                            });
+                        },
+                        select : function(event, ui){
+                            $('#producerUpdate').val(ui.item.label);
+                        }
+                    });
+
+                    $(button).click(function(){
+                        var parent = $(this).parent();
+                        var newVal = $(parent).children("input")[0].value;
+                        $.ajax({
+                            type : "POST",
+                            url : 'wineFunctions.php', // on appelle le script JSON
+                            dataType : 'json', 
+                            data: {updateWine: 'producer', producer: newVal, wineId: wineId}
+                        });
+                        $(parent).html(newVal);
+                        return false;
+                    });
+                }else if(index == 4){
+                    $(txtField).attr("id","countryUpdate");
+                    $(txtField).autocomplete({
+                        source: function(request, response){
+                            $.ajax({
+                                url : 'wineFunctions.php', // on appelle le script JSON
+                                dataType : 'json', 
+                                data: {searchType: 'country', country: request.term},
+                                success : function(list,b){
+                                    response($.map(list, function(obj){return obj;}));
+                                } 
+                            });
+                        },
+                        select : function(event, ui){
+                            $('#countryUpdate').val(ui.item.label);
+                            $('#countryUpdate').attr("data-id",ui.item.id);
+                        }
+                    });
+
+                    $(button).click(function(){
+                        var parent = $(this).parent();
+                        var newVal = $(parent).children("input")[0];
+                        var newValId=$(newVal).attr("data-id");
+                        newVal=newVal.value;
+                        $.ajax({
+                            type : "POST",
+                            url : 'wineFunctions.php', // on appelle le script JSON
+                            dataType : 'json', 
+                            data: {updateWine: 'country', country: newValId, wineId: wineId}
+                        });
+                        $(parent).html(newVal);
+                        return false;
+                    });
+                }else if(index == 5){
+                    $(txtField).attr("id","regionUpdate");
+                    $(txtField).autocomplete({
+                        source: function(request, response){
+                            $.ajax({
+                                url : 'wineFunctions.php', // on appelle le script JSON
+                                dataType : 'json', 
+                                data: {searchType: 'region', region: request.term, country: countryVal},
+                                success : function(list,b){
+                                    response($.map(list, function(obj){return obj;}));
+                                } 
+                            });
+                        },
+                        select : function(event, ui){
+                            $('#regionUpdate').val(ui.item.label);
+                            $('#regionUpdate').attr("data-id",ui.item.id);
+                        }
+                    });
+
+                    $(button).click(function(){
+                        var parent = $(this).parent();
+                        var newVal = $(parent).children("input")[0];
+                        var newValId=$(newVal).attr("data-id");
+                        newVal=newVal.value;
+                        $.ajax({
+                            type : "POST",
+                            url : 'wineFunctions.php', // on appelle le script JSON
+                            dataType : 'json', 
+                            data: {updateWine: 'region', region: newValId, wineId: wineId}
+                        });
+                        $(parent).html(newVal);
+                        return false;
+                    });
+                }else if(index == 6){
+                    $(txtField).attr("id","apellationUpdate");
+                    $(txtField).autocomplete({
+                        source: function(request, response){
+                            $.ajax({
+                                url : 'wineFunctions.php', // on appelle le script JSON
+                                dataType : 'json', 
+                                data: {searchType: 'appellation', appellation: request.term, region: regionVal},
+                                success : function(list,b){
+                                    response($.map(list, function(obj){return obj;}));
+                                } 
+                            });
+                        },
+                        select : function(event, ui){
+                            $('#apellationUpdate').val(ui.item.label);
+                            $('#apellationUpdate').attr("data-id",ui.item.id);
+                        }
+                    });
+
+                    $(button).click(function(){
+                        var parent = $(this).parent();
+                        var newVal = $(parent).children("input")[0];
+                        var newValId=$(newVal).attr("data-id");
+                        newVal=newVal.value;
+                        $.ajax({
+                            type : "POST",
+                            url : 'wineFunctions.php', // on appelle le script JSON
+                            dataType : 'json', 
+                            data: {updateWine: 'apellation', apellation: newValId, wineId: wineId}
+                        });
+                        $(parent).html(newVal);
+                        return false;
+                    });
+                }else if(index == 7){
+                    $(txtField).attr("id","categoryUpdate");
+                    $(txtField).autocomplete({
+                        source: function(request, response){
+                            $.ajax({
+                                url : 'wineFunctions.php', // on appelle le script JSON
+                                dataType : 'json', 
+                                data: {searchType: 'category', category: request.term, country: countryVal},
+                                success : function(list,b){
+                                    response($.map(list, function(obj){return obj;}));
+                                } 
+                            });
+                        },
+                        select : function(event, ui){
+                            $('#categoryUpdate').val(ui.item.label);
+                            $('#categoryUpdate').attr("data-id",ui.item.id);
+                        }
+                    });
+
+                    $(button).click(function(){
+                        var parent = $(this).parent();
+                        var newVal = $(parent).children("input")[0];
+                        var newValId=$(newVal).attr("data-id");
+                        newVal=newVal.value;
+                        $.ajax({
+                            type : "POST",
+                            url : 'wineFunctions.php', // on appelle le script JSON
+                            dataType : 'json', 
+                            data: {updateWine: 'category', category: newValId, wineId: wineId}
+                        });
+                        $(parent).html(newVal);
+                        return false;
+                    });
+                }else if(index == 8){
+                    $(txtField).attr("id","colorUpdate");
+                    $(txtField).autocomplete({
+                        source: function(request, response){
+                            $.ajax({
+                                url : 'wineFunctions.php', // on appelle le script JSON
+                                dataType : 'json', 
+                                data: {searchType: 'color', color: request.term, country: countryVal},
+                                success : function(list,b){
+                                    response($.map(list, function(obj){return obj;}));
+                                } 
+                            });
+                        },
+                        select : function(event, ui){
+                            $('#colorUpdate').val(ui.item.label);
+                            $('#colorUpdate').attr("data-id",ui.item.id);
+                        }
+                    });
+
+                    $(button).click(function(){
+                        var parent = $(this).parent();
+                        var newVal = $(parent).children("input")[0];
+                        var newValId=$(newVal).attr("data-id");
+                        newVal=newVal.value;
+                        $.ajax({
+                            type : "POST",
+                            url : 'wineFunctions.php', // on appelle le script JSON
+                            dataType : 'json', 
+                            data: {updateWine: 'color', color: newValId, wineId: wineId}
+                        });
+                        $(parent).html(newVal);
+                        return false;
+                    });
+                }
+                return false;
+            });
+        }
+    });
 }
 function fillDetails(wineId){
     fillPositionDetails(wineId);
