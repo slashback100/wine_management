@@ -257,7 +257,8 @@ $('#addWine').click(function(e){
                 cepagePerc6: $('#cepagePerc6').val().replace('%',''),
                 size: $('#sizeSearch').val(),
                 location: $('#locationSearch').val(),
-                buyDate: $('#buyDate').val().substr(6, 4)+"-"+$('#buyDate').val().substr(3, 2)+"-"+$('#buyDate').val().substr(0, 2),
+                //buyDate: $('#buyDate').val().substr(6, 4)+"-"+$('#buyDate').val().substr(3, 2)+"-"+$('#buyDate').val().substr(0, 2),
+                buyDate: $('#buyDate').val(),
                 quantity: $('#quantity').val(),
                 price: $('#price').val(),
                 optimum: $('#optimum').val(),
@@ -290,7 +291,7 @@ $('#addWine').click(function(e){
 $(document).ready(function() {
     var d = new Date();
     $('#buyDate').val(("0"+d.getDate()).slice(-2)+"-"+("0" + (d.getMonth()+1)).slice(-2) + "-" + d.getFullYear());
-    $("#buyDate").datepicker({ dateFormat: 'dd-mm-yy' });
+    //$("#buyDate").datepicker({ dateFormat: 'dd-mm-yy' });
 
     $('#countrySearch').on('input',search);
     $('#countrySearch').autocomplete({
