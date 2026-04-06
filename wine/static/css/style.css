@@ -1,0 +1,1083 @@
+:root {
+    --bg-primary: #1a1a2e;
+    --bg-secondary: #16213e;
+    --bg-card: #0f3460;
+    --text-primary: #e8e8e8;
+    --text-secondary: #a0a0a0;
+    --accent: #e94560;
+    --accent-hover: #ff6b6b;
+    --border: #2a2a4a;
+    --success: #4caf50;
+    --warning: #ff9800;
+    --danger: #f44336;
+    --input-bg: #252545;
+    --shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.6;
+    min-height: 100vh;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.nav-brand a {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--accent);
+    text-decoration: none;
+}
+
+.nav-menu {
+    display: flex;
+    gap: 1rem;
+}
+
+.nav-item {
+    color: var(--text-secondary);
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.nav-item:hover {
+    color: var(--text-primary);
+    background: var(--bg-card);
+}
+
+.main-content {
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.page-header h1 {
+    font-size: 2rem;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background: var(--accent);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--accent-hover);
+}
+
+.btn-secondary {
+    background: var(--bg-card);
+    color: var(--text-primary);
+}
+
+.btn-secondary:hover {
+    background: #1a4a7a;
+}
+
+.btn-danger {
+    background: var(--danger);
+    color: white;
+}
+
+.btn-success {
+    background: #28a745;
+    color: white;
+}
+
+.btn-success:hover {
+    background: #218838;
+}
+
+.btn-warning {
+    background: #ffc107;
+    color: #212529;
+}
+
+.btn-warning:hover {
+    background: #e0a800;
+}
+
+.btn-info {
+    background: #17a2b8;
+    color: white;
+}
+
+.btn-info:hover {
+    background: #138496;
+}
+
+.btn-sm {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.875rem;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0.5rem;
+}
+
+.data-table th,
+.data-table td {
+    padding: 0.5rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+}
+
+.data-table th {
+    background: var(--bg-card);
+    font-weight: 600;
+}
+
+.btn-icon {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 0.25rem;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.btn-icon:hover {
+    opacity: 1;
+}
+
+.search-bar {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+}
+
+.search-bar input,
+.search-bar select {
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--input-bg);
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+
+.search-bar input {
+    flex: 1;
+    min-width: 200px;
+}
+
+.search-bar select {
+    min-width: 120px;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.filter-group label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.wine-count {
+    margin-bottom: 1rem;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.wine-list {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    min-height: 200px;
+}
+
+.pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.pagination .btn {
+    padding: 0.5rem 1rem;
+}
+
+.advanced-filters {
+    background: var(--bg-secondary);
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.advanced-filters .filter-row {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.5rem;
+}
+
+.advanced-filters .filter-group {
+    min-width: 120px;
+}
+
+.advanced-filters input[type="text"] {
+    padding: 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--input-bg);
+    color: var(--text-primary);
+}
+
+.mini-cellar-filter {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr auto;
+    gap: 2px;
+    width: 140px;
+    height: 100px;
+    background: var(--bg-card);
+    padding: 4px;
+    border-radius: 4px;
+}
+
+.mini-center {
+    display: flex;
+    justify-content: space-between;
+}
+
+.mini-wall {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 0.65rem;
+    font-weight: bold;
+    padding: 2px;
+    border-radius: 2px;
+    transition: all 0.2s;
+    text-align: center;
+}
+
+.mini-wall:hover {
+    background: var(--accent);
+    color: white;
+}
+
+.mini-wall.active {
+    background: var(--accent);
+    color: white;
+}
+
+.mini-wall#mini-north,
+.mini-wall#mini-south {
+    height: 24px;
+}
+
+.mini-wall#mini-west,
+.mini-wall#mini-east {
+    width: 48%;
+    height: 36px;
+}
+
+.location-filter-container {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+}
+
+.casier-grid {
+    display: block;
+    min-width: 100px;
+}
+
+.casier-wall-grid {
+    display: none;
+}
+
+.casier-wall-grid.active {
+    display: block;
+    gap: 4px;
+    max-width: 140px;
+}
+
+.casier-cell-filter {
+    width: 28px;
+    height: 24px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.55rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.casier-cell-filter:hover {
+    background: var(--accent);
+    color: white;
+}
+
+.casier-cell-filter.selected {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+}
+
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    min-width: auto !important;
+}
+
+.checkbox-group label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.wine-card {
+    background: var(--bg-card);
+    border-radius: 8px;
+    padding: 1.25rem;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: var(--shadow);
+}
+
+.wine-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.4);
+}
+
+.wine-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.wine-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.wine-color-1 { background: #722f37; }
+.wine-color-2 { background: #f7e7ce; }
+.wine-color-3 { background: #e9967a; }
+
+.wine-year {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.wine-card-body {
+    flex: 1;
+}
+
+.wine-bottles {
+    margin-top: 0.5rem;
+}
+
+.wine-bottle-count {
+    display: inline-block;
+    background: var(--accent);
+    color: white;
+    padding: 0.15rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    margin-right: 0.25rem;
+}
+
+.select-with-add {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.select-with-add select {
+    flex: 1;
+}
+
+.wine-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border);
+}
+
+.wine-note {
+    font-weight: 600;
+    color: var(--accent);
+}
+
+.wine-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.empty-state,
+.loading {
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-secondary);
+}
+
+.wine-list.loading {
+    position: relative;
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.wine-list.loading::before {
+    content: 'Chargement...';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--bg-card);
+    padding: 1rem 2rem;
+    border-radius: 8px;
+    z-index: 10;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.modal.modal-active {
+    z-index: 1002;
+}
+
+.modal-large {
+    max-width: 800px;
+}
+
+.modal-content {
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    max-width: 500px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+#position-modal .modal-content {
+    max-width: 1000px;
+    min-width: 900px;
+}
+
+#position-modal .cellar-plan {
+    min-height: 400px;
+}
+
+.modal-large {
+    max-width: 800px;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.modal-header h2 {
+    font-size: 1.25rem;
+}
+
+.btn-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+}
+
+.btn-close:hover {
+    color: var(--text-primary);
+}
+
+.wine-form,
+.position-form {
+    padding: 1.25rem;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--input-bg);
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 60px;
+}
+
+.form-section {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+}
+
+.form-section h3 {
+    margin-bottom: 1rem;
+    font-size: 1rem;
+    color: var(--accent);
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+}
+
+.cepage-row {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    align-items: center;
+}
+
+.cepage-row select {
+    flex: 2;
+}
+
+.cepage-row input {
+    flex: 1;
+    min-width: 60px;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: var(--bg-card);
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+    box-shadow: var(--shadow);
+}
+
+.stat-value {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: var(--accent);
+}
+
+.stat-label {
+    color: var(--text-secondary);
+    margin-top: 0.5rem;
+}
+
+.charts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 1.5rem;
+}
+
+.chart-card {
+    background: var(--bg-card);
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+}
+
+.chart-card h3 {
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.bar-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.bar-label {
+    min-width: 100px;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.bar-container {
+    flex: 1;
+    height: 20px;
+    background: var(--input-bg);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.bar {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 4px;
+    transition: width 0.3s;
+}
+
+.bar-value {
+    min-width: 40px;
+    text-align: right;
+    font-weight: 600;
+}
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    padding: 1.25rem;
+}
+
+.detail-section h3 {
+    font-size: 0.9rem;
+    color: var(--accent);
+    margin-bottom: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.detail-section p {
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+}
+
+.detail-actions {
+    display: flex;
+    gap: 1rem;
+    padding: 1.25rem;
+    border-top: 1px solid var(--border);
+}
+
+.cellar-plan {
+    padding: 1rem;
+}
+
+.cellar-room {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.cellar-wall {
+    flex: 1;
+    background: var(--bg-primary);
+    border-radius: 8px;
+    padding: 0.75rem;
+    border: 2px solid var(--border);
+}
+
+.cellar-wall-label {
+    text-align: center;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    color: var(--accent);
+    text-transform: uppercase;
+    font-size: 0.85rem;
+}
+
+.cellar-casiers {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.4rem;
+}
+
+.casier-cell {
+    aspect-ratio: 1;
+    background: var(--input-bg);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 0.6rem;
+    min-height: 28px;
+    padding: 2px;
+    transition: all 0.2s;
+    position: relative;
+}
+
+.casier-cell:hover {
+    border-color: var(--accent);
+    background: var(--bg-card);
+}
+
+.casier-cell.occupied {
+    background: var(--bg-card);
+    border-color: var(--success);
+}
+
+.casier-cell.partial {
+    background: rgba(76, 175, 80, 0.2);
+    border-color: var(--success);
+}
+
+.casier-number {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.casier-count {
+    color: var(--text-secondary);
+    font-size: 0.65rem;
+}
+
+.casier-cell.selected {
+    border-color: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+}
+
+.cellar-summary {
+    display: flex;
+    justify-content: space-around;
+    padding: 0.75rem;
+    background: var(--bg-card);
+    border-radius: 4px;
+    margin-bottom: 1rem;
+}
+
+.cellar-stat {
+    text-align: center;
+}
+
+.cellar-stat-value {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: var(--accent);
+}
+
+.cellar-stat-label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.cellar-wall-tabs {
+    display: none;
+}
+
+.cellar-plan {
+    padding: 1rem;
+}
+
+.cellar-visual {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+    gap: 4px;
+    margin-bottom: 1rem;
+    max-width: 500px;
+    margin: 0 auto 1rem;
+    min-height: 350px;
+    background: #222;
+    padding: 8px;
+    border-radius: 8px;
+}
+
+.cellar-visual .wall-north { grid-column: 2; grid-row: 1; }
+.cellar-visual .wall-south { grid-column: 2; grid-row: 3; }
+.cellar-visual .wall-west { grid-column: 1; grid-row: 2; }
+.cellar-visual .wall-east { grid-column: 3; grid-row: 2; }
+.cellar-visual .room-center { 
+    grid-column: 2; 
+    grid-row: 2; 
+    background: var(--bg-primary);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    border: 2px dashed var(--border);
+}
+
+.cellar-wall-visual {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 4px;
+    background: var(--bg-card);
+    border: 2px solid var(--border);
+    border-radius: 4px;
+    height: 100%;
+}
+
+.wall-label-visual {
+    font-size: 0.7rem;
+    font-weight: bold;
+    text-align: center;
+    color: var(--accent);
+    margin-bottom: 2px;
+}
+
+.cellar-wall-row {
+    display: flex;
+    gap: 2px;
+    flex: 1;
+}
+
+.casier-cell {
+    flex: 1;
+    min-height: 25px;
+    background: var(--input-bg);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6rem;
+    color: var(--text-primary);
+    cursor: pointer;
+}
+
+.casier-cell:hover {
+    border-color: var(--accent);
+}
+
+.cellar-visual .wall-east,
+.cellar-visual .wall-west {
+    writing-mode: horizontal-tb;
+}
+
+.cellar-visual .wall-east .cellar-wall-row,
+.cellar-visual .wall-west .cellar-wall-row {
+    flex-direction: row;
+}
+
+.cellar-visual .wall-east .wall-label-visual,
+.cellar-visual .wall-west .wall-label-visual {
+    transform: none;
+}
+
+.cellar-wall-row {
+    display: flex;
+    gap: 1px;
+    flex: 1;
+}
+
+.cellar-wall-row .casier-cell {
+    flex: 1;
+}
+
+.wall-label-visual {
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-align: center;
+    color: var(--accent);
+    margin-bottom: 2px;
+}
+
+.cellar-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+    padding: 1rem;
+    background: var(--bg-primary);
+    border-radius: 4px;
+    margin-top: 1rem;
+}
+
+.toast {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--bg-card);
+    color: var(--text-primary);
+    padding: 1rem 2rem;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    transition: transform 0.3s;
+    z-index: 2000;
+}
+
+.toast.show {
+    transform: translateX(-50%) translateY(0);
+}
+
+.alert {
+    padding: 1rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+}
+
+.alert-error {
+    background: rgba(244, 67, 54, 0.2);
+    border: 1px solid var(--danger);
+    color: var(--danger);
+}
+
+.login-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: var(--bg-primary);
+}
+
+.login-container {
+    width: 100%;
+    max-width: 400px;
+    padding: 2rem;
+}
+
+.login-box {
+    background: var(--bg-secondary);
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+}
+
+.login-box h1 {
+    text-align: center;
+    margin-bottom: 2rem;
+    color: var(--accent);
+}
+
+.login-box .form-group {
+    margin-bottom: 1.5rem;
+}
+
+.login-box button {
+    width: 100%;
+}
+
+@media (max-width: 768px) {
+    .navbar {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .nav-menu {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .search-bar {
+        flex-direction: column;
+    }
+    
+    .search-bar input,
+    .search-bar select {
+        width: 100%;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .detail-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .charts-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .wine-list {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .wine-list {
+        grid-template-columns: 1fr;
+    }
+}

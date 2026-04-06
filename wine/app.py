@@ -1,0 +1,766 @@
+import logging
+import hashlib
+
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for
+from flask_cors import CORS
+import os
+from datetime import datetime
+
+from models import db, Wine, WineCepage, Buy, OutRecord, PositionCave, CasierCapacity, Millesime
+from models import Country, Region, Apellation, Color, Category, Cepage, Size, ToKeep
+
+logger = logging.getLogger(__name__)
+
+
+def create_app():
+    app = Flask(__name__)
+    app.config.from_object('config.Config')
+    
+    db.init_app(app)
+    
+    CORS(app, resources={r"/wine/*": {"origins": "*"}})
+    
+    def serialize_model(obj, **kwargs):
+        if hasattr(obj, "to_dict"):
+            return obj.to_dict(**kwargs)
+        return obj
+    
+    def is_logged_in():
+        if 'logged' in session:
+            return True
+        if request.remote_addr in app.config.get('ALLOWED_IPS', []):
+            return True
+        return False
+    
+    def check_auth():
+        if not is_logged_in():
+            if request.is_json or request.headers.get('Accept') == 'application/json':
+                return jsonify({"success": False, "error": "Non autorisé"}), 401
+            return redirect('/wine/login')
+        return None
+    
+    @app.route('/wine/')
+    def index():
+        if not is_logged_in():
+            return redirect('/wine/login')
+        return render_template('index.html')
+    
+    @app.route('/wine/login', methods=['GET', 'POST'])
+    def login():
+        if request.method == 'POST':
+            username = request.form.get('username', '')
+            password = request.form.get('password', '')
+            
+            password_hash = hashlib.md5(password.encode()).hexdigest()
+            
+            if username in app.config.get('USERS', {}):
+                if app.config['USERS'][username] == password_hash:
+                    session['logged'] = True
+                    session['user'] = username
+                    return redirect('/wine/')
+            
+            return render_template('login.html', error='Identifiants invalides')
+        
+        return render_template('login.html')
+    
+    @app.route('/wine/logout')
+    def logout():
+        session.clear()
+        return redirect('/wine/login')
+    
+    @app.route('/wine/api/countries')
+    def get_countries():
+        countries = Country.query.order_by(Country.label).all()
+        return jsonify([serialize_model(c) for c in countries])
+    
+    @app.route('/wine/api/countries', methods=['POST'])
+    def create_country():
+        auth_check = check_auth()
+        if auth_check:
+            return auth_check
+        
+        data = request.get_json()
+        country = Country(label=data.get('label'))
+        db.session.add(country)
+        db.session.commit()
+        return jsonify({"success": True, "data": country.to_dict()}), 201
+    
+    @app.route('/wine/api/regions')
+    def get_regions():
+        country_id = request.args.get('country_id', type=int)
+        query = Region.query
+        if country_id:
+            query = query.filter_by(country_id=country_id)
+        regions = query.order_by(Region.label).all()
+        return jsonify([serialize_model(r) for r in regions])
+    
+    @app.route('/wine/api/regions', methods=['POST'])
+    def create_region():
+        auth_check = check_auth()
+        if auth_check:
+            return auth_check
+        
+        data = request.get_json()
+        region = Region(
+            label=data.get('label'),
+            country_id=data.get('country_id')
+        )
+        db.session.add(region)
+        db.session.commit()
+        return jsonify({"success": True, "data": region.to_dict()}), 201
+    
+    @app.route('/wine/api/appellations')
+    def get_appellations():
+        region_id = request.args.get('region_id', type=int)
+        query = Apellation.query
+        if region_id:
+            query = query.filter_by(region_id=region_id)
+        appellations = query.order_by(Apellation.label).all()
+        return jsonify([serialize_model(a) for a in appellations])
+    
+    @app.route('/wine/api/appellations', methods=['POST'])
+    def create_apellation():
+        auth_check = check_auth()
+        if auth_check:
+            return auth_check
+        
+        data = request.get_json()
+        apellation = Apellation(
+            label=data.get('label'),
+            region_id=data.get('region_id')
+        )
+        db.session.add(apellation)
+        db.session.commit()
+        return jsonify({"success": True, "data": apellation.to_dict()}), 201
+    
+    @app.route('/wine/api/colors')
+    def get_colors():
+        colors = Color.query.order_by(Color.label).all()
+        return jsonify([serialize_model(c) for c in colors])
+    
+    @app.route('/wine/api/categories')
+    def get_categories():
+        categories = Category.query.order_by(Category.label).all()
+        return jsonify([serialize_model(c) for c in categories])
+    
+    @app.route('/wine/api/cepages')
+    def get_cepages():
+        cepages = Cepage.query.order_by(Cepage.label).all()
+        return jsonify([serialize_model(c) for c in cepages])
+    
+    @app.route('/wine/api/cepages', methods=['POST'])
+    def create_cepage():
+        auth_check = check_auth()
+        if auth_check:
+            return auth_check
+        
+        data = request.get_json()
+        cepage = Cepage(label=data.get('label'))
+        db.session.add(cepage)
+        db.session.commit()
+        return jsonify({"success": True, "data": cepage.to_dict()}), 201
+    
+    @app.route('/wine/api/sizes')
+    def get_sizes():
+        sizes = Size.query.order_by(Size.volume).all()
+        return jsonify([serialize_model(s) for s in sizes])
+    
+    @app.route('/wine/api/to_keep')
+    def get_to_keep():
+        to_keep = ToKeep.query.order_by(ToKeep.label).all()
+        return jsonify([serialize_model(t) for t in to_keep])
+    
+    @app.route('/wine/api/years')
+    def get_years():
+        years = db.session.query(Wine.year).distinct().filter(Wine.year.isnot(None)).order_by(Wine.year.desc()).all()
+        return jsonify([{"id": y[0], "label": str(y[0])} for y in years])
+    
+    @app.route('/wine/api/wines')
+    def get_wines():
+        auth_check = check_auth()
+        if auth_check:
+            return auth_check
+        
+        query = Wine.query
+        
+        search = request.args.get('search', '')
+        if search:
+            search_term = '%{}%'.format(search)
+            query = query.filter(
+                db.or_(
+                    Wine.name_climat.ilike(search_term),
+                    Wine.propriete.ilike(search_term),
+                    Wine.producer.ilike(search_term)
+                )
+            )
+        
+        country_id = request.args.get('country_id', type=int)
+        if country_id:
+            query = query.filter_by(country_id=country_id)
+        
+        region_id = request.args.get('region_id', type=int)
+        if region_id:
+            query = query.filter_by(region_id=region_id)
+        
+        color_id = request.args.get('color_id', type=int)
+        if color_id:
+            query = query.filter_by(color_id=color_id)
+        
+        category_id = request.args.get('category_id', type=int)
+        if category_id:
+            query = query.filter_by(category_id=category_id)
+        
+        year = request.args.get('year', type=int)
+        if year:
+            query = query.filter_by(year=year)
+        
+        to_keep_id = request.args.get('to_keep_id', type=int)
+        if to_keep_id:
+            query = query.filter_by(to_keep_id=to_keep_id)
+        
+        meal = request.args.get('meal', '')
+        if meal:
+            query_term = '%{}%'.format(meal)
+            query = query.filter(Wine.meal.ilike(query_term))
+        
+        ready = request.args.get('ready', type=int)
+        if ready:
+            from datetime import datetime
+            current_year = datetime.now().year
+            query = query.filter(
+                Wine.date_optimum.isnot(None),
+                Wine.end_optimum.isnot(None),
+                Wine.date_optimum <= current_year,
+                Wine.end_optimum >= current_year
+            )
+        
+        in_stock = request.args.get('in_stock', type=int)
+        if in_stock:
+            query = query.join(PositionCave).filter(PositionCave.quantity > 0)
+        
+        not_stored = request.args.get('not_stored', type=int)
+        if not_stored:
+            from sqlalchemy import func
+            buy_subq = db.session.query(
+                Buy.wine_id,
+                func.coalesce(func.sum(Buy.quantity), 0).label('bought')
+            ).group_by(Buy.wine_id).subquery()
+            
+            out_subq = db.session.query(
+                OutRecord.wine_id,
+                func.coalesce(func.sum(OutRecord.quantity), 0).label('consumed')
+            ).group_by(OutRecord.wine_id).subquery()
+            
+            cellar_subq = db.session.query(
+                PositionCave.wine_id,
+                func.coalesce(func.sum(PositionCave.quantity), 0).label('in_cellar')
+            ).group_by(PositionCave.wine_id).subquery()
+            
+            query = query.outerjoin(buy_subq, Wine.id == buy_subq.c.wine_id)\
+                .outerjoin(out_subq, Wine.id == out_subq.c.wine_id)\
+                .outerjoin(cellar_subq, Wine.id == cellar_subq.c.wine_id)\
+                .filter(
+                    func.coalesce(buy_subq.c.bought, 0) - func.coalesce(out_subq.c.consumed, 0) > func.coalesce(cellar_subq.c.in_cellar, 0)
+                )
+        
+        wall = request.args.get('wall', '')
+        casier = request.args.get('casier', '')
+        
+        if wall or casier:
+            walls = wall.split(',') if wall else None
+            casiers = casier.split(',') if casier else None
+            
+            if walls and casiers:
+                query = query.join(PositionCave).filter(
+                    PositionCave.wall.in_(walls),
+                    PositionCave.casier.in_(casiers)
+                )
+            elif walls:
+                query = query.join(PositionCave).filter(PositionCave.wall.in_(walls))
+            elif casiers:
+                query = query.join(PositionCave).filter(PositionCave.casier.in_(casiers))
+        
+        cepage_id = request.args.get('cepage_id', type=int)
+        if cepage_id:
+            query = query.join(WineCepage).filter(WineCepage.cepage_id == cepage_id)
+        
+        size_id = request.args.get('size_id', type=int)
+        if size_id:
+            query = query.join(PositionCave).filter(PositionCave.size_id == size_id)
+        
+        total = query.count()
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 20, type=int)
+        
+        wine_data = []
+        wines = query.order_by(Wine.year.desc(), Wine.name_climat).offset((page - 1) * per_page).limit(per_page).all()
+        
+        wine_ids = [w.id for w in wines]
+        if wine_ids:
+            from sqlalchemy import func
+            
+            bought_subq = db.session.query(
+                Buy.wine_id,
+                func.coalesce(func.sum(Buy.quantity), 0).label('bought')
+            ).filter(Buy.wine_id.in_(wine_ids)).group_by(Buy.wine_id).subquery()
+            
+            consumed_subq = db.session.query(
+                OutRecord.wine_id,
+                func.coalesce(func.sum(OutRecord.quantity), 0).label('consumed')
+            ).filter(OutRecord.wine_id.in_(wine_ids)).group_by(OutRecord.wine_id).subquery()
+            
+            bottle_counts = db.session.query(
+                Wine.id,
+                func.coalesce(bought_subq.c.bought, 0) - func.coalesce(consumed_subq.c.consumed, 0)
+            ).outerjoin(bought_subq, Wine.id == bought_subq.c.wine_id)\
+             .outerjoin(consumed_subq, Wine.id == consumed_subq.c.wine_id).all()
+            
+            bottle_map = {bc[0]: bc[1] for bc in bottle_counts}
+            
+            total_bottles = sum(1 for bc in bottle_counts if bc[1] > 0)
+        else:
+            bottle_map = {}
+            total_bottles = 0
+        
+        for wine in wines:
+            d = wine.to_dict(summary=True)
+            d['bottle_count'] = bottle_map.get(wine.id, 0) or 0
+            wine_data.append(d)
+        
+        return jsonify({
+            "success": True,
+            "data": wine_data,
+            "count": total,
+            "total_bottles": int(total_bottles),
+            "page": page,
+            "per_page": per_page,
+            "total_pages": (total + per_page - 1) // per_page
+        })
+    
+    @app.route('/wine/api/wines/<int:wine_id>')
+    def get_wine(wine_id):
+        auth_check = check_auth()
+        if auth_check:
+            return auth_check
+        
+        wine = Wine.query.get_or_404(wine_id)
+        return jsonify({
+            "success": True,
+            "data": wine.to_dict(include_cepages=True)
+        })
+    
+    @app.route('/wine/api/wines', methods=['POST'])
+    def create_wine():
+        auth_check = check_auth()
+        if auth_check:
+            return auth_check
+        
+        data = request.get_json()
+        
+        wine = Wine(
+            name_climat=data.get('name_climat'),
+            year=data.get('year'),
+            propriete=data.get('propriete'),
+            producer=data.get('producer'),
+            country_id=data.get('country_id'),
+            region_id=data.get('region_id'),
+            apellation_id=data.get('apellation_id'),
+            category_id=data.get('category_id'),
+            color_id=data.get('color_id'),
+            date_optimum=data.get('date_optimum'),
+            end_optimum=data.get('end_optimum'),
+            to_keep_id=data.get('to_keep_id'),
+            distinction=data.get('distinction'),
+            medal=data.get('medal'),
+            view=data.get('view'),
+            noze=data.get('noze'),
+            taste=data.get('taste'),
+            my_note=data.get('my_note'),
+            meal=data.get('meal'),
+            comment=data.get('comment')
+        )
+        
+        db.session.add(wine)
+        db.session.flush()
+        
+        cepages = data.get('cepages', [])
+        for cepage_data in cepages:
+            wc = WineCepage(
+                wine_id=wine.id,
+                cepage_id=cepage_data.get('cepage_id'),
+                percentage=cepage_data.get('percentage')
+            )
+            db.session.add(wc)
+        
+        db.session.commit()
+        
+        return jsonify({
+            "success": True,
+            "data": wine.to_dict()
+        }), 201
+    
+    @app.route('/wine/api/wines/<int:wine_id>', methods=['PUT'])
+    def update_wine(wine_id):
+        auth_check = check_auth()
+        if auth_check:
+            return auth_check
+        
+        wine = Wine.query.get_or_404(wine_id)
+        data = request.get_json()
+        
+        wine.name_climat = data.get('name_climat', wine.name_climat)
+        wine.year = data.get('year', wine.year)
+        wine.propriete = data.get('propriete', wine.propriete)
+        wine.producer = data.get('producer', wine.producer)
+        wine.country_id = data.get('country_id', wine.country_id)
+        wine.region_id = data.get('region_id', wine.region_id)
+        wine.apellation_id = data.get('apellation_id', wine.apellation_id)
+        wine.category_id = data.get('category_id', wine.category_id)
+        wine.color_id = data.get('color_id', wine.color_id)
+        wine.date_optimum = data.get('date_optimum', wine.date_optimum)
+        wine.end_optimum = data.get('end_optimum', wine.end_optimum)
+        wine.to_keep_id = data.get('to_keep_id', wine.to_keep_id)
+        wine.distinction = data.get('distinction', wine.distinction)
+        wine.medal = data.get('medal', wine.medal)
+        wine.view = data.get('view', wine.view)
+        wine.noze = data.get('noze', wine.noze)
+        wine.taste = data.get('taste', wine.taste)
+        wine.my_note = data.get('my_note', wine.my_note)
+        wine.meal = data.get('meal', wine.meal)
+        wine.comment = data.get('comment', wine.comment)
+        
+        if 'cepages' in data:
+            WineCepage.query.filter_by(wine_id=wine.id).delete()
+            for cepage_data in data['cepages']:
+                wc = WineCepage(
+                    wine_id=wine.id,
+                    cepage_id=cepage_data.get('cepage_id'),
+                    percentage=cepage_data.get('percentage')
+                )
+                db.session.add(wc)
+        
+        db.session.commit()
+        
+        return jsonify({
+            "success": True,
+            "data": wine.to_dict(include_cepages=True)
+        })
+    
+    @app.route('/wine/api/wines/<int:wine_id>', methods=['DELETE'])
+    def delete_wine(wine_id):
+        auth_check = check_auth()
+        if auth_check:
+            return auth_check
+        
+        wine = Wine.query.get_or_404(wine_id)
+        
+        WineCepage.query.filter_by(wine_id=wine_id).delete()
+        Buy.query.filter_by(wine_id=wine_id).delete()
+        OutRecord.query.filter_by(wine_id=wine_id).delete()
+        PositionCave.query.filter_by(wine_id=wine_id).delete()
+        
+        db.session.delete(wine)
+        db.session.commit()
+        
+        return jsonify({"success": True})
+    
+    @app.route('/wine/api/buys', methods=['GET', 'POST'])
+    def handle_buys():
+        auth_check = check_auth()
+        if auth_check:
+            return auth_check
+        
+        wine_id = request.args.get('wine_id', type=int) if request.method == 'GET' else None
+        
+        if request.method == 'GET':
+            if not wine_id:
+                return jsonify({"success": False, "error": "wine_id requis"}), 400
+            buys = Buy.query.filter_by(wine_id=wine_id).order_by(Buy.buy_date.desc()).all()
+            return jsonify({
+                "success": True,
+                "data": [serialize_model(b) for b in buys]
+            })
+        
+        data = request.get_json()
+        buy = Buy(
+            wine_id=data.get('wine_id'),
+            quantity=data.get('quantity', 1),
+            location=data.get('location'),
+            size_id=data.get('size_id'),
+            unit_price=data.get('unit_price'),
+            buy_date=datetime.strptime(data['date'], '%Y-%m-%d').date() if data.get('date') else None
+        )
+        db.session.add(buy)
+        db.session.commit()
+        
+        return jsonify({
+            "success": True,
+            "data": serialize_model(buy)
+        }), 201
+    
+    @app.route('/wine/api/buys/<int:buy_id>', methods=['DELETE'])
+    def delete_buy(buy_id):
+        auth_check = check_auth()
+        if auth_check:
+            return auth_check
+        
+        buy = Buy.query.get_or_404(buy_id)
+        db.session.delete(buy)
+        db.session.commit()
+        
+        return jsonify({"success": True})
+    
+    @app.route('/wine/api/out_records', methods=['GET', 'POST'])
+    def handle_out_records():
+        auth_check = check_auth()
+        if auth_check:
+            return auth_check
+        
+        wine_id = request.args.get('wine_id', type=int) if request.method == 'GET' else None
+        
+        if request.method == 'GET':
+            if not wine_id:
+                return jsonify({"success": False, "error": "wine_id requis"}), 400
+            records = OutRecord.query.filter_by(wine_id=wine_id).order_by(OutRecord.out_date.desc()).all()
+            return jsonify({
+                "success": True,
+                "data": [serialize_model(r) for r in records]
+            })
+        
+        data = request.get_json()
+        record = OutRecord(
+            wine_id=data.get('wine_id'),
+            quantity=data.get('quantity', 1),
+            size_id=data.get('size_id'),
+            out_date=datetime.strptime(data['out_date'], '%Y-%m-%d').date() if data.get('out_date') else None
+        )
+        db.session.add(record)
+        db.session.commit()
+        
+        return jsonify({
+            "success": True,
+            "data": serialize_model(record)
+        }), 201
+    
+    @app.route('/wine/api/positions', methods=['GET', 'POST'])
+    def handle_positions():
+        auth_check = check_auth()
+        if auth_check:
+            return auth_check
+        
+        wine_id = request.args.get('wine_id', type=int) if request.method == 'GET' else None
+        
+        if request.method == 'GET':
+            if wine_id:
+                positions = PositionCave.query.filter_by(wine_id=wine_id).all()
+            else:
+                positions = PositionCave.query.all()
+            return jsonify({
+                "success": True,
+                "data": [serialize_model(p) for p in positions]
+            })
+        
+        data = request.get_json()
+        
+        existing = PositionCave.query.filter_by(
+            wine_id=data.get('wine_id'),
+            wall=data.get('wall'),
+            casier=data.get('casier')
+        ).first()
+        
+        if existing:
+            existing.quantity = data.get('quantity', 1)
+            existing.size_id = data.get('size_id')
+            db.session.commit()
+            return jsonify({
+                "success": True,
+                "data": serialize_model(existing)
+            })
+        
+        position = PositionCave(
+            wine_id=data.get('wine_id'),
+            wall=data.get('wall'),
+            casier=data.get('casier'),
+            quantity=data.get('quantity', 1),
+            size_id=data.get('size_id')
+        )
+        db.session.add(position)
+        db.session.commit()
+        
+        return jsonify({
+            "success": True,
+            "data": serialize_model(position)
+        }), 201
+    
+    @app.route('/wine/api/positions/<int:pos_id>', methods=['PUT', 'DELETE'])
+    def handle_position(pos_id):
+        auth_check = check_auth()
+        if auth_check:
+            return auth_check
+        
+        position = PositionCave.query.get_or_404(pos_id)
+        
+        if request.method == 'DELETE':
+            db.session.delete(position)
+            db.session.commit()
+            return jsonify({"success": True})
+        
+        data = request.get_json()
+        position.wall = data.get('wall', position.wall)
+        position.casier = data.get('casier', position.casier)
+        position.quantity = data.get('quantity', position.quantity)
+        position.size_id = data.get('size_id', position.size_id)
+        
+        db.session.commit()
+        
+        return jsonify({
+            "success": True,
+            "data": serialize_model(position)
+        })
+    
+    @app.route('/wine/api/capacity')
+    def get_capacity():
+        capacities = CasierCapacity.query.all()
+        return jsonify({
+            "success": True,
+            "data": [serialize_model(c) for c in capacities]
+        })
+    
+    @app.route('/wine/api/stats')
+    def get_stats():
+        auth_check = check_auth()
+        if auth_check:
+            return auth_check
+        
+        total_wines = Wine.query.count()
+        
+        positions = PositionCave.query.all()
+        total_bottles = sum(p.quantity for p in positions)
+        
+        capacities = CasierCapacity.query.all()
+        total_capacity = sum(c.capacity for c in capacities)
+        
+        colors = Color.query.all()
+        color_counts = []
+        for color in colors:
+            count = Wine.query.filter_by(color_id=color.id).count()
+            color_counts.append({"label": color.label, "count": count})
+        
+        regions = Region.query.all()
+        region_counts = []
+        for region in regions[:10]:
+            count = Wine.query.filter_by(region_id=region.id).count()
+            if count > 0:
+                region_counts.append({"label": region.label, "count": count})
+        
+        return jsonify({
+            "success": True,
+            "data": {
+                "total_wines": total_wines,
+                "total_bottles": total_bottles,
+                "total_capacity": total_capacity,
+                "available": total_capacity - total_bottles,
+                "by_color": color_counts,
+                "by_region": region_counts
+            }
+        })
+    
+    @app.route('/wine/api/millesime', methods=['GET', 'POST'])
+    def handle_millesime():
+        auth_check = check_auth()
+        if auth_check:
+            return auth_check
+        
+        if request.method == 'GET':
+            year = request.args.get('year', type=int)
+            region = request.args.get('region')
+            color_id = request.args.get('color_id', type=int)
+            
+            query = Millesime.query
+            if year:
+                query = query.filter_by(year=year)
+            if region:
+                query = query.filter_by(region=region)
+            if color_id:
+                color = Color.query.get(color_id)
+                if color:
+                    query = query.filter_by(color=color.label)
+            
+            millesimes = query.order_by(Millesime.year.desc()).all()
+            return jsonify({
+                "success": True,
+                "data": [serialize_model(m) for m in millesimes]
+            })
+        
+        data = request.get_json()
+        millesime = Millesime(
+            year=data.get('year'),
+            region=data.get('region'),
+            color=data.get('color'),
+            category=data.get('category'),
+            appellation=data.get('appellation'),
+            note=data.get('note')
+        )
+        db.session.add(millesime)
+        db.session.commit()
+        
+        return jsonify({
+            "success": True,
+            "data": serialize_model(millesime)
+        }), 201
+    
+    @app.route('/wine/api/autocomplete')
+    def autocomplete():
+        search_type = request.args.get('type', '')
+        query = request.args.get('q', '')
+        
+        if not query:
+            return jsonify([])
+        
+        query_lower = '%{}%'.format(query.lower())
+        
+        if search_type == 'country':
+            items = Country.query.filter(Country.label.ilike(query_lower)).limit(10).all()
+            return jsonify([{"id": i.id, "label": i.label} for i in items])
+        
+        elif search_type == 'region':
+            items = Region.query.filter(Region.label.ilike(query_lower)).limit(10).all()
+            return jsonify([{"id": i.id, "label": i.label} for i in items])
+        
+        elif search_type == 'nameClimat' or search_type == 'wine':
+            items = Wine.query.filter(Wine.name_climat.ilike(query_lower)).limit(10).all()
+            return jsonify([{"id": i.id, "label": i.name_climat, "year": i.year} for i in items])
+        
+        elif search_type == 'propriete':
+            items = Wine.query.filter(Wine.propriete.ilike(query_lower)).limit(10).all()
+            return jsonify([{"id": i.id, "label": i.propriete} for i in items])
+        
+        elif search_type == 'producer':
+            items = Wine.query.filter(Wine.producer.ilike(query_lower)).limit(10).all()
+            return jsonify([{"id": i.id, "label": i.producer} for i in items])
+        
+        elif search_type == 'appellation':
+            items = Apellation.query.filter(Apellation.label.ilike(query_lower)).limit(10).all()
+            return jsonify([{"id": i.id, "label": i.label} for i in items])
+        
+        elif search_type == 'cepage':
+            items = Cepage.query.filter(Cepage.label.ilike(query_lower)).limit(10).all()
+            return jsonify([{"id": i.id, "label": i.label} for i in items])
+        
+        return jsonify([])
+    
+    @app.route('/wine/stats')
+    def stats_page():
+        auth_check = check_auth()
+        if auth_check:
+            return auth_check
+        return render_template('stats.html')
+    
+    return app
+
+
+app = create_app()
+
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5001, debug=True)

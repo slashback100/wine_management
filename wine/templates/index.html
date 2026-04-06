@@ -1,0 +1,1755 @@
+{% extends "base.html" %}
+
+{% block title %}Cave à Vin - Vins{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1>Mes Vins</h1>
+        <button class="btn btn-primary" onclick="showWineForm()">Ajouter un vin</button>
+    </div>
+
+    <div class="search-bar">
+        <input type="text" id="search-input" placeholder="Rechercher un vin..." oninput="debouncedSearch()">
+        <div class="filter-group">
+            <label>Pays</label>
+            <select id="filter-country" onchange="filterWines()">
+                <option value="">Tous</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>Région</label>
+            <select id="filter-region" onchange="filterWines()">
+                <option value="">Toutes</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>Couleur</label>
+            <select id="filter-color" onchange="filterWines()">
+                <option value="">Toutes</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>Catégorie</label>
+            <select id="filter-category" onchange="filterWines()">
+                <option value="">Toutes</option>
+            </select>
+        </div>
+        <button class="btn btn-sm" onclick="toggleAdvancedFilters()">+ Filtres</button>
+    </div>
+
+    <div class="advanced-filters" id="advanced-filters" style="display: none;">
+        <div class="filter-row">
+            <div class="filter-group">
+                <label>Millésime</label>
+                <select id="filter-year" onchange="filterWines()">
+                    <option value="">Tous</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>À garder</label>
+                <select id="filter-to-keep" onchange="filterWines()">
+                    <option value="">Tous</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Cépage</label>
+                <select id="filter-cepage" onchange="filterWines()">
+                    <option value="">Tous</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Taille</label>
+                <select id="filter-size" onchange="filterWines()">
+                    <option value="">Toutes</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Accords</label>
+                <input type="text" id="filter-meal" placeholder="Rechercher..." oninput="debouncedSearch()">
+            </div>
+        </div>
+        <div class="filter-row">
+            <div class="filter-group">
+                <label>Emplacement</label>
+                <div class="location-filter-container">
+                    <div class="mini-cellar-filter" id="mini-cellar-filter">
+                        <div class="mini-wall" id="mini-north" onclick="toggleFilterWall('north')">En face</div>
+                        <div class="mini-center">
+                            <div class="mini-wall mini-west" id="mini-west" onclick="toggleFilterWall('west')">Gauche</div>
+                            <div class="mini-wall mini-east" id="mini-east" onclick="toggleFilterWall('east')">Droite</div>
+                        </div>
+                        <div class="mini-wall" id="mini-south" onclick="toggleFilterWall('south')">Arrière</div>
+                    </div>
+                    <div class="casier-grid" id="casier-grid"></div>
+                </div>
+            </div>
+        </div>
+        <div class="filter-row">
+            <div class="filter-group checkbox-group">
+                <label>
+                    <input type="checkbox" id="filter-ready" onchange="filterWines()">
+                    Prêt à boire (dans la fenêtre de consommation)
+                </label>
+            </div>
+            <div class="filter-group checkbox-group">
+                <label>
+                    <input type="checkbox" id="filter-in-stock" onchange="filterWines()">
+                    Uniquement les vins en stock
+                </label>
+            </div>
+            <div class="filter-group checkbox-group">
+                <label>
+                    <input type="checkbox" id="filter-not-stored" onchange="filterWines()">
+                    Vin acheté mais pas en cave
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <div class="wine-count" id="wine-count"></div>
+
+    <div class="pagination" id="pagination">
+        <button class="btn btn-sm" id="prev-page" onclick="changePage(-1)" disabled>Précédent</button>
+        <span id="page-info">Page 1</span>
+        <button class="btn btn-sm" id="next-page" onclick="changePage(1)" disabled>Suivant</button>
+    </div>
+
+    <div class="wine-list" id="wine-list">
+        <div class="loading">Chargement...</div>
+    </div>
+</div>
+
+<div class="modal" id="wine-modal">
+    <div class="modal-content modal-large">
+        <div class="modal-header">
+            <h2 id="modal-title">Ajouter un vin</h2>
+            <button class="btn-close" onclick="closeWineModal()">&times;</button>
+        </div>
+        <form id="wine-form" class="wine-form">
+            <input type="hidden" id="wine-id">
+            <input type="hidden" id="wine-position-wall">
+            <input type="hidden" id="wine-position-casier">
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="name_climat">Nom / Climat</label>
+                    <input type="text" id="name_climat" name="name_climat">
+                </div>
+                <div class="form-group">
+                    <label for="year">Année</label>
+                    <input type="number" id="year" name="year" min="1900" max="2100">
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="propriete">Propriété</label>
+                    <input type="text" id="propriete" name="propriete">
+                </div>
+                <div class="form-group">
+                    <label for="producer">Producteur</label>
+                    <input type="text" id="producer" name="producer">
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="country_id">Pays</label>
+                    <div class="select-with-add">
+                        <select id="country_id" name="country_id" onchange="loadRegions()">
+                            <option value="">Sélectionner...</option>
+                        </select>
+                        <button type="button" class="btn btn-sm" onclick="showAddLookupModal('country')">+</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="region_id">Région</label>
+                    <div class="select-with-add">
+                        <select id="region_id" name="region_id" onchange="loadApellations()">
+                            <option value="">Sélectionner...</option>
+                        </select>
+                        <button type="button" class="btn btn-sm" onclick="showAddLookupModal('region')">+</button>
+                    </div>
+                </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="apellation_id">Appellation</label>
+                    <div class="select-with-add">
+                        <select id="apellation_id" name="apellation_id">
+                            <option value="">Sélectionner...</option>
+                        </select>
+                        <button type="button" class="btn btn-sm" onclick="showAddLookupModal('apellation')">+</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="color_id">Couleur</label>
+                    <select id="color_id" name="color_id">
+                        <option value="">Sélectionner...</option>
+                    </select>
+                </div>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="category_id">Catégorie</label>
+                    <select id="category_id" name="category_id">
+                        <option value="">Sélectionner...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="to_keep_id">À...</label>
+                    <select id="to_keep_id" name="to_keep_id">
+                        <option value="">Sélectionner...</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="date_optimum">Date optimum</label>
+                    <input type="number" id="date_optimum" name="date_optimum" min="1900" max="2100">
+                </div>
+                <div class="form-group">
+                    <label for="end_optimum">Fin optimum</label>
+                    <input type="number" id="end_optimum" name="end_optimum" min="1900" max="2100">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="cepages">Cépages</label>
+                <div id="cepages-container">
+                    <div class="cepage-row">
+                        <select name="cepage_id[]" class="cepage-select">
+                            <option value="">Sélectionner...</option>
+                        </select>
+                        <input type="number" name="percentage[]" placeholder="%" min="0" max="100" class="cepage-percent">
+                        <button type="button" class="btn btn-sm btn-danger" onclick="removeCepage(this)">&times;</button>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-sm" onclick="addCepage()">+ Ajouter cépage</button>
+                <button type="button" class="btn btn-sm" onclick="showAddLookupModal('cepage')">+ Nouveau cépage</button>
+            </div>
+            
+            <div class="form-section">
+                <h3>Dégustation</h3>
+                <div class="form-group">
+                    <label for="view">Vue</label>
+                    <textarea id="view" name="view" rows="2"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="noze">Nez</label>
+                    <textarea id="noze" name="noze" rows="2"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="taste">Goût</label>
+                    <textarea id="taste" name="taste" rows="2"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="my_note">Ma note (/20)</label>
+                    <input type="number" id="my_note" name="my_note" min="0" max="20" step="0.5">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="meal">Accords mets</label>
+                <textarea id="meal" name="meal" rows="2"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="distinction">Distinction</label>
+                <input type="text" id="distinction" name="distinction">
+            </div>
+            
+            <div class="form-group">
+                <label for="medal">Médaille</label>
+                <input type="text" id="medal" name="medal">
+            </div>
+            
+            <div class="form-group">
+                <label for="comment">Commentaire</label>
+                <textarea id="comment" name="comment" rows="3"></textarea>
+            </div>
+            
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeWineModal()">Annuler</button>
+                <button type="submit" class="btn btn-primary">Enregistrer</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="modal" id="position-modal">
+    <div class="modal-content modal-large">
+        <div class="modal-header">
+            <h2>Position Cave</h2>
+            <button class="btn-close" onclick="closePositionModal()">&times;</button>
+        </div>
+        <div class="cellar-plan">
+            <div class="cellar-visual" id="cellar-visual">
+                <div class="wall-north" id="wall-north"></div>
+                <div class="wall-east" id="wall-east"></div>
+                <div class="wall-west" id="wall-west"></div>
+                <div class="wall-south" id="wall-south"></div>
+                <div class="room-center">Salle</div>
+            </div>
+            <div class="position-form" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border);">
+                <input type="hidden" id="position-wine-id">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="position-quantity">Quantité</label>
+                        <input type="number" id="position-quantity" value="1" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label for="position-size">Taille</label>
+                        <select id="position-size">
+                            <option value="">Sélectionner...</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <button type="button" class="btn btn-primary" id="btn-save-position" onclick="savePosition()">Enregistrer</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="detail-modal">
+    <div class="modal-content modal-large">
+        <div class="modal-header">
+            <h2 id="detail-title">Détails du vin</h2>
+            <button class="btn-close" onclick="closeDetailModal()">&times;</button>
+        </div>
+        <div class="wine-detail" id="wine-detail">
+            <div class="detail-loading">Chargement...</div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="add-bottle-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Ajouter des bouteilles</h2>
+            <button class="btn-close" onclick="closeAddBottleModal()">&times;</button>
+        </div>
+        <form id="add-bottle-form" class="wine-form">
+            <input type="hidden" id="add-bottle-wine-id">
+            <div class="form-group">
+                <label for="add-bottle-date">Date d'achat/réception</label>
+                <input type="date" id="add-bottle-date" required>
+            </div>
+            <div class="form-group">
+                <label for="add-bottle-location">Lieu d'achat</label>
+                <input type="text" id="add-bottle-location" placeholder="Magasin, cave, offre...">
+            </div>
+            <div class="form-group">
+                <label for="add-bottle-quantity">Quantité</label>
+                <input type="number" id="add-bottle-quantity" value="1" min="1" required>
+            </div>
+            <div class="form-group">
+                <label for="add-bottle-size">Taille</label>
+                <select id="add-bottle-size" required></select>
+            </div>
+            <div class="form-group">
+                <label for="add-bottle-price">Prix unitaire (€)</label>
+                <input type="number" id="add-bottle-price" step="0.01" min="0" placeholder="0.00">
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeAddBottleModal()">Annuler</button>
+                <button type="submit" class="btn btn-success">Ajouter</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="modal" id="remove-bottle-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Enlever des bouteilles</h2>
+            <button class="btn-close" onclick="closeRemoveBottleModal()">&times;</button>
+        </div>
+        <form id="remove-bottle-form" class="wine-form">
+            <input type="hidden" id="remove-bottle-wine-id">
+            <div class="form-group">
+                <label for="remove-bottle-date">Date de sortie</label>
+                <input type="date" id="remove-bottle-date" required>
+            </div>
+            <div class="form-group">
+                <label for="remove-bottle-size">Taille</label>
+                <select id="remove-bottle-size" required></select>
+            </div>
+            <div class="form-group">
+                <label for="remove-bottle-quantity">Quantité</label>
+                <input type="number" id="remove-bottle-quantity" value="1" min="1" required>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeRemoveBottleModal()">Annuler</button>
+                <button type="submit" class="btn btn-warning">Enlever</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="modal" id="history-modal">
+    <div class="modal-content modal-large">
+        <div class="modal-header">
+            <h2>Historique du vin</h2>
+            <button class="btn-close" onclick="closeHistoryModal()">&times;</button>
+        </div>
+        <div id="history-content">
+            <div class="loading">Chargement...</div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="add-lookup-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="add-lookup-title">Ajouter</h2>
+            <button class="btn-close" onclick="closeAddLookupModal()">&times;</button>
+        </div>
+        <form id="add-lookup-form" class="wine-form">
+            <div class="form-group">
+                <label for="lookup-label">Nom</label>
+                <input type="text" id="lookup-label" required>
+            </div>
+            <div class="form-group" id="lookup-country-group" style="display: none;">
+                <label for="lookup-country">Pays</label>
+                <select id="lookup-country"></select>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeAddLookupModal()">Annuler</button>
+                <button type="submit" class="btn btn-primary">Ajouter</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const API_BASE = '/wine/api';
+
+let lookupData = {};
+
+window.addEventListener('DOMContentLoaded', init);
+
+async function init() {
+    await loadLookups();
+    await loadCellarData();
+    filterWines();
+}
+
+async function loadLookups() {
+    const [countries, regions, appellations, colors, categories, cepages, sizes, toKeep, years] = await Promise.all([
+        fetch(`${API_BASE}/countries`).then(r => r.json()),
+        fetch(`${API_BASE}/regions`).then(r => r.json()),
+        fetch(`${API_BASE}/appellations`).then(r => r.json()),
+        fetch(`${API_BASE}/colors`).then(r => r.json()),
+        fetch(`${API_BASE}/categories`).then(r => r.json()),
+        fetch(`${API_BASE}/cepages`).then(r => r.json()),
+        fetch(`${API_BASE}/sizes`).then(r => r.json()),
+        fetch(`${API_BASE}/to_keep`).then(r => r.json()),
+        fetch(`${API_BASE}/years`).then(r => r.json())
+    ]);
+    
+    lookupData = { countries, regions, appellations, colors, categories, cepages, sizes, toKeep, years };
+    
+    populateSelect('filter-country', countries);
+    populateSelect('filter-region', regions);
+    populateSelect('filter-color', colors);
+    populateSelect('filter-category', categories);
+    
+    populateSelect('country_id', countries, true);
+    populateSelect('region_id', regions, true);
+    const currentRegionId = document.getElementById('region_id').value;
+    const filteredAppellations = currentRegionId 
+        ? appellations.filter(a => a.region_id == currentRegionId) 
+        : appellations;
+    populateSelect('apellation_id', filteredAppellations, true);
+    populateSelect('color_id', colors, true);
+    populateSelect('category_id', categories, true);
+    populateSelect('to_keep_id', toKeep, true);
+    populateSelect('position-size', sizes, true);
+    
+    populateSelect('filter-year', years, true);
+    populateSelect('filter-to-keep', toKeep, true);
+    populateSelect('filter-cepage', cepages, true);
+    populateSelect('filter-size', sizes, true);
+    
+    const sizeSelect = document.getElementById('position-size');
+    for (let i = 0; i < sizeSelect.options.length; i++) {
+        if (sizeSelect.options[i].text.toLowerCase().includes('bouteille')) {
+            sizeSelect.selectedIndex = i;
+            break;
+        }
+    }
+}
+
+function toggleAdvancedFilters() {
+    const el = document.getElementById('advanced-filters');
+    el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+let filterWalls = [];
+let filterCasiers = [];
+
+function toggleFilterWall(wall) {
+    console.log('toggleFilterWall called:', wall);
+    console.log('positionData:', positionData);
+    const el = document.getElementById('mini-'.concat(wall));
+    
+    // Single selection - if clicking already selected wall, deselect it
+    if (filterWalls.includes(wall)) {
+        filterWalls = [];
+        el.classList.remove('active');
+    } else {
+        // Deselect all walls first
+        ['north', 'south', 'east', 'west'].forEach(w => {
+            document.getElementById('mini-'.concat(w)).classList.remove('active');
+        });
+        filterWalls = [wall];
+        el.classList.add('active');
+    }
+    
+    filterCasiers = [];
+    console.log('filterWalls:', filterWalls);
+    renderCasierGrid();
+    filterWines();
+}
+
+function renderCasierGrid() {
+    console.log('renderCasierGrid called');
+    console.log('filterWalls:', filterWalls);
+    const container = document.getElementById('casier-grid');
+    container.innerHTML = '';
+    
+    if (filterWalls.length === 0) {
+        container.innerHTML = '<span style="font-size: 0.7rem; color: var(--text-secondary);">Sélectionnez un mur</span>';
+        return;
+    }
+    
+    const wall = filterWalls[0];
+    console.log('Rendering for wall:', wall);
+    console.log('positionData[wall]:', positionData[wall]);
+    console.log('Keys in east:', positionData[wall] ? Object.keys(positionData[wall]) : []);
+    
+    const wallDiv = document.createElement('div');
+    wallDiv.className = 'casier-wall-grid active';
+    wallDiv.id = 'casier-grid-'.concat(wall);
+    wallDiv.style.display = 'block';
+    
+    const wallLabel = document.createElement('div');
+    wallLabel.style.fontSize = '0.65rem';
+    wallLabel.style.fontWeight = 'bold';
+    wallLabel.style.width = '100%';
+    wallLabel.style.marginBottom = '4px';
+    wallLabel.textContent = wall === 'north' ? 'En face' : wall === 'south' ? 'Arrière' : wall === 'east' ? 'Droite' : 'Gauche';
+    wallDiv.appendChild(wallLabel);
+    
+    const wallCols = { north: 5, south: 3, west: 4, east: 3 };
+    const cols = wallCols[wall] || 4;
+    
+    const casiers = positionData[wall] ? Object.keys(positionData[wall]) : [];
+    const sortedCasiers = casiers.sort((a, b) => {
+        const rowA = parseInt(a.replace('wall', '')[0]);
+        const colA = parseInt(a.replace('wall', '')[1]);
+        const rowB = parseInt(b.replace('wall', '')[0]);
+        const colB = parseInt(b.replace('wall', '')[1]);
+        if (rowA !== rowB) return rowA - rowB;
+        return colA - colB;
+    });
+    
+    const gridDiv = document.createElement('div');
+    gridDiv.style.display = 'grid';
+    gridDiv.style.gridTemplateColumns = 'repeat('.concat(cols, ', 1fr)');
+    gridDiv.style.gap = '2px';
+    gridDiv.style.width = 'fit-content';
+    
+    sortedCasiers.forEach(casier => {
+        const cell = document.createElement('div');
+        cell.className = 'casier-cell-filter';
+        
+        const posInfo = positionData[wall] ? positionData[wall][casier] : null;
+        const occupied = posInfo ? posInfo.occupied : 0;
+        
+        if (filterCasiers.includes(casier)) {
+            cell.classList.add('selected');
+        }
+        
+        cell.textContent = occupied > 0 ? occupied : '-';
+        cell.title = 'R'.concat(casier.replace('wall', '').substring(0,1), 'C', casier.replace('wall', '').substring(1), ' - ', occupied, ' bouteille(s)');
+        
+        cell.onclick = function() {
+            if (filterCasiers.includes(casier)) {
+                filterCasiers = filterCasiers.filter(c => c !== casier);
+                cell.classList.remove('selected');
+            } else {
+                filterCasiers.push(casier);
+                cell.classList.add('selected');
+            }
+            filterWines();
+        };
+        gridDiv.appendChild(cell);
+    });
+    
+    wallDiv.appendChild(gridDiv);
+    container.appendChild(wallDiv);
+    console.log('Casier grid rendered, container innerHTML:', container.innerHTML.substring(0, 200));
+}
+
+function populateSelect(id, items, addEmpty = false) {
+    const select = document.getElementById(id);
+    if (!select) return;
+    
+    select.innerHTML = addEmpty ? '<option value="">Sélectionner...</option>' : '<option value="">Tous</option>';
+    items.forEach(item => {
+        const opt = document.createElement('option');
+        opt.value = item.id;
+        opt.textContent = item.label;
+        select.appendChild(opt);
+    });
+}
+
+let searchTimeout;
+let currentPage = 1;
+let totalPages = 1;
+
+function debouncedSearch() {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(function() { currentPage = 1; filterWines(); }, 300);
+}
+
+async function filterWines() {
+    const container = document.getElementById('wine-list');
+    container.classList.add('loading');
+    
+    const search = document.getElementById('search-input').value;
+    const country_id = document.getElementById('filter-country').value;
+    const region_id = document.getElementById('filter-region').value;
+    const color_id = document.getElementById('filter-color').value;
+    const category_id = document.getElementById('filter-category').value;
+    
+    const year = document.getElementById('filter-year').value;
+    const to_keep_id = document.getElementById('filter-to-keep').value;
+    const cepage_id = document.getElementById('filter-cepage').value;
+    const size_id = document.getElementById('filter-size').value;
+    const meal = document.getElementById('filter-meal').value;
+    const ready = document.getElementById('filter-ready').checked;
+    const in_stock = document.getElementById('filter-in-stock').checked;
+    const not_stored = document.getElementById('filter-not-stored').checked;
+    
+    let url = ''.concat(API_BASE, '/wines?page=', currentPage, '&per_page=20');
+    if (search) url += ''.concat('&search=', encodeURIComponent(search));
+    if (country_id) url += ''.concat('&country_id=', country_id);
+    if (region_id) url += ''.concat('&region_id=', region_id);
+    if (color_id) url += ''.concat('&color_id=', color_id);
+    if (category_id) url += ''.concat('&category_id=', category_id);
+    if (year) url += ''.concat('&year=', year);
+    if (to_keep_id) url += ''.concat('&to_keep_id=', to_keep_id);
+    if (cepage_id) url += ''.concat('&cepage_id=', cepage_id);
+    if (size_id) url += ''.concat('&size_id=', size_id);
+    if (meal) url += ''.concat('&meal=', encodeURIComponent(meal));
+    if (ready) url += ''.concat('&ready=1');
+    if (in_stock) url += ''.concat('&in_stock=1');
+    if (not_stored) url += ''.concat('&not_stored=1');
+    if (filterWalls.length > 0) url += ''.concat('&wall=', filterWalls.join(','));
+    if (filterCasiers.length > 0) url += ''.concat('&casier=', filterCasiers.join(','));
+    
+    const response = await fetch(url);
+    const result = await response.json();
+    container.classList.remove('loading');
+    
+    if (result.success) {
+        renderWineList(result.data);
+        totalPages = result.total_pages || 1;
+        document.getElementById('wine-count').textContent = ''.concat(result.count, ' vin(s)', result.total_bottles ? ''.concat(' - ', result.total_bottles, ' bouteille(s)') : '');
+        updatePagination();
+    }
+}
+
+function changePage(delta) {
+    currentPage += delta;
+    if (currentPage < 1) currentPage = 1;
+    if (currentPage > totalPages) currentPage = totalPages;
+    filterWines();
+}
+
+function updatePagination() {
+    document.getElementById('page-info').textContent = ''.concat('Page ', currentPage, ' / ', totalPages);
+    document.getElementById('prev-page').disabled = currentPage <= 1;
+    document.getElementById('next-page').disabled = currentPage >= totalPages;
+}
+
+function renderWineList(wines) {
+    const container = document.getElementById('wine-list');
+    
+    if (wines.length === 0) {
+        container.innerHTML = '<div class="empty-state">Aucun vin trouvé</div>';
+        return;
+    }
+    
+    container.innerHTML = wines.map(wine => {
+        let bottlesHtml = '';
+        if (wine.bottle_count > 0) {
+            bottlesHtml = '<span class="wine-bottle-count">'.concat(wine.bottle_count, ' Bouteille</span>');
+        }
+        
+        return ''.concat(
+        '<div class="wine-card" onclick="showWineDetail(', wine.id, ')">',
+            '<div class="wine-card-header">',
+                '<span class="wine-color wine-color-', wine.color_id, '"></span>',
+                '<span class="wine-year">', wine.year || '', '</span>',
+            '</div>',
+            '<div class="wine-card-body">',
+                '<h3 class="wine-name">', escapeHtml(wine.name_climat || ''), '</h3>',
+                '<p class="wine-propriete">', escapeHtml(wine.propriete || ''), '</p>',
+                '<p class="wine-region">', escapeHtml(wine.region || ''), '</p>',
+                bottlesHtml ? ''.concat('<p class="wine-bottles">', bottlesHtml, '</p>') : '',
+            '</div>',
+            '<div class="wine-card-footer">',
+                '<span class="wine-note">', wine.my_note ? ''.concat(wine.my_note, '/20') : '', '</span>',
+                '<div class="wine-actions">',
+                    '<button class="btn-icon" onclick="event.stopPropagation();editWine(', wine.id, ')" title="Modifier">✏️</button>',
+                    '<button class="btn-icon" onclick="event.stopPropagation();deleteWine(', wine.id, ')" title="Supprimer">🗑️</button>',
+                '</div>',
+            '</div>',
+        '</div>');
+    }).join('');
+}
+
+async function showWineDetail(id) {
+    const response = await fetch(`${API_BASE}/wines/${id}`);
+    const result = await response.json();
+    
+    if (!result.success) {
+        showToast('Erreur chargement vin');
+        return;
+    }
+    
+    const wine = result.data;
+    document.getElementById('detail-title').textContent = wine.name_climat || 'Détails';
+    
+    const detail = document.getElementById('wine-detail');
+    detail.innerHTML = `
+        <div class="detail-grid">
+            <div class="detail-section">
+                <h3>Informations</h3>
+                <p><strong>Année:</strong> ${wine.year || '-'}</p>
+                <p><strong>Propriété:</strong> ${escapeHtml(wine.propriete || '-')}</p>
+                <p><strong>Producteur:</strong> ${escapeHtml(wine.producer || '-')}</p>
+                <p><strong>Pays:</strong> ${escapeHtml(wine.country || '-')}</p>
+                <p><strong>Région:</strong> ${escapeHtml(wine.region || '-')}</p>
+                <p><strong>Appellation:</strong> ${escapeHtml(wine.apellation || '-')}</p>
+                <p><strong>Couleur:</strong> ${escapeHtml(wine.color || '-')}</p>
+                <p><strong>Catégorie:</strong> ${escapeHtml(wine.category || '-')}</p>
+                <p><strong>Quantité:</strong> ${wine.bottles && wine.bottles.length ? wine.bottles.map(b => `${b.quantity} ${b.size}`).join(', ') : '0'}</p>
+            </div>
+            <div class="detail-section">
+                <h3>-garde</h3>
+                <p><strong>À:</strong> ${escapeHtml(wine.to_keep || '-')}</p>
+                <p><strong>Date optimum:</strong> ${wine.date_optimum || '-'}</p>
+                <p><strong>Fin optimum:</strong> ${wine.end_optimum || '-'}</p>
+                <p><strong>Distinction:</strong> ${escapeHtml(wine.distinction || '-')}</p>
+                <p><strong>Médaille:</strong> ${escapeHtml(wine.medal || '-')}</p>
+            </div>
+            <div class="detail-section">
+                <h3>Dégustation</h3>
+                <p><strong>Vue:</strong> ${escapeHtml(wine.view || '-')}</p>
+                <p><strong>Nez:</strong> ${escapeHtml(wine.noze || '-')}</p>
+                <p><strong>Goût:</strong> ${escapeHtml(wine.taste || '-')}</p>
+                <p><strong>Note:</strong> ${wine.my_note ? wine.my_note + '/20' : '-'}</p>
+                <p><strong>Accords:</strong> ${escapeHtml(wine.meal || '-')}</p>
+            </div>
+            <div class="detail-section">
+                <h3>Cépages</h3>
+                <p>${wine.cepages && wine.cepages.length ? wine.cepages.map(c => c.percentage ? `${c.cepage} (${c.percentage}%)` : c.cepage).join(', ') : '-'}</p>
+                <h3>Commentaire</h3>
+                <p>${escapeHtml(wine.comment || '-')}</p>
+            </div>
+        </div>
+        <div class="detail-actions">
+            <button class="btn btn-primary" onclick="editWine(${wine.id}); closeDetailModal();">Modifier</button>
+            <button class="btn btn-secondary" onclick="showPositionModal(${wine.id})">Position cave</button>
+            <button class="btn btn-success" onclick="showAddBottleModal(${wine.id})">Ajouter bouteilles</button>
+            <button class="btn btn-warning" onclick="showRemoveBottleModal(${wine.id})">Enlever bouteilles</button>
+            <button class="btn btn-info" onclick="showHistoryModal(${wine.id})">Historique</button>
+        </div>
+    `;
+    
+    document.getElementById('detail-modal').style.display = 'flex';
+}
+
+function closeDetailModal() {
+    document.getElementById('detail-modal').style.display = 'none';
+}
+
+function showWineForm() {
+    document.getElementById('modal-title').textContent = 'Ajouter un vin';
+    document.getElementById('wine-form').reset();
+    document.getElementById('wine-id').value = '';
+    document.getElementById('wine-position-wall').value = '';
+    document.getElementById('wine-position-casier').value = '';
+    resetCepages();
+    document.getElementById('wine-modal').style.display = 'flex';
+}
+
+async function editWine(id) {
+    const response = await fetch(`${API_BASE}/wines/${id}`);
+    const result = await response.json();
+    
+    if (!result.success) {
+        showToast('Erreur chargement vin');
+        return;
+    }
+    
+    const wine = result.data;
+    document.getElementById('modal-title').textContent = 'Modifier le vin';
+    document.getElementById('wine-id').value = wine.id;
+    
+    document.getElementById('name_climat').value = wine.name_climat || '';
+    document.getElementById('year').value = wine.year || '';
+    document.getElementById('propriete').value = wine.propriete || '';
+    document.getElementById('producer').value = wine.producer || '';
+    document.getElementById('country_id').value = wine.country_id || '';
+    await loadRegions(wine.region_id);
+    document.getElementById('apellation_id').value = wine.apellation_id || '';
+    document.getElementById('color_id').value = wine.color_id || '';
+    document.getElementById('category_id').value = wine.category_id || '';
+    document.getElementById('to_keep_id').value = wine.to_keep_id || '';
+    document.getElementById('date_optimum').value = wine.date_optimum || '';
+    document.getElementById('end_optimum').value = wine.end_optimum || '';
+    document.getElementById('view').value = wine.view || '';
+    document.getElementById('noze').value = wine.noze || '';
+    document.getElementById('taste').value = wine.taste || '';
+    document.getElementById('my_note').value = wine.my_note || '';
+    document.getElementById('meal').value = wine.meal || '';
+    document.getElementById('distinction').value = wine.distinction || '';
+    document.getElementById('medal').value = wine.medal || '';
+    document.getElementById('comment').value = wine.comment || '';
+    
+    resetCepages();
+    if (wine.cepages && wine.cepages.length) {
+        wine.cepages.forEach((c, i) => {
+            if (i > 0) addCepage();
+        });
+        wine.cepages.forEach((c, i) => {
+            const rows = document.querySelectorAll('.cepage-row');
+            if (rows[i]) {
+                rows[i].querySelector('.cepage-select').value = c.cepage_id || '';
+                rows[i].querySelector('.cepage-percent').value = c.percentage || '';
+            }
+        });
+    }
+    
+    document.getElementById('wine-modal').style.display = 'flex';
+}
+
+function resetCepages() {
+    const container = document.getElementById('cepages-container');
+    container.innerHTML = `
+        <div class="cepage-row">
+            <select name="cepage_id[]" class="cepage-select">
+                <option value="">Sélectionner...</option>
+            </select>
+            <input type="number" name="percentage[]" placeholder="%" min="0" max="100" class="cepage-percent">
+            <button type="button" class="btn btn-sm btn-danger" onclick="removeCepage(this)">&times;</button>
+        </div>
+    `;
+    populateCepageSelects();
+}
+
+function addCepage() {
+    const container = document.getElementById('cepages-container');
+    const div = document.createElement('div');
+    div.className = 'cepage-row';
+    div.innerHTML = `
+        <select name="cepage_id[]" class="cepage-select">
+            <option value="">Sélectionner...</option>
+        </select>
+        <input type="number" name="percentage[]" placeholder="%" min="0" max="100" class="cepage-percent">
+        <button type="button" class="btn btn-sm btn-danger" onclick="removeCepage(this)">&times;</button>
+    `;
+    container.appendChild(div);
+    populateCepageSelects();
+}
+
+function removeCepage(btn) {
+    const rows = document.querySelectorAll('.cepage-row');
+    if (rows.length > 1) {
+        btn.closest('.cepage-row').remove();
+    }
+}
+
+function populateCepageSelects() {
+    document.querySelectorAll('.cepage-select').forEach(select => {
+        const currentVal = select.value;
+        select.innerHTML = '<option value="">Sélectionner...</option>';
+        lookupData.cepages.forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c.id;
+            opt.textContent = c.label;
+            select.appendChild(opt);
+        });
+        select.value = currentVal;
+    });
+}
+
+async function loadRegions(selectedId) {
+    const countryId = document.getElementById('country_id').value;
+    let url = `${API_BASE}/regions`;
+    if (countryId) url += `?country_id=${countryId}`;
+    
+    const response = await fetch(url);
+    const regions = await response.json();
+    
+    const select = document.getElementById('region_id');
+    select.innerHTML = '<option value="">Sélectionner...</option>';
+    regions.forEach(r => {
+        const opt = document.createElement('option');
+        opt.value = r.id;
+        opt.textContent = r.label;
+        select.appendChild(opt);
+    });
+    
+    if (selectedId) select.value = selectedId;
+}
+
+async function loadApellations(selectedId) {
+    const regionId = document.getElementById('region_id').value;
+    let url = `${API_BASE}/appellations`;
+    if (regionId) url += `?region_id=${regionId}`;
+    
+    const response = await fetch(url);
+    const appellations = await response.json();
+    
+    const select = document.getElementById('apellation_id');
+    select.innerHTML = '<option value="">Sélectionner...</option>';
+    appellations.forEach(a => {
+        const opt = document.createElement('option');
+        opt.value = a.id;
+        opt.textContent = a.label;
+        select.appendChild(opt);
+    });
+    
+    if (selectedId) select.value = selectedId;
+}
+
+document.getElementById('wine-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const id = document.getElementById('wine-id').value;
+    const data = {
+        name_climat: document.getElementById('name_climat').value,
+        year: parseInt(document.getElementById('year').value) || null,
+        propriete: document.getElementById('propriete').value,
+        producer: document.getElementById('producer').value,
+        country_id: parseInt(document.getElementById('country_id').value) || null,
+        region_id: parseInt(document.getElementById('region_id').value) || null,
+        apellation_id: parseInt(document.getElementById('apellation_id').value) || null,
+        color_id: parseInt(document.getElementById('color_id').value) || null,
+        category_id: parseInt(document.getElementById('category_id').value) || null,
+        to_keep_id: parseInt(document.getElementById('to_keep_id').value) || null,
+        date_optimum: parseInt(document.getElementById('date_optimum').value) || null,
+        end_optimum: parseInt(document.getElementById('end_optimum').value) || null,
+        view: document.getElementById('view').value,
+        noze: document.getElementById('noze').value,
+        taste: document.getElementById('taste').value,
+        my_note: parseFloat(document.getElementById('my_note').value) || null,
+        meal: document.getElementById('meal').value,
+        distinction: document.getElementById('distinction').value,
+        medal: document.getElementById('medal').value,
+        comment: document.getElementById('comment').value,
+        cepages: []
+    };
+    
+    document.querySelectorAll('.cepage-row').forEach(row => {
+        const cepageId = row.querySelector('.cepage-select').value;
+        const percent = row.querySelector('.cepage-percent').value;
+        if (cepageId) {
+            data.cepages.push({
+                cepage_id: parseInt(cepageId),
+                percentage: parseInt(percent) || null
+            });
+        }
+    });
+    
+    let url = `${API_BASE}/wines`;
+    let method = 'POST';
+    
+    if (id) {
+        url += `/${id}`;
+        method = 'PUT';
+    }
+    
+    const response = await fetch(url, {
+        method: method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    });
+    
+    const result = await response.json();
+    
+    if (result.success) {
+        const wall = document.getElementById('wine-position-wall').value;
+        const casier = document.getElementById('wine-position-casier').value;
+        
+        if (wall && casier) {
+            const positionData = {
+                wine_id: result.data.id,
+                wall: wall,
+                casier: casier,
+                quantity: parseInt(document.getElementById('position-quantity').value) || 1,
+                size_id: parseInt(document.getElementById('position-size').value) || null
+            };
+            
+            await fetch(`${API_BASE}/positions`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(positionData)
+            });
+        }
+        
+        showToast(id ? 'Vin modifié' : 'Vin ajouté');
+        closeWineModal();
+        filterWines();
+        if (!id) {
+            console.log('Result:', result);
+            console.log('Data:', result.data);
+            const wineId = result.data.id;
+            console.log('Wine ID:', wineId, typeof wineId);
+            await showWineDetail(wineId);
+        }
+    } else {
+        showToast(result.error || 'Erreur');
+    }
+});
+
+function closeWineModal() {
+    document.getElementById('wine-modal').style.display = 'none';
+}
+
+async function deleteWine(id) {
+    if (!confirm('Supprimer ce vin ?')) return;
+    
+    const response = await fetch(`${API_BASE}/wines/${id}`, { method: 'DELETE' });
+    const result = await response.json();
+    
+    if (result.success) {
+        showToast('Vin supprimé');
+        filterWines();
+    } else {
+        showToast(result.error || 'Erreur');
+    }
+}
+
+let currentWall = 'north';
+let selectedCasier = null;
+let positionData = {};
+let winePositions = {};
+let positionModalSource = null;
+
+function openPositionFromWine() {
+    positionModalSource = 'wine';
+    document.getElementById('position-wine-id').value = document.getElementById('wine-id').value || '';
+    document.getElementById('wine-modal').style.display = 'none';
+    document.getElementById('position-modal').style.display = 'flex';
+    document.getElementById('position-modal').classList.add('modal-active');
+    
+    selectedCasier = null;
+    document.getElementById('btn-save-position').textContent = 'Enregistrer';
+    document.getElementById('position-quantity').value = 1;
+    
+    loadCellarData();
+}
+
+async function showPositionModal(wineId) {
+    positionModalSource = 'detail';
+    document.getElementById('detail-modal').style.display = 'none';
+    document.getElementById('position-modal').style.display = 'flex';
+    document.getElementById('position-modal').classList.add('modal-active');
+    
+    document.getElementById('position-wine-id').value = wineId;
+    
+    selectedCasier = null;
+    document.getElementById('btn-save-position').textContent = 'Enregistrer';
+    
+    await loadCellarData();
+    selectWall('north');
+}
+
+function closePositionModal() {
+    document.getElementById('position-modal').style.display = 'none';
+    document.getElementById('position-modal').classList.remove('modal-active');
+    
+    if (positionModalSource === 'wine') {
+        if (selectedCasier) {
+            document.getElementById('wine-position-wall').value = selectedCasier.wall;
+            document.getElementById('wine-position-casier').value = selectedCasier.casier;
+            showToast(`Position: ${selectedCasier.casier} (${selectedCasier.wall})`);
+        }
+        document.getElementById('wine-modal').style.display = 'flex';
+    } else if (positionModalSource === 'detail') {
+        document.getElementById('detail-modal').style.display = 'flex';
+    } else if (positionModalSource === 'addBottle') {
+        filterWines();
+    } else if (positionModalSource === 'removeBottle') {
+        if (pendingOutRecord) {
+            showToast('Bouteilles retirées');
+            pendingOutRecord = null;
+        }
+        filterWines();
+    }
+    positionModalSource = null;
+}
+
+async function loadCellarData() {
+    const response = await fetch(`${API_BASE}/capacity`);
+    const result = await response.json();
+    
+    // Initialize with empty data
+    positionData = {
+        north: {},
+        south: {},
+        east: {},
+        west: {}
+    };
+    
+    // Populate from casier_capacity table
+    if (result && result.data) {
+        result.data.forEach(c => {
+            if (!positionData[c.wall]) positionData[c.wall] = {};
+            positionData[c.wall][c.casier] = { capacity: c.capacity, occupied: 0 };
+        });
+    }
+    
+    try {
+        const positionsRes = await fetch(`${API_BASE}/positions`);
+        const positionsResult = await positionsRes.json();
+        
+        if (positionsResult && positionsResult.success) {
+            winePositions = {};
+            positionsResult.data.forEach(p => {
+                if (!winePositions[p.wall]) winePositions[p.wall] = {};
+                if (!winePositions[p.wall][p.casier]) winePositions[p.wall][p.casier] = [];
+                winePositions[p.wall][p.casier].push(p);
+            });
+            
+            Object.keys(winePositions).forEach(wall => {
+                Object.keys(winePositions[wall]).forEach(casier => {
+                    if (positionData[wall] && positionData[wall][casier]) {
+                        positionData[wall][casier].occupied = winePositions[wall][casier].reduce((sum, p) => sum + p.quantity, 0);
+                    }
+                });
+            });
+        }
+    } catch (e) {
+        console.log('Error loading positions:', e);
+    }
+    
+    const wineId = document.getElementById('position-wine-id').value;
+    renderAllWalls(wineId);
+}
+
+function renderAllWalls(wineId) {
+    ['north', 'south', 'east', 'west'].forEach(wall => {
+        renderWallVisual(wall, positionData, wineId);
+    });
+}
+
+function updateCellarSummary() {
+    let totalBottles = 0;
+    let totalCapacity = 0;
+    
+    Object.values(positionData).forEach(wall => {
+        Object.values(wall).forEach(casier => {
+            totalCapacity += casier.capacity;
+            totalBottles += casier.occupied;
+        });
+    });
+    
+    document.getElementById('total-bottles').textContent = totalBottles;
+    document.getElementById('total-capacity').textContent = totalCapacity;
+    document.getElementById('available-slots').textContent = totalCapacity - totalBottles;
+}
+
+function selectWall(wall) {
+    currentWall = wall;
+    
+    document.querySelectorAll('.cellar-wall-visual').forEach(el => {
+        el.classList.toggle('active', el.dataset.wall === wall);
+    });
+    
+    const wineId = document.getElementById('position-wine-id').value;
+    renderAllWalls(wineId);
+}
+
+function renderWallVisual(wall, data, wineId) {
+    const container = document.getElementById(`wall-${wall}`);
+    if (!container) {
+        console.log('Container wall-' + wall + ' not found');
+        return;
+    }
+    
+    const wallData = data[wall] || {};
+    let casierNumbers = Object.keys(wallData).sort((a, b) => {
+        // Sort by row (first digit) then column (second digit) - wallXY = row X, column Y
+        const rowA = parseInt(a.replace('wall', '')[0]);
+        const colA = parseInt(a.replace('wall', '')[1]);
+        const rowB = parseInt(b.replace('wall', '')[0]);
+        const colB = parseInt(b.replace('wall', '')[1]);
+        if (rowA !== rowB) return rowA - rowB;
+        return colA - colB;
+    });
+    
+    // Wall-specific column configurations
+    const wallConfig = {
+        north: { cols: 5 },
+        south: { cols: 3 },
+        west: { cols: 4 },
+        east: { cols: 3 }
+    };
+    
+    const cols = wallConfig[wall] ? wallConfig[wall].cols : 4;
+    const rows = Math.ceil(casierNumbers.length / cols) || 1;
+    
+    let html = `<div class="wall-label-visual">${wall.toUpperCase()}</div>`;
+    
+    for (let r = 0; r < rows; r++) {
+        html += '<div class="cellar-wall-row">';
+        for (let c = 0; c < cols; c++) {
+            const idx = r * cols + c;
+            const casier = casierNumbers[idx];
+            if (casier) {
+                const info = wallData[casier];
+                const totalOccupied = info ? info.occupied : 0;
+                const capacity = info ? info.capacity : 0;
+                
+                // Get bottles of current wine in this casier
+                let wineBottles = 0;
+                if (wineId && winePositions[wall] && winePositions[wall][casier]) {
+                    const casierPositions = winePositions[wall][casier];
+                    const winePos = casierPositions.find(p => p.wine_id == wineId);
+                    if (winePos) wineBottles = winePos.quantity;
+                }
+                
+                let cellClass = 'casier-cell';
+                if (wineBottles > 0) {
+                    cellClass += ' occupied';
+                } else if (totalOccupied > 0) {
+                    cellClass += ' partial';
+                }
+                
+                let label = '0';
+                if (wineBottles > 0) {
+                    label = `<span class="casier-number">${wineBottles}</span>`;
+                }
+                
+                html += `<div class="${cellClass}" data-wall="${wall}" data-casier="${casier}" onclick="selectCasier('${wall}', '${casier}')">${label}</div>`;
+            } else {
+                html += '<div class="casier-cell" style="opacity: 0.2;"></div>';
+            }
+        }
+        html += '</div>';
+    }
+    
+    container.className = `cellar-wall-visual wall-${wall}`;
+    container.dataset.wall = wall;
+    container.innerHTML = html;
+}
+
+function selectCasier(wall, casier) {
+    currentWall = wall;
+    selectedCasier = { wall: wall, casier: casier };
+    
+    document.querySelectorAll('.casier-cell').forEach(cell => {
+        cell.classList.remove('selected');
+    });
+    document.querySelectorAll('.cellar-wall-visual').forEach(el => {
+        el.classList.remove('active');
+    });
+    
+    const cell = document.querySelector(`.casier-cell[data-wall="${wall}"][data-casier="${casier}"]`);
+    const wallEl = document.querySelector(`.cellar-wall-visual[data-wall="${wall}"]`);
+    if (cell) cell.classList.add('selected');
+    if (wallEl) wallEl.classList.add('active');
+    
+    const positionModal = document.getElementById('position-modal');
+    const addBottleModal = document.getElementById('add-bottle-modal');
+    
+    if (positionModal && positionModal.style.display !== 'none') {
+        if (positionModalSource !== 'addBottle' && positionModalSource !== 'removeBottle') {
+            const wineId = parseInt(document.getElementById('position-wine-id').value);
+            const wallPositions = winePositions[wall] || {};
+            const casierPositions = wallPositions[casier] || [];
+            
+            const winePosition = casierPositions.find(p => p.wine_id === wineId);
+            
+            if (winePosition) {
+                document.getElementById('position-quantity').value = winePosition.quantity;
+                document.getElementById('position-size').value = winePosition.size_id || '';
+            } else {
+                document.getElementById('position-quantity').value = 1;
+            }
+        }
+    }
+    
+
+}
+
+async function savePosition() {
+    if (!selectedCasier) {
+        showToast('Sélectionnez un casier');
+        return;
+    }
+    
+    const wineId = document.getElementById('position-wine-id').value;
+    const quantity = parseInt(document.getElementById('position-quantity').value) || 1;
+    const sizeId = parseInt(document.getElementById('position-size').value) || null;
+    
+    if (positionModalSource === 'removeBottle' && pendingOutRecord) {
+        const data = {
+            wine_id: parseInt(wineId),
+            quantity: quantity,
+            size_id: sizeId,
+            out_date: pendingOutRecord.outDate
+        };
+        
+        const response = await fetch(`${API_BASE}/out_records`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (!result.success) {
+            showToast(result.error || 'Erreur');
+            return;
+        }
+        
+        const wallKey = selectedCasier.wall;
+        const casierKey = selectedCasier.casier;
+        const wallPositions = winePositions[wallKey] || {};
+        const casierPositions = wallPositions[casierKey] || [];
+        const winePosition = casierPositions.find(p => p.wine_id == wineId);
+        
+        if (winePosition) {
+            const newQty = winePosition.quantity - quantity;
+            if (newQty <= 0) {
+                await fetch(`${API_BASE}/positions/${winePosition.id}`, {
+                    method: 'DELETE'
+                });
+            } else {
+                await fetch(`${API_BASE}/positions/${winePosition.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ quantity: newQty, size_id: sizeId })
+                });
+            }
+        }
+        
+        pendingOutRecord = null;
+        showToast('Bouteilles retirées');
+        await loadCellarData();
+        selectWall(currentWall);
+        return;
+    }
+    
+    const positionData = {
+        wine_id: parseInt(wineId),
+        wall: selectedCasier.wall,
+        casier: selectedCasier.casier,
+        quantity: quantity,
+        size_id: sizeId
+    };
+    
+    const wallKey = selectedCasier.wall;
+    const casierKey = selectedCasier.casier;
+    const wallPositions = winePositions[wallKey] || {};
+    const casierPositions = wallPositions[casierKey] || [];
+    const existingPosition = casierPositions.find(p => p.wine_id == wineId);
+    
+    if (existingPosition && positionModalSource === 'addBottle') {
+        const newQty = existingPosition.quantity + quantity;
+        await fetch(`${API_BASE}/positions/${existingPosition.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ quantity: newQty, size_id: sizeId })
+        });
+    } else {
+        const response = await fetch(`${API_BASE}/positions`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(positionData)
+        });
+        
+        const posResult = await response.json();
+        
+        if (!posResult.success) {
+            showToast(posResult.error || 'Erreur');
+            return;
+        }
+    }
+    
+    showToast('Position enregistrée');
+    await loadCellarData();
+    selectWall(currentWall);
+}
+
+async function deletePosition() {
+    if (!selectedCasier) return;
+    
+    if (!confirm('Supprimer la position ?')) return;
+    
+    const wineId = parseInt(document.getElementById('position-wine-id').value);
+    const wallPositions = winePositions[currentWall] || {};
+    const casierPositions = wallPositions[selectedCasier.casier] || [];
+    const winePosition = casierPositions.find(p => p.wine_id === wineId);
+    
+    if (!winePosition) return;
+    
+    const response = await fetch(`${API_BASE}/positions/${winePosition.id}`, {
+        method: 'DELETE'
+    });
+    
+    const result = await response.json();
+    
+    if (result.success) {
+        showToast('Position supprimée');
+        await loadCellarData();
+        selectWall(currentWall);
+        selectedCasier = null;
+    } else {
+        showToast(result.error || 'Erreur');
+    }
+}
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function showToast(message) {
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.classList.add('show'), 10);
+    setTimeout(() => toast.classList.remove('show'), 3000);
+    setTimeout(() => toast.remove(), 3500);
+}
+
+function showAddBottleModal(wineId) {
+    document.getElementById('add-bottle-wine-id').value = wineId;
+    document.getElementById('add-bottle-date').value = new Date().toISOString().split('T')[0];
+    document.getElementById('add-bottle-location').value = '';
+    document.getElementById('add-bottle-quantity').value = 1;
+    document.getElementById('add-bottle-price').value = '';
+
+    
+    const sizeSelect = document.getElementById('add-bottle-size');
+    sizeSelect.innerHTML = '';
+    if (lookupData.sizes) {
+        lookupData.sizes.forEach(s => {
+            const option = document.createElement('option');
+            option.value = s.id;
+            option.textContent = s.label;
+            sizeSelect.appendChild(option);
+        });
+        for (let i = 0; i < sizeSelect.options.length; i++) {
+            if (sizeSelect.options[i].text.toLowerCase().includes('bouteille')) {
+                sizeSelect.selectedIndex = i;
+                break;
+            }
+        }
+    }
+    
+    document.getElementById('add-bottle-modal').style.display = 'flex';
+}
+
+function closeAddBottleModal() {
+    document.getElementById('add-bottle-modal').style.display = 'none';
+}
+
+document.getElementById('add-bottle-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const wineId = document.getElementById('add-bottle-wine-id').value;
+    const quantity = parseInt(document.getElementById('add-bottle-quantity').value);
+    const sizeId = parseInt(document.getElementById('add-bottle-size').value);
+    const data = {
+        wine_id: parseInt(wineId),
+        quantity: quantity,
+        location: document.getElementById('add-bottle-location').value,
+        size_id: sizeId,
+        unit_price: parseFloat(document.getElementById('add-bottle-price').value) || null,
+        date: document.getElementById('add-bottle-date').value
+    };
+    
+    const response = await fetch(`${API_BASE}/buys`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    });
+    
+    const result = await response.json();
+    
+    if (result.success) {
+        showToast('Bouteilles ajoutées');
+        closeAddBottleModal();
+        await showPositionModalFromAdd(wineId, quantity, sizeId);
+        filterWines();
+    } else {
+        showToast(result.error || 'Erreur');
+    }
+});
+
+async function showPositionModalFromAdd(wineId, quantity, sizeId) {
+    positionModalSource = 'addBottle';
+    document.getElementById('position-wine-id').value = wineId;
+    document.getElementById('position-quantity').value = quantity;
+    document.getElementById('position-size').value = sizeId;
+    
+    selectedCasier = null;
+    document.getElementById('btn-save-position').textContent = 'Enregistrer';
+    
+    await loadCellarData();
+    selectWall('north');
+    
+    document.getElementById('position-modal').style.display = 'flex';
+    document.getElementById('position-modal').classList.add('modal-active');
+}
+
+function showRemoveBottleModal(wineId) {
+    document.getElementById('remove-bottle-wine-id').value = wineId;
+    document.getElementById('remove-bottle-date').value = new Date().toISOString().split('T')[0];
+    document.getElementById('remove-bottle-quantity').value = 1;
+    
+    const sizeSelect = document.getElementById('remove-bottle-size');
+    sizeSelect.innerHTML = '';
+    if (lookupData.sizes) {
+        lookupData.sizes.forEach(s => {
+            const option = document.createElement('option');
+            option.value = s.id;
+            option.textContent = s.label;
+            sizeSelect.appendChild(option);
+        });
+        for (let i = 0; i < sizeSelect.options.length; i++) {
+            if (sizeSelect.options[i].text.toLowerCase().includes('bouteille')) {
+                sizeSelect.selectedIndex = i;
+                break;
+            }
+        }
+    }
+    
+    document.getElementById('remove-bottle-modal').style.display = 'flex';
+}
+
+function closeRemoveBottleModal() {
+    document.getElementById('remove-bottle-modal').style.display = 'none';
+}
+
+document.getElementById('remove-bottle-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const wineId = document.getElementById('remove-bottle-wine-id').value;
+    const quantity = parseInt(document.getElementById('remove-bottle-quantity').value);
+    const sizeId = parseInt(document.getElementById('remove-bottle-size').value);
+    const outDate = document.getElementById('remove-bottle-date').value;
+    
+    await showPositionModalFromRemove(wineId, quantity, sizeId, outDate);
+    closeRemoveBottleModal();
+});
+
+async function showPositionModalFromRemove(wineId, quantity, sizeId, outDate) {
+    positionModalSource = 'removeBottle';
+    pendingOutRecord = { wineId, quantity, sizeId, outDate };
+    
+    document.getElementById('position-wine-id').value = wineId;
+    document.getElementById('position-quantity').value = quantity;
+    document.getElementById('position-size').value = sizeId;
+    
+    selectedCasier = null;
+    document.getElementById('btn-save-position').textContent = 'Confirmer';
+    
+    await loadCellarData();
+    selectWall('north');
+    
+    document.getElementById('position-modal').style.display = 'flex';
+    document.getElementById('position-modal').classList.add('modal-active');
+}
+
+let pendingOutRecord = null;
+
+async function showHistoryModal(wineId) {
+    document.getElementById('history-modal').style.display = 'flex';
+    const content = document.getElementById('history-content');
+    content.innerHTML = '<div class="loading">Chargement...</div>';
+    
+    try {
+        const [buysRes, outRes] = await Promise.all([
+            fetch(`${API_BASE}/buys?wine_id=${wineId}`),
+            fetch(`${API_BASE}/out_records?wine_id=${wineId}`)
+        ]);
+        
+        const buysResult = await buysRes.json();
+        const outResult = await outRes.json();
+        
+        const buys = buysResult.success ? buysResult.data : [];
+        const outs = outResult.success ? outResult.data : [];
+        
+        let html = '<h3>Achats/Réceptions</h3>';
+        if (buys.length === 0) {
+            html += '<p>Aucun achat enregistré</p>';
+        } else {
+            html += '<table class="data-table"><thead><tr><th>Date</th><th>Quantité</th><th>Taille</th><th>Lieu</th><th>Prix</th></tr></thead><tbody>';
+            buys.forEach(b => {
+                html += `<tr><td>${b.date || '-'}</td><td>${b.quantity}</td><td>${b.size || '-'}</td><td>${escapeHtml(b.location || '-')}</td><td>${b.unit_price ? b.unit_price + '€' : '-'}</td></tr>`;
+            });
+            html += '</tbody></table>';
+        }
+        
+        html += '<h3 style="margin-top: 1.5rem;">Sorties</h3>';
+        if (outs.length === 0) {
+            html += '<p>Aucune sortie enregistrée</p>';
+        } else {
+            html += '<table class="data-table"><thead><tr><th>Date</th><th>Quantité</th><th>Taille</th></tr></thead><tbody>';
+            outs.forEach(o => {
+                html += `<tr><td>${o.out_date || '-'}</td><td>${o.quantity}</td><td>${o.size || '-'}</td></tr>`;
+            });
+            html += '</tbody></table>';
+        }
+        
+        content.innerHTML = html;
+    } catch (e) {
+        content.innerHTML = '<p>Erreur de chargement</p>';
+    }
+}
+
+function closeHistoryModal() {
+    document.getElementById('history-modal').style.display = 'none';
+}
+
+let currentLookupType = null;
+
+function showAddLookupModal(type) {
+    currentLookupType = type;
+    const title = document.getElementById('add-lookup-title');
+    const countryGroup = document.getElementById('lookup-country-group');
+    const countrySelect = document.getElementById('lookup-country');
+    
+    if (type === 'country') {
+        title.textContent = 'Ajouter un pays';
+        countryGroup.style.display = 'none';
+    } else if (type === 'region') {
+        title.textContent = 'Ajouter une région';
+        countryGroup.style.display = 'block';
+        document.querySelector('#lookup-country-group label').textContent = 'Pays';
+        populateSelect('lookup-country', lookupData.countries, true);
+        const selectedCountry = document.getElementById('country_id').value;
+        if (selectedCountry) countrySelect.value = selectedCountry;
+    } else if (type === 'apellation') {
+        title.textContent = 'Ajouter une appellation';
+        countryGroup.style.display = 'block';
+        document.querySelector('#lookup-country-group label').textContent = 'Région';
+        populateSelect('lookup-country', lookupData.regions, true);
+        const selectedRegion = document.getElementById('region_id').value;
+        if (selectedRegion) countrySelect.value = selectedRegion;
+    } else if (type === 'cepage') {
+        title.textContent = 'Ajouter un cépage';
+        countryGroup.style.display = 'none';
+    }
+    
+    document.getElementById('lookup-label').value = '';
+    document.getElementById('add-lookup-modal').style.display = 'flex';
+}
+
+function closeAddLookupModal() {
+    document.getElementById('add-lookup-modal').style.display = 'none';
+    currentLookupType = null;
+}
+
+document.getElementById('add-lookup-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const label = document.getElementById('lookup-label').value;
+    if (!label) return;
+    
+    let url = `${API_BASE}/`;
+    let data = { label: label };
+    
+    if (currentLookupType === 'country') {
+        url += 'countries';
+    } else if (currentLookupType === 'region') {
+        url += 'regions';
+        data.country_id = parseInt(document.getElementById('lookup-country').value) || null;
+    } else if (currentLookupType === 'apellation') {
+        url += 'appellations';
+        data.region_id = parseInt(document.getElementById('lookup-country').value) || null;
+    } else if (currentLookupType === 'cepage') {
+        url += 'cepages';
+    }
+    
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    });
+    
+    const result = await response.json();
+    
+    if (result.success) {
+        showToast(`${currentLookupType === 'country' ? 'Pays' : currentLookupType === 'region' ? 'Région' : 'Appellation'} ajouté`);
+        
+        const savedCountry = document.getElementById('country_id').value;
+        const savedRegion = document.getElementById('region_id').value;
+        const savedApellation = document.getElementById('apellation_id').value;
+        const savedCepages = Array.from(document.querySelectorAll('.cepage-select')).map(s => s.value);
+        
+        await loadLookups();
+        
+        document.getElementById('country_id').value = savedCountry;
+        document.getElementById('region_id').value = savedRegion;
+        document.getElementById('apellation_id').value = savedApellation;
+        
+        if (currentLookupType === 'cepage') {
+            populateCepageSelects();
+        }
+        
+        const newId = result.data.id;
+        
+        if (currentLookupType === 'country') {
+            document.getElementById('country_id').value = String(newId);
+            loadRegions();
+        } else if (currentLookupType === 'region') {
+            document.getElementById('region_id').value = String(newId);
+            loadApellations();
+        } else if (currentLookupType === 'apellation') {
+            loadApellations(String(newId));
+        } else if (currentLookupType === 'apellation') {
+            document.getElementById('apellation_id').value = String(newId);
+        } else if (currentLookupType === 'cepage') {
+            document.querySelectorAll('.cepage-select').forEach((select, i) => {
+                if (!savedCepages[i]) {
+                    select.value = String(newId);
+                }
+            });
+        }
+        
+        closeAddLookupModal();
+    } else {
+        showToast(result.error || 'Erreur');
+    }
+});
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+{% endblock %}

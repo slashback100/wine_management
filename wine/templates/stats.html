@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}Cave à Vin - Statistiques{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Statistiques</h1>
+    
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value" id="stat-wines">-</div>
+            <div class="stat-label">Vins</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="stat-bottles">-</div>
+            <div class="stat-label">Bouteilles</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="stat-capacity">-</div>
+            <div class="stat-label">Capacité totale</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="stat-available">-</div>
+            <div class="stat-label">Disponibles</div>
+        </div>
+    </div>
+    
+    <div class="charts-grid">
+        <div class="chart-card">
+            <h3>Par couleur</h3>
+            <div id="chart-color"></div>
+        </div>
+        <div class="chart-card">
+            <h3>Par région</h3>
+            <div id="chart-region"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const API_BASE = '/wine/api';
+
+async function loadStats() {
+    const response = await fetch(`${API_BASE}/stats`);
+    const result = await response.json();
+    
+    if (!result.success) {
+        showToast('Erreur chargement stats');
+        return;
+    }
+    
+    const data = result.data;
+    
+    document.getElementById('stat-wines').textContent = data.total_wines;
+    document.getElementById('stat-bottles').textContent = data.total_bottles;
+    document.getElementById('stat-capacity').textContent = data.total_capacity;
+    document.getElementById('stat-available').textContent = data.available;
+    
+    renderColorChart(data.by_color);
+    renderRegionChart(data.by_region);
+}
+
+function renderColorChart(data) {
+    const container = document.getElementById('chart-color');
+    if (!data || data.length === 0) {
+        container.innerHTML = '<p>Aucune donnée</p>';
+        return;
+    }
+    
+    const max = Math.max(...data.map(d => d.count));
+    
+    container.innerHTML = data.map(item => `
+        <div class="bar-item">
+            <span class="bar-label">${escapeHtml(item.label)}</span>
+            <div class="bar-container">
+                <div class="bar" style="width: ${(item.count / max) * 100}%"></div>
+            </div>
+            <span class="bar-value">${item.count}</span>
+        </div>
+    `).join('');
+}
+
+function renderRegionChart(data) {
+    const container = document.getElementById('chart-region');
+    if (!data || data.length === 0) {
+        container.innerHTML = '<p>Aucune donnée</p>';
+        return;
+    }
+    
+    const max = Math.max(...data.map(d => d.count));
+    
+    container.innerHTML = data.map(item => `
+        <div class="bar-item">
+            <span class="bar-label">${escapeHtml(item.label)}</span>
+            <div class="bar-container">
+                <div class="bar" style="width: ${(item.count / max) * 100}%"></div>
+            </div>
+            <span class="bar-value">${item.count}</span>
+        </div>
+    `).join('');
+}
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function showToast(message) {
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.classList.add('show'), 10);
+    setTimeout(() => toast.classList.remove('show'), 3000);
+    setTimeout(() => toast.remove(), 3500);
+}
+
+document.addEventListener('DOMContentLoaded', loadStats);
+</script>
+{% endblock %}
