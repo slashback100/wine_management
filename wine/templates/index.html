@@ -36,6 +36,15 @@
             </select>
         </div>
         <button class="btn btn-sm" onclick="toggleAdvancedFilters()">+ Filtres</button>
+        <button class="btn btn-sm" onclick="toggleResetFilters()">Réinitialiser</button>
+	<br/>
+	    <div class="filter-group">
+                <label>
+			<!--<input type="checkbox" style="min-width: 20px;font-size: 0.75rem" checked id="filter-in-stock" onchange="filterWines()">-->
+                    <input type="checkbox" style="min-width: 20px" checked id="filter-in-stock" onchange="filterWines()">
+                    Uniquement les vins en stock
+                </label>
+            </div>
     </div>
 
     <div class="advanced-filters" id="advanced-filters" style="display: none;">
@@ -74,12 +83,12 @@
                 <label>Emplacement</label>
                 <div class="location-filter-container">
                     <div class="mini-cellar-filter" id="mini-cellar-filter">
-                        <div class="mini-wall" id="mini-north" onclick="toggleFilterWall('north')">En face</div>
+                        <div class="mini-wall" id="mini-en_face" onclick="toggleFilterWall('en_face')">En face</div>
                         <div class="mini-center">
-                            <div class="mini-wall mini-west" id="mini-west" onclick="toggleFilterWall('west')">Gauche</div>
-                            <div class="mini-wall mini-east" id="mini-east" onclick="toggleFilterWall('east')">Droite</div>
+                            <div class="mini-wall mini-gauche" id="mini-gauche" onclick="toggleFilterWall('gauche')">Gauche</div>
+                            <div class="mini-wall mini-droite" id="mini-droite" onclick="toggleFilterWall('droite')">Droite</div>
                         </div>
-                        <div class="mini-wall" id="mini-south" onclick="toggleFilterWall('south')">Arrière</div>
+                        <div class="mini-wall" id="mini-arriere" onclick="toggleFilterWall('arriere')">Arrière</div>
                     </div>
                     <div class="casier-grid" id="casier-grid"></div>
                 </div>
@@ -94,12 +103,6 @@
             </div>
             <div class="filter-group checkbox-group">
                 <label>
-                    <input type="checkbox" id="filter-in-stock" onchange="filterWines()">
-                    Uniquement les vins en stock
-                </label>
-            </div>
-            <div class="filter-group checkbox-group">
-                <label>
                     <input type="checkbox" id="filter-not-stored" onchange="filterWines()">
                     Vin acheté mais pas en cave
                 </label>
@@ -108,12 +111,6 @@
     </div>
 
     <div class="wine-count" id="wine-count"></div>
-
-    <div class="pagination" id="pagination">
-        <button class="btn btn-sm" id="prev-page" onclick="changePage(-1)" disabled>Précédent</button>
-        <span id="page-info">Page 1</span>
-        <button class="btn btn-sm" id="next-page" onclick="changePage(1)" disabled>Suivant</button>
-    </div>
 
     <div class="wine-list" id="wine-list">
         <div class="loading">Chargement...</div>
@@ -280,6 +277,14 @@
         </form>
     </div>
 </div>
+<div class="container">
+    <div class="pagination" id="pagination">
+        <button class="btn btn-sm" id="prev-page" onclick="changePage(-1)" disabled>Précédent</button>
+        <span id="page-info">Page 1</span>
+        <button class="btn btn-sm" id="next-page" onclick="changePage(1)" disabled>Suivant</button>
+    </div>
+</div>
+
 
 <div class="modal" id="position-modal">
     <div class="modal-content modal-large">
@@ -300,7 +305,8 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label for="position-quantity">Quantité</label>
-                        <input type="number" id="position-quantity" value="1" min="1">
+                        <input type="number" id="position-quantity" value="1" min="0">
+                        <input type="number" id="position-quantity-immutable" value="1" style="display: none"/>
                     </div>
                     <div class="form-group">
                         <label for="position-size">Taille</label>
@@ -496,6 +502,48 @@ function toggleAdvancedFilters() {
     el.style.display = el.style.display === 'none' ? 'block' : 'none';
 }
 
+function toggleResetFilters() {
+    document.getElementById('search-input').value = '';
+    document.getElementById('filter-country').value = '';
+    document.getElementById('filter-region').value = '';
+    document.getElementById('filter-color').value = '';
+    document.getElementById('filter-category').value = '';
+
+    document.getElementById('filter-year').value = '';
+    document.getElementById('filter-to-keep').value = '';
+    document.getElementById('filter-cepage').value = '';
+    document.getElementById('filter-size').value = '';
+    document.getElementById('filter-meal').value = '';
+    document.getElementById('filter-ready').checked = '';
+    document.getElementById('filter-in-stock').checked = 'checked';
+    document.getElementById('filter-not-stored').checked = '';
+    const els = document.getElementsByClassName('casier-cell-filter');
+    if(els.length > 0){
+	els[0].classList.remove('selected');
+    }
+    const walls = document.getElementsByClassName('mini-wall');
+    for(let i = 0; i < walls.length; i++){
+	walls[i].classList.remove('active');
+    }
+    filterWalls = [];
+    filterCasiers = [];
+    filterWines();
+}
+
+const WALL_MAP = {
+    'en_face': 'En face',
+    'gauche': 'Gauche',
+    'droite': 'Droite',
+    'arriere': 'Arrière'
+};
+
+const WALL_KEYS = {
+    'en_face': 'en_face',
+    'gauche': 'gauche',
+    'droite': 'droite',
+    'arriere': 'arriere'
+};
+
 let filterWalls = [];
 let filterCasiers = [];
 
@@ -510,7 +558,7 @@ function toggleFilterWall(wall) {
         el.classList.remove('active');
     } else {
         // Deselect all walls first
-        ['north', 'south', 'east', 'west'].forEach(w => {
+        ['en_face', 'arriere', 'droite', 'gauche'].forEach(w => {
             document.getElementById('mini-'.concat(w)).classList.remove('active');
         });
         filterWalls = [wall];
@@ -536,8 +584,11 @@ function renderCasierGrid() {
     
     const wall = filterWalls[0];
     console.log('Rendering for wall:', wall);
-    console.log('positionData[wall]:', positionData[wall]);
-    console.log('Keys in east:', positionData[wall] ? Object.keys(positionData[wall]) : []);
+    
+    // Translate frontend wall name to database key
+    const wallDbKey = { en_face: 'north', arriere: 'south', droite: 'east', gauche: 'west' }[wall] || wall;
+    console.log('positionData[wallDbKey]:', positionData[wallDbKey]);
+    console.log('Keys in positionData:', positionData[wallDbKey] ? Object.keys(positionData[wallDbKey]) : []);
     
     const wallDiv = document.createElement('div');
     wallDiv.className = 'casier-wall-grid active';
@@ -549,13 +600,13 @@ function renderCasierGrid() {
     wallLabel.style.fontWeight = 'bold';
     wallLabel.style.width = '100%';
     wallLabel.style.marginBottom = '4px';
-    wallLabel.textContent = wall === 'north' ? 'En face' : wall === 'south' ? 'Arrière' : wall === 'east' ? 'Droite' : 'Gauche';
+    wallLabel.textContent = WALL_MAP[wall] || wall;
     wallDiv.appendChild(wallLabel);
     
-    const wallCols = { north: 5, south: 3, west: 4, east: 3 };
+    const wallCols = { en_face: 5, arriere: 3, gauche: 4, droite: 3 };
     const cols = wallCols[wall] || 4;
     
-    const casiers = positionData[wall] ? Object.keys(positionData[wall]) : [];
+    const casiers = positionData[wallDbKey] ? Object.keys(positionData[wallDbKey]) : [];
     const sortedCasiers = casiers.sort((a, b) => {
         const rowA = parseInt(a.replace('wall', '')[0]);
         const colA = parseInt(a.replace('wall', '')[1]);
@@ -575,8 +626,11 @@ function renderCasierGrid() {
         const cell = document.createElement('div');
         cell.className = 'casier-cell-filter';
         
-        const posInfo = positionData[wall] ? positionData[wall][casier] : null;
+        const posInfo = positionData[wallDbKey] ? positionData[wallDbKey][casier] : null;
         const occupied = posInfo ? posInfo.occupied : 0;
+	console.log('wall ', wall);
+	console.log('wall ', wallDbKey);
+	console.log('occupied: ',positionData); 
         
         if (filterCasiers.includes(casier)) {
             cell.classList.add('selected');
@@ -696,10 +750,17 @@ function renderWineList(wines) {
     
     container.innerHTML = wines.map(wine => {
         let bottlesHtml = '';
-        if (wine.bottle_count > 0) {
-            bottlesHtml = '<span class="wine-bottle-count">'.concat(wine.bottle_count, ' Bouteille</span>');
+        if (wine.bottles && wine.bottles.length) {
+            bottlesHtml = wine.bottles.map(b => ''.concat('<span class="wine-bottle-count">', b.quantity, ' ', b.size, '</span>')).join(' ');
         }
-        
+        let bottlesToStoreHtml = '';
+        if (wine.bottlesToStore && wine.bottlesToStore.length) {
+		bottlesToStoreHtml = wine.bottlesToStore.map(b => ''.concat('<span class="wine-bottle-to-store-count">', b.quantity, ' ', b.size, '</span> <input type="number" id="bottles-to-store" style="display: none" value="', b.quantity,'"/>')).join(' ');
+        }
+        let avPriceHtml = '';
+	if (wine.average_price && wine.average_price > 0){
+		avPriceHtml = escapeHtml(parseFloat(wine.average_price).toFixed(2) || '')+' €';
+	}
         return ''.concat(
         '<div class="wine-card" onclick="showWineDetail(', wine.id, ')">',
             '<div class="wine-card-header">',
@@ -710,11 +771,14 @@ function renderWineList(wines) {
                 '<h3 class="wine-name">', escapeHtml(wine.name_climat || ''), '</h3>',
                 '<p class="wine-propriete">', escapeHtml(wine.propriete || ''), '</p>',
                 '<p class="wine-region">', escapeHtml(wine.region || ''), '</p>',
+		avPriceHtml ? ''.concat('<p class="wine-av-price">', avPriceHtml, '</p>') : '',
                 bottlesHtml ? ''.concat('<p class="wine-bottles">', bottlesHtml, '</p>') : '',
+                bottlesToStoreHtml ? ''.concat('<p class="wine-bottles">', bottlesToStoreHtml, '</p>') : '',
             '</div>',
             '<div class="wine-card-footer">',
                 '<span class="wine-note">', wine.my_note ? ''.concat(wine.my_note, '/20') : '', '</span>',
                 '<div class="wine-actions">',
+                    '<button class="btn-icon" onclick="event.stopPropagation();duplicateWine(', wine.id, ')" title="Dupliquer">📋</button>',
                     '<button class="btn-icon" onclick="event.stopPropagation();editWine(', wine.id, ')" title="Modifier">✏️</button>',
                     '<button class="btn-icon" onclick="event.stopPropagation();deleteWine(', wine.id, ')" title="Supprimer">🗑️</button>',
                 '</div>',
@@ -773,12 +837,13 @@ async function showWineDetail(id) {
                 <p>${escapeHtml(wine.comment || '-')}</p>
             </div>
         </div>
-        <div class="detail-actions">
-            <button class="btn btn-primary" onclick="editWine(${wine.id}); closeDetailModal();">Modifier</button>
-            <button class="btn btn-secondary" onclick="showPositionModal(${wine.id})">Position cave</button>
-            <button class="btn btn-success" onclick="showAddBottleModal(${wine.id})">Ajouter bouteilles</button>
-            <button class="btn btn-warning" onclick="showRemoveBottleModal(${wine.id})">Enlever bouteilles</button>
-            <button class="btn btn-info" onclick="showHistoryModal(${wine.id})">Historique</button>
+        <div class="detail-actions" style="display: flex; flex-direction: column; gap: 8px; padding: 1rem;">
+            <button class="btn btn-primary" onclick="editWine(${wine.id}); closeDetailModal();" style="width: 100%;">Modifier</button>
+            <button class="btn btn-position" onclick="showPositionModal(${wine.id})">Position cave</button>
+            <button class="btn btn-secondary" onclick="duplicateWine(${wine.id}); closeDetailModal();" style="width: 100%;">Dupliquer</button>
+            <button class="btn btn-success" onclick="showAddBottleModal(${wine.id})" style="width: 100%;">Ajouter bouteilles</button>
+            <button class="btn btn-warning" onclick="showRemoveBottleModal(${wine.id})" style="width: 100%;">Enlever bouteilles</button>
+            <button class="btn btn-info" onclick="showHistoryModal(${wine.id})" style="width: 100%;">Historique</button>
         </div>
     `;
     
@@ -788,6 +853,12 @@ async function showWineDetail(id) {
 function closeDetailModal() {
     document.getElementById('detail-modal').style.display = 'none';
 }
+
+document.getElementById('detail-modal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeDetailModal();
+    }
+});
 
 function showWineForm() {
     document.getElementById('modal-title').textContent = 'Ajouter un vin';
@@ -811,14 +882,36 @@ async function editWine(id) {
     const wine = result.data;
     document.getElementById('modal-title').textContent = 'Modifier le vin';
     document.getElementById('wine-id').value = wine.id;
+    populateWineForm(wine);
+    document.getElementById('wine-modal').style.display = 'flex';
+}
+
+async function duplicateWine(id) {
+    const response = await fetch(`${API_BASE}/wines/${id}`);
+    const result = await response.json();
     
+    if (!result.success) {
+        showToast('Erreur chargement vin');
+        return;
+    }
+    
+    const wine = result.data;
+    document.getElementById('modal-title').textContent = 'Dupliquer le vin';
+    document.getElementById('wine-id').value = '';
+    populateWineForm(wine);
+    document.getElementById('name_climat').value = wine.name_climat + ' (copie)';
+    document.getElementById('wine-modal').style.display = 'flex';
+}
+
+function populateWineForm(wine) {
     document.getElementById('name_climat').value = wine.name_climat || '';
     document.getElementById('year').value = wine.year || '';
     document.getElementById('propriete').value = wine.propriete || '';
     document.getElementById('producer').value = wine.producer || '';
     document.getElementById('country_id').value = wine.country_id || '';
-    await loadRegions(wine.region_id);
-    document.getElementById('apellation_id').value = wine.apellation_id || '';
+    loadRegions(wine.region_id).then(() => {
+        document.getElementById('apellation_id').value = wine.apellation_id || '';
+    });
     document.getElementById('color_id').value = wine.color_id || '';
     document.getElementById('category_id').value = wine.category_id || '';
     document.getElementById('to_keep_id').value = wine.to_keep_id || '';
@@ -846,7 +939,21 @@ async function editWine(id) {
             }
         });
     }
+}
+
+async function duplicateWine(id) {
+    const response = await fetch(`${API_BASE}/wines/${id}`);
+    const result = await response.json();
     
+    if (!result.success) {
+        showToast('Erreur chargement vin');
+        return;
+    }
+    
+    const wine = result.data;
+    document.getElementById('modal-title').textContent = 'Dupliquer le vin';
+    document.getElementById('wine-id').value = '';
+    populateWineForm(wine);
     document.getElementById('wine-modal').style.display = 'flex';
 }
 
@@ -918,6 +1025,7 @@ async function loadRegions(selectedId) {
     });
     
     if (selectedId) select.value = selectedId;
+    return Promise.resolve();
 }
 
 async function loadApellations(selectedId) {
@@ -1073,6 +1181,8 @@ async function showPositionModal(wineId) {
     document.getElementById('detail-modal').style.display = 'none';
     document.getElementById('position-modal').style.display = 'flex';
     document.getElementById('position-modal').classList.add('modal-active');
+    document.getElementById('position-quantity').value = document.getElementById('bottles-to-store').value;
+    document.getElementById('position-quantity-immutable').value = document.getElementById('bottles-to-store').value;
     
     document.getElementById('position-wine-id').value = wineId;
     
@@ -1187,6 +1297,13 @@ function selectWall(wall) {
     
     const wineId = document.getElementById('position-wine-id').value;
     renderAllWalls(wineId);
+}
+
+function switchWallTab(wall) {
+    document.querySelectorAll('.wall-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.wall === wall);
+    });
+    selectWall(wall);
 }
 
 function renderWallVisual(wall, data, wineId) {
@@ -1309,8 +1426,14 @@ async function savePosition() {
     }
     
     const wineId = document.getElementById('position-wine-id').value;
-    const quantity = parseInt(document.getElementById('position-quantity').value) || 1;
+    const quantity = parseInt(document.getElementById('position-quantity').value) || 0;
+    const origQuantity = parseInt(document.getElementById('position-quantity-immutable').value) || 0;
     const sizeId = parseInt(document.getElementById('position-size').value) || null;
+    if(origQuantity < quantity && positionModalSource === 'addBottle'){
+        showToast("Trop de bouteille rangée, seul "+origQuantity+" sont encore à ranger");
+        return;
+    }
+
     
     if (positionModalSource === 'removeBottle' && pendingOutRecord) {
         const data = {
@@ -1396,10 +1519,23 @@ async function savePosition() {
             return;
         }
     }
-    
-    showToast('Position enregistrée');
-    await loadCellarData();
-    selectWall(currentWall);
+    // if we are adding new bottle, it would be great to : close of all bottles are stored, or show the remaining number of bottle to store
+    if(positionModalSource === 'addBottle'){
+        if(origQuantity > quantity){
+            showToast('Position enregistrée, il reste '+(origQuantity - quantity)+' bouteilles à ranger');
+            document.getElementById('position-quantity-immutable').value = origQuantity - quantity;
+            document.getElementById('position-quantity').value = origQuantity - quantity;
+    	    await loadCellarData();
+    	    selectWall(currentWall);
+        } else { 
+    	    showToast('Toutes les bouteilles ont été rangées');
+	    closePositionModal();
+        }
+    } else {
+            showToast('Position enregistrée');
+    	    await loadCellarData();
+    	    selectWall(currentWall);
+    }
 }
 
 async function deletePosition() {
@@ -1516,6 +1652,7 @@ async function showPositionModalFromAdd(wineId, quantity, sizeId) {
     positionModalSource = 'addBottle';
     document.getElementById('position-wine-id').value = wineId;
     document.getElementById('position-quantity').value = quantity;
+    document.getElementById('position-quantity-immutable').value = quantity;
     document.getElementById('position-size').value = sizeId;
     
     selectedCasier = null;

@@ -105,6 +105,15 @@ body {
     background: var(--accent-hover);
 }
 
+.btn-position {
+    background: #1a007a;
+    color: var(--text-primary);
+}
+
+.btn-position:hover {
+    background: #2a108a;
+}
+
 .btn-secondary {
     background: var(--bg-card);
     color: var(--text-primary);
@@ -433,9 +442,19 @@ body {
     margin-top: 0.5rem;
 }
 
-.wine-bottle-count {
+.wine-bottle-to-store-count {
     display: inline-block;
     background: var(--accent);
+    color: white;
+    padding: 0.15rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    margin-right: 0.25rem;
+}
+
+.wine-bottle-count {
+    display: inline-block;
+    background: #228822; 
     color: white;
     padding: 0.15rem 0.5rem;
     border-radius: 12px;
@@ -524,6 +543,7 @@ body {
     width: 100%;
     max-height: 90vh;
     overflow-y: auto;
+    overflow-x: hidden;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
@@ -742,9 +762,15 @@ body {
 
 .detail-actions {
     display: flex;
-    gap: 1rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
     padding: 1.25rem;
     border-top: 1px solid var(--border);
+}
+
+.detail-actions .btn {
+    flex: 1 1 calc(50% - 0.5rem);
+    min-width: 120px;
 }
 
 .cellar-plan {
@@ -1045,11 +1071,24 @@ body {
     .navbar {
         flex-direction: column;
         gap: 1rem;
+        padding: 1rem;
+    }
+    
+    .nav-brand {
+        width: 100%;
+        text-align: center;
     }
     
     .nav-menu {
         width: 100%;
         justify-content: center;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .nav-item {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.9rem;
     }
     
     .search-bar {
@@ -1079,5 +1118,96 @@ body {
     
     .wine-list {
         grid-template-columns: 1fr;
+    }
+    
+    .modal {
+        padding: 0.5rem;
+    }
+    
+    .modal-content {
+        max-width: 100%;
+        max-height: 95vh;
+    }
+    
+    #position-modal .modal-content {
+        width: 100%;
+        min-width: 0;
+    }
+    
+    #position-modal .cellar-visual {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        min-height: auto;
+        max-width: 100%;
+        padding: 0.5rem;
+    }
+    
+    #position-modal .cellar-visual .wall-north,
+    #position-modal .cellar-visual .wall-south,
+    #position-modal .cellar-visual .wall-west,
+    #position-modal .cellar-visual .wall-east {
+        grid-column: auto;
+        grid-row: auto;
+    }
+    
+    #position-modal .cellar-visual .room-center {
+        display: none;
+    }
+    
+    #detail-modal .modal-content {
+        max-width: 100%;
+        width: 100%;
+    }
+    
+    #detail-modal .wine-detail {
+        overflow-x: hidden;
+    }
+    
+    #detail-modal .wine-detail .detail-actions {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    #detail-modal .wine-detail .detail-actions .btn {
+        width: 100%;
+        flex: none;
+    }
+    
+    .btn-close {
+        font-size: 1.25rem;
+        padding: 0.5rem;
+        min-width: 44px;
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    #detail-modal .modal-content {
+        max-width: 100% !important;
+        width: 100% !important;
+    }
+    
+    #detail-modal .wine-detail {
+        overflow-x: hidden !important;
+    }
+    
+    #detail-modal .wine-detail .detail-actions {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 8px !important;
+        padding: 12px !important;
+    }
+    
+    #detail-modal .wine-detail .detail-actions .btn {
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        flex: none !important;
+        padding: 10px 8px !important;
+        font-size: 14px !important;
     }
 }

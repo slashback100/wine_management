@@ -1,0 +1,311 @@
+{% extends "base.html" %}
+
+{% block title %}Cave à Vin - Notation Millésime{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Notation Millésime</h1>
+    
+    <div id="millesime-loading" class="loading">Chargement...</div>
+    <div id="millesime-error" class="error" style="display: none;"></div>
+    
+    <div class="millesime-container" style="overflow-x: auto;">
+        <table id="millesime-table" class="data-table" style="display: none;">
+            <thead id="millesime-thead"></thead>
+            <tbody id="millesime-tbody"></tbody>
+        </table>
+    </div>
+    
+    <div class="millesime-actions" style="margin-top: 1rem; display: none;" id="millesime-actions">
+        <button class="btn btn-primary" onclick="showAddMillesimeForm()">Ajouter un millésime</button>
+    </div>
+</div>
+
+<div class="modal" id="millesime-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="millesime-modal-title">Ajouter un millésime</h2>
+            <button class="btn-close" onclick="closeMillesimeModal()">&times;</button>
+        </div>
+        <form id="millesime-form" class="wine-form">
+            <input type="hidden" id="millesime-id">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="millesime-year">Année</label>
+                    <input type="number" id="millesime-year" required min="1900" max="2100">
+                </div>
+                <div class="form-group">
+                    <label for="millesime-note">Note</label>
+                    <input type="number" id="millesime-note" required min="0" max="100">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="millesime-region">Région</label>
+                    <select id="millesime-region" required>
+                        <option value="">Sélectionner...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="millesime-color">Couleur</label>
+                    <select id="millesime-color">
+                        <option value="">Toutes</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="millesime-category">Catégorie</label>
+                    <select id="millesime-category">
+                        <option value="">Toutes</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="millesime-appellation">Appellation</label>
+                    <select id="millesime-appellation">
+                        <option value="">Toutes</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Enregistrer</button>
+                <button type="button" class="btn btn-secondary" onclick="closeMillesimeModal()">Annuler</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const API_BASE = '/wine/api';
+
+let millesimeData = [];
+let regions = [];
+let colors = [];
+let categories = [];
+let appellations = [];
+
+async function loadMillesime() {
+    try {
+        const response = await fetch(`${API_BASE}/millesime`);
+        const result = await response.json();
+        
+        if (!result.success) {
+            throw new Error(result.error || 'Erreur chargement');
+        }
+        
+        millesimeData = result.data;
+        
+        await Promise.all([
+            loadFilters()
+        ]);
+        
+        renderMillesimeTable();
+        
+        document.getElementById('millesime-loading').style.display = 'none';
+        document.getElementById('millesime-table').style.display = 'table';
+        document.getElementById('millesime-actions').style.display = 'block';
+    } catch (error) {
+        document.getElementById('millesime-loading').style.display = 'none';
+        document.getElementById('millesime-error').textContent = error.message;
+        document.getElementById('millesime-error').style.display = 'block';
+    }
+}
+
+async function loadFilters() {
+    const [regionsRes, colorsRes, categoriesRes, appellationsRes] = await Promise.all([
+        fetch(`${API_BASE}/regions`),
+        fetch(`${API_BASE}/colors`),
+        fetch(`${API_BASE}/categories`),
+        fetch(`${API_BASE}/appellations`)
+    ]);
+    
+    const [regionsData, colorsData, categoriesData, appellationsData] = await Promise.all([
+        regionsRes.json(),
+        colorsRes.json(),
+        categoriesRes.json(),
+        appellationsRes.json()
+    ]);
+    
+    regions = regionsData.data || [];
+    colors = colorsData.data || [];
+    categories = categoriesData.data || [];
+    appellations = appellationsData.data || [];
+    
+    populateSelect('millesime-region', regions, 'label');
+    populateSelect('millesime-color', colors, 'label');
+    populateSelect('millesime-category', categories, 'label');
+    populateSelect('millesime-appellation', appellations, 'label');
+}
+
+function populateSelect(selectId, data, labelField) {
+    const select = document.getElementById(selectId);
+    const firstOption = select.querySelector('option');
+    select.innerHTML = '';
+    select.appendChild(firstOption);
+    data.forEach(item => {
+        const option = document.createElement('option');
+        option.value = item[labelField] || item.label || item.name;
+        option.textContent = item[labelField] || item.label || item.name;
+        select.appendChild(option);
+    });
+}
+
+function renderMillesimeTable() {
+    const grouped = {};
+    const years = new Set();
+    
+    millesimeData.forEach(m => {
+        const key = `${m.region || ''}|${m.color || ''}|${m.category || ''}|${m.appellation || ''}`;
+        if (!grouped[key]) {
+            grouped[key] = {
+                region: m.region,
+                country_id: m.region_country_id,
+                color: m.color,
+                category: m.category,
+                appellation: m.appellation,
+                notes: {}
+            };
+        }
+        grouped[key].notes[m.year] = m.note;
+        years.add(m.year);
+    });
+    
+    const sortedYears = Array.from(years).sort((a, b) => b - a);
+    
+    let thead = '<tr><th>Vin</th>';
+    sortedYears.forEach(y => {
+        thead += `<th>${y}</th>`;
+    });
+    thead += '</tr>';
+    document.getElementById('millesime-thead').innerHTML = thead;
+    
+    let tbody = '';
+    Object.values(grouped).forEach(g => {
+        let row = `<tr><td>${g.region || ''} ${g.color || ''} ${g.category || ''} ${g.appellation || ''}</td>`;
+        sortedYears.forEach(y => {
+            const note = g.notes[y];
+            const noteClass = getNoteClass(note, g.country_id);
+            row += `<td class="${noteClass}">${note !== undefined ? note : ''}</td>`;
+        });
+        row += '</tr>';
+        tbody += row;
+    });
+    document.getElementById('millesime-tbody').innerHTML = tbody;
+}
+
+function getNoteClass(note, countryId) {
+    if (note === undefined || note === null) return '';
+    
+    const isFrench = countryId == 6;
+    const isItalian = countryId == 7;
+    
+    if (isFrench) {
+        if (note >= 19) return 'note-19plus';
+        if (note >= 17) return 'note-17';
+        if (note >= 15) return 'note-15';
+        if (note >= 13) return 'note-13';
+        if (note >= 11) return 'note-11';
+        if (note >= 9) return 'note-9';
+        return 'note-low';
+    } else if (isItalian) {
+        if (note >= 95) return 'note-95plus';
+        if (note >= 85) return 'note-85';
+        if (note >= 75) return 'note-75';
+        if (note >= 65) return 'note-65';
+        if (note >= 55) return 'note-55';
+        return 'note-low';
+    } else {
+        if (note >= 19) return 'note-19plus';
+        if (note >= 17) return 'note-17';
+        if (note >= 15) return 'note-15';
+        if (note >= 13) return 'note-13';
+        if (note >= 11) return 'note-11';
+        if (note >= 9) return 'note-9';
+        return 'note-low';
+    }
+}
+
+function showAddMillesimeForm() {
+    document.getElementById('millesime-modal-title').textContent = 'Ajouter un millésime';
+    document.getElementById('millesime-form').reset();
+    document.getElementById('millesime-id').value = '';
+    document.getElementById('millesime-modal').style.display = 'flex';
+}
+
+function closeMillesimeModal() {
+    document.getElementById('millesime-modal').style.display = 'none';
+}
+
+document.getElementById('millesime-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const id = document.getElementById('millesime-id').value;
+    const data = {
+        year: parseInt(document.getElementById('millesime-year').value),
+        note: parseFloat(document.getElementById('millesime-note').value),
+        region: document.getElementById('millesime-region').value,
+        color: document.getElementById('millesime-color').value || null,
+        category: document.getElementById('millesime-category').value || null,
+        appellation: document.getElementById('millesime-appellation').value || null
+    };
+    
+    const method = id ? 'PUT' : 'POST';
+    const url = id ? `${API_BASE}/millesime/${id}` : `${API_BASE}/millesime`;
+    
+    try {
+        const response = await fetch(url, {
+            method: method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showToast('Millésime enregistré');
+            closeMillesimeModal();
+            loadMillesime();
+        } else {
+            showToast(result.error || 'Erreur enregistrement');
+        }
+    } catch (error) {
+        showToast('Erreur connexion');
+    }
+});
+
+document.getElementById('millesime-modal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeMillesimeModal();
+    }
+});
+
+loadMillesime();
+</script>
+
+<style>
+.note-19plus { background: #FC0D1B !important; color: white !important; }
+.note-17 { background: #FC6120 !important; color: white !important; }
+.note-15 { background: #FD9F28 !important; color: black !important; }
+.note-13 { background: #D9BC2C !important; color: black !important; }
+.note-11 { background: #92B733 !important; color: white !important; }
+.note-9 { background: #4DB242 !important; color: white !important; }
+.note-low { background: #1AAF54 !important; color: white !important; }
+
+.note-95plus { background: #FC0D1B !important; color: white !important; }
+.note-85 { background: #FD7F24 !important; color: white !important; }
+.note-75 { background: #FDBF2D !important; color: black !important; }
+.note-65 { background: #92B733 !important; color: white !important; }
+.note-55 { background: #4DB242 !important; color: white !important; }
+
+#millesime-table td {
+    min-width: 50px;
+    text-align: center;
+}
+#millesime-table td:first-child {
+    min-width: 200px;
+    text-align: left;
+}
+</style>
+{% endblock %}

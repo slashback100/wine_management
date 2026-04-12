@@ -131,6 +131,11 @@ class Wine(db.Model):
         from sqlalchemy import func
         from app import db
         
+        average_price = db.session.query(
+                func.avg(Buy.unit_price).label('average')
+            ).filter(Buy.wine_id == self.id).filter(func.coalesce(Buy.unit_price,0) > 0).scalar()
+        #if average_price:
+        #    logger.warn("average price ", average_price)
         result = {
             "id": self.id,
             "name_climat": self.name_climat,
@@ -159,6 +164,7 @@ class Wine(db.Model):
             "color": self.color.label if self.color else None,
             "category": self.category.label if self.category else None,
             "to_keep": self.to_keep.label if self.to_keep else None,
+            "average_price": average_price if average_price else None,
         }
         
         if not summary:
@@ -172,14 +178,14 @@ class Wine(db.Model):
                 func.sum(OutRecord.quantity).label('total')
             ).filter(OutRecord.wine_id == self.id).group_by(OutRecord.size_id).all()
             
-            bought_by_size = {b.size_id: b.total for b in bought}
-            consumed_by_size = {c.size_id: c.total for c in consumed}
+            bought_by_size = {b.size_id: int(b.total or 0) for b in bought}
+            consumed_by_size = {c.size_id: int(c.total or 0) for c in consumed}
             
             all_size_ids = set(bought_by_size.keys()) | set(consumed_by_size.keys())
             
             bottles_by_size = defaultdict(int)
             for size_id in all_size_ids:
-                qty = (bought_by_size.get(size_id, 0) or 0) - (consumed_by_size.get(size_id, 0) or 0)
+                qty = int((bought_by_size.get(size_id, 0) or 0) - (consumed_by_size.get(size_id, 0) or 0))
                 if qty > 0:
                     size = Size.query.get(size_id)
                     size_label = size.label if size else "Inconnu"
@@ -289,6 +295,38 @@ class PositionCave(db.Model):
             "size": self.size.label if self.size else None
         }
 
+class StockAll(db.Model):
+    __tablename__ = 'stock_all'
+    __table_args__ = {'extend_existing': True}
+    wine_id = db.Column(db.Integer,  primary_key=True)
+    quantity = db.Column(db.Integer, primary_key=True)
+    size_id = db.Column(db.Integer)
+    stored_quantity = db.Column(db.Integer)
+    
+    
+    def to_dict(self):
+        return {
+            "wine_id": self.wine_id,
+            "quantity": self.quantity,
+            "size_id": self.size_id,
+            "stored_quantity": self.stored_quantity
+        }
+
+class StockAllAgregated(db.Model):
+    __tablename__ = 'stock_all_agregated'
+    __table_args__ = {'extend_existing': True}
+    wine_id = db.Column(db.Integer,  primary_key=True)
+    quantity = db.Column(db.Integer, primary_key=True)
+    stored_quantity = db.Column(db.Integer)
+    
+    
+    def to_dict(self):
+        return {
+            "wine_id": self.wine_id,
+            "quantity": self.quantity,
+            "stored_quantity": self.stored_quantity
+        }
+
 
 class CasierCapacity(db.Model):
     __tablename__ = 'casier_capacity'
@@ -312,19 +350,26 @@ class Millesime(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     year = db.Column(db.Integer)
-    region = db.Column(db.String(100))
-    color = db.Column(db.String(50))
-    category = db.Column(db.String(50))
-    appellation = db.Column(db.String(100))
+    region_id = db.Column(db.Integer, db.ForeignKey('region.id'))
+    color_id = db.Column(db.Integer, db.ForeignKey('color.id'))
+    category_id = db.Column(db.Integer, db.ForeignKey('category.id'))
+    apellation_id = db.Column(db.Integer, db.ForeignKey('apellation.id'))
     note = db.Column(db.Float)
+    priority = db.Column(db.Integer)
+    
+    region = db.relationship('Region', foreign_keys=[region_id])
+    color = db.relationship('Color', foreign_keys=[color_id])
+    category = db.relationship('Category', foreign_keys=[category_id])
+    apellation = db.relationship('Apellation', foreign_keys=[apellation_id])
     
     def to_dict(self):
         return {
             "id": self.id,
             "year": self.year,
-            "region": self.region,
-            "color": self.color,
-            "category": self.category,
-            "appellation": self.appellation,
+            "region": self.region.label if self.region else None,
+            "region_country_id": self.region.country_id if self.region else None,
+            "color": self.color.label if self.color else None,
+            "category": self.category.label if self.category else None,
+            "appellation": self.apellation.label if self.apellation else None,
             "note": self.note
         }

@@ -6,11 +6,21 @@ from flask_cors import CORS
 import os
 from datetime import datetime
 
-from models import db, Wine, WineCepage, Buy, OutRecord, PositionCave, CasierCapacity, Millesime
+from models import db, Wine, WineCepage, Buy, OutRecord, PositionCave, CasierCapacity, Millesime, StockAll, StockAllAgregated
 from models import Country, Region, Apellation, Color, Category, Cepage, Size, ToKeep
+from sqlalchemy.orm import aliased
+from decimal import Decimal
 
 logger = logging.getLogger(__name__)
 
+def convert(obj):
+    if isinstance(obj, Decimal):
+        return float(obj)
+    if isinstance(obj, dict):
+        return {k: convert(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [convert(v) for v in obj]
+    return obj
 
 def create_app():
     app = Flask(__name__)
@@ -236,47 +246,41 @@ def create_app():
         
         in_stock = request.args.get('in_stock', type=int)
         if in_stock:
-            query = query.join(PositionCave).filter(PositionCave.quantity > 0)
+            from sqlalchemy import func
+            StockAllA1 = aliased(StockAllAgregated)
+            query = query.outerjoin(StockAllA1, Wine.id == StockAllA1.wine_id).filter(
+                func.coalesce(StockAllA1.quantity, 0) > 0
+            )
         
         not_stored = request.args.get('not_stored', type=int)
         if not_stored:
             from sqlalchemy import func
-            buy_subq = db.session.query(
-                Buy.wine_id,
-                func.coalesce(func.sum(Buy.quantity), 0).label('bought')
-            ).group_by(Buy.wine_id).subquery()
-            
-            out_subq = db.session.query(
-                OutRecord.wine_id,
-                func.coalesce(func.sum(OutRecord.quantity), 0).label('consumed')
-            ).group_by(OutRecord.wine_id).subquery()
-            
-            cellar_subq = db.session.query(
-                PositionCave.wine_id,
-                func.coalesce(func.sum(PositionCave.quantity), 0).label('in_cellar')
-            ).group_by(PositionCave.wine_id).subquery()
-            
-            query = query.outerjoin(buy_subq, Wine.id == buy_subq.c.wine_id)\
-                .outerjoin(out_subq, Wine.id == out_subq.c.wine_id)\
-                .outerjoin(cellar_subq, Wine.id == cellar_subq.c.wine_id)\
-                .filter(
-                    func.coalesce(buy_subq.c.bought, 0) - func.coalesce(out_subq.c.consumed, 0) > func.coalesce(cellar_subq.c.in_cellar, 0)
-                )
+            StockAllA2 = aliased(StockAllAgregated)
+            query = query.outerjoin(StockAllA2, Wine.id == StockAllA2.wine_id).filter(
+                func.coalesce(StockAllA2.quantity, 0) > func.coalesce(StockAllA2.stored_quantity, 0)
+            )
         
         wall = request.args.get('wall', '')
         casier = request.args.get('casier', '')
         
         if wall or casier:
-            walls = wall.split(',') if wall else None
+            # Translate frontend wall names to database names
+            wall_map = {
+                'en_face': 'north',
+                'arriere': 'south',
+                'droite': 'east',
+                'gauche': 'west'
+            }
+            translated_walls = [wall_map.get(w, w) for w in wall.split(',')] if wall else None
             casiers = casier.split(',') if casier else None
             
-            if walls and casiers:
+            if translated_walls and casiers:
                 query = query.join(PositionCave).filter(
-                    PositionCave.wall.in_(walls),
+                    PositionCave.wall.in_(translated_walls),
                     PositionCave.casier.in_(casiers)
                 )
-            elif walls:
-                query = query.join(PositionCave).filter(PositionCave.wall.in_(walls))
+            elif translated_walls:
+                query = query.join(PositionCave).filter(PositionCave.wall.in_(translated_walls))
             elif casiers:
                 query = query.join(PositionCave).filter(PositionCave.casier.in_(casiers))
         
@@ -286,48 +290,74 @@ def create_app():
         
         size_id = request.args.get('size_id', type=int)
         if size_id:
-            query = query.join(PositionCave).filter(PositionCave.size_id == size_id)
+            PositionCaveSize = aliased(PositionCave)
+            query = query.join(PositionCaveSize).filter(PositionCaveSize.size_id == size_id)
         
         total = query.count()
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 20, type=int)
+        
+        total_bottles = 0
+        if total > 0:
+            from sqlalchemy import func
+            wine_ids_all = [w.id for w in query.all()]
+            
+            total_bought = db.session.query(func.sum(Buy.quantity)).filter(Buy.wine_id.in_(wine_ids_all)).scalar() or 0
+            total_consumed = db.session.query(func.sum(OutRecord.quantity)).filter(OutRecord.wine_id.in_(wine_ids_all)).scalar() or 0
+            total_bottles = int(total_bought - total_consumed)
         
         wine_data = []
         wines = query.order_by(Wine.year.desc(), Wine.name_climat).offset((page - 1) * per_page).limit(per_page).all()
         
         wine_ids = [w.id for w in wines]
         if wine_ids:
-            from sqlalchemy import func
-            
-            bought_subq = db.session.query(
-                Buy.wine_id,
-                func.coalesce(func.sum(Buy.quantity), 0).label('bought')
-            ).filter(Buy.wine_id.in_(wine_ids)).group_by(Buy.wine_id).subquery()
-            
-            consumed_subq = db.session.query(
-                OutRecord.wine_id,
-                func.coalesce(func.sum(OutRecord.quantity), 0).label('consumed')
-            ).filter(OutRecord.wine_id.in_(wine_ids)).group_by(OutRecord.wine_id).subquery()
-            
             bottle_counts = db.session.query(
-                Wine.id,
-                func.coalesce(bought_subq.c.bought, 0) - func.coalesce(consumed_subq.c.consumed, 0)
-            ).outerjoin(bought_subq, Wine.id == bought_subq.c.wine_id)\
-             .outerjoin(consumed_subq, Wine.id == consumed_subq.c.wine_id).all()
+                StockAll.wine_id,
+                StockAll.size_id,
+                StockAll.quantity,
+                StockAll.stored_quantity
+            ).filter(StockAll.wine_id.in_(wine_ids)).all()
+
+            bottle_map = {}
+            bottle_to_store_map = {}
+            for bc in bottle_counts:
+                wine_id = bc[0]
+                size_id = bc[1]
+                qty = int(bc[2] or 0)
+                qtyToSt = qty - int(bc[3] or 0)
+                if qty > 0:
+                    if wine_id not in bottle_map:
+                        bottle_map[wine_id] = {}
+                    size = Size.query.get(size_id)
+                    size_label = size.label if size else "Inconnu"
+                    bottle_map[wine_id][size_label] = qty
+                if qtyToSt > 0:
+                    if wine_id not in bottle_to_store_map:
+                        bottle_to_store_map[wine_id] = {}
+                    size = Size.query.get(size_id)
+                    size_label = size.label if size else "Inconnu"
+                    bottle_to_store_map[wine_id][size_label] = qtyToSt
             
-            bottle_map = {bc[0]: bc[1] for bc in bottle_counts}
-            
-            total_bottles = sum(1 for bc in bottle_counts if bc[1] > 0)
         else:
             bottle_map = {}
-            total_bottles = 0
+            bottle_to_store_map = {}
         
         for wine in wines:
             d = wine.to_dict(summary=True)
-            d['bottle_count'] = bottle_map.get(wine.id, 0) or 0
+            d['bottles'] = []
+            d['bottlesToStore'] = []
+            if wine.id in bottle_map:
+                for size_label, qty in bottle_map[wine.id].items():
+                    d['bottles'].append({"size": size_label, "quantity": qty})
+                d['bottle_count'] = sum(bottle_map[wine.id].values())
+            if wine.id in bottle_to_store_map:
+                for size_label, qty in bottle_to_store_map[wine.id].items():
+                    d['bottlesToStore'].append({"size": size_label, "quantity": qty})
+            else:
+                d['bottle_count'] = 0
             wine_data.append(d)
         
-        return jsonify({
+        return jsonify(convert({
             "success": True,
             "data": wine_data,
             "count": total,
@@ -335,7 +365,7 @@ def create_app():
             "page": page,
             "per_page": per_page,
             "total_pages": (total + per_page - 1) // per_page
-        })
+        }))
     
     @app.route('/wine/api/wines/<int:wine_id>')
     def get_wine(wine_id):
@@ -692,22 +722,86 @@ def create_app():
                 "data": [serialize_model(m) for m in millesimes]
             })
         
-        data = request.get_json()
-        millesime = Millesime(
-            year=data.get('year'),
-            region=data.get('region'),
-            color=data.get('color'),
-            category=data.get('category'),
-            appellation=data.get('appellation'),
-            note=data.get('note')
-        )
-        db.session.add(millesime)
-        db.session.commit()
-        
-        return jsonify({
-            "success": True,
-            "data": serialize_model(millesime)
-        }), 201
+        if request.method == 'POST':
+            data = request.get_json()
+            
+            region_label = data.get('region')
+            color_label = data.get('color')
+            category_label = data.get('category')
+            appellation_label = data.get('appellation')
+            
+            region_id = None
+            if region_label:
+                region = Region.query.filter_by(label=region_label).first()
+                if region:
+                    region_id = region.id
+            
+            color_id = None
+            if color_label:
+                color = Color.query.filter_by(label=color_label).first()
+                if color:
+                    color_id = color.id
+            
+            category_id = None
+            if category_label:
+                category = Category.query.filter_by(label=category_label).first()
+                if category:
+                    category_id = category.id
+            
+            apellation_id = None
+            if appellation_label:
+                apellation = Apellation.query.filter_by(label=appellation_label).first()
+                if apellation:
+                    apellation_id = apellation.id
+            
+            millesime = Millesime(
+                year=data.get('year'),
+                region_id=region_id,
+                color_id=color_id,
+                category_id=category_id,
+                apellation_id=apellation_id,
+                note=data.get('note')
+            )
+            db.session.add(millesime)
+            db.session.commit()
+            
+            return jsonify({
+                "success": True,
+                "data": serialize_model(millesime)
+            }), 201
+        elif request.method == 'PUT':
+            data = request.get_json()
+            millesime_id = data.get('id')
+            millesime = Millesime.query.get(millesime_id)
+            if not millesime:
+                return jsonify({"success": False, "error": "Millésime non trouvé"}), 404
+            
+            region_label = data.get('region')
+            color_label = data.get('color')
+            category_label = data.get('category')
+            appellation_label = data.get('appellation')
+            
+            if region_label:
+                region = Region.query.filter_by(label=region_label).first()
+                millesime.region_id = region.id if region else None
+            if color_label:
+                color = Color.query.filter_by(label=color_label).first()
+                millesime.color_id = color.id if color else None
+            if category_label:
+                category = Category.query.filter_by(label=category_label).first()
+                millesime.category_id = category.id if category else None
+            if appellation_label:
+                apellation = Apellation.query.filter_by(label=appellation_label).first()
+                millesime.apellation_id = apellation.id if apellation else None
+            
+            millesime.year = data.get('year', millesime.year)
+            millesime.note = data.get('note', millesime.note)
+            db.session.commit()
+            
+            return jsonify({
+                "success": True,
+                "data": serialize_model(millesime)
+            })
     
     @app.route('/wine/api/autocomplete')
     def autocomplete():
@@ -756,6 +850,13 @@ def create_app():
             return auth_check
         return render_template('stats.html')
     
+    @app.route('/wine/millesime')
+    def millesime_page():
+        auth_check = check_auth()
+        if auth_check:
+            return auth_check
+        return render_template('millesime.html')
+    
     return app
 
 
@@ -763,4 +864,4 @@ app = create_app()
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5001, debug=True)
+    app.run(host="0.0.0.0", port=5002, debug=True)
