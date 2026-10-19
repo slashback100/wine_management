@@ -756,7 +756,7 @@ def create_app():
         if auth_check:
             return auth_check
         
-        total_wines = db.session.query(StockAllAgregated.wine_id).filter(StockAllAgregated.quantity > 0).distinct().count()
+        total_wines = db.session.query(StockAllAgregated.wine_id).filter(StockAllAgregated.stored_quantity > 0).distinct().count()
         
         positions = PositionCave.query.all()
         total_bottles = sum(p.quantity for p in positions)
