@@ -406,35 +406,32 @@ def create_app():
         wine = Wine.query.get_or_404(wine_id)
 
         from sqlalchemy import func
-        bought_rows = db.session.query(Buy.size_id, func.sum(Buy.quantity)).filter(Buy.wine_id == wine_id).group_by(Buy.size_id).all()
-        removed_rows = db.session.query(OutRecord.size_id, func.sum(OutRecord.quantity)).filter(OutRecord.wine_id == wine_id).group_by(OutRecord.size_id).all()
-        positioned_rows = db.session.query(PositionCave.size_id, func.sum(PositionCave.quantity)).filter(PositionCave.wine_id == wine_id).group_by(PositionCave.size_id).all()
+        stock_rows = db.session.query(
+            StockAll.size_id, StockAll.quantity, StockAll.stored_quantity
+        ).filter(StockAll.wine_id == wine_id).all()
 
-        bought_by_size = {r[0]: int(r[1] or 0) for r in bought_rows}
-        removed_by_size = {r[0]: int(r[1] or 0) for r in removed_rows}
-        positioned_by_size = {r[0]: int(r[1] or 0) for r in positioned_rows}
-
-        size_ids = set(bought_by_size) | set(removed_by_size) | set(positioned_by_size)
+        bottles = []
+        bottles_to_store = []
         not_stored_by_size = {}
-        for size_id in size_ids:
-            not_stored_by_size[str(size_id)] = (
-                bought_by_size.get(size_id, 0)
-                - removed_by_size.get(size_id, 0)
-                - positioned_by_size.get(size_id, 0)
-            )
-        not_stored = sum(not_stored_by_size.values())
+        not_stored = 0
+        for size_id, qty, stored_qty in stock_rows:
+            qty = int(qty or 0)
+            stored_qty = int(stored_qty or 0)
+            to_store = qty - stored_qty
+            size = Size.query.get(size_id)
+            size_label = size.label if size else "Inconnu"
+            if qty > 0:
+                bottles.append({"size": size_label, "quantity": qty})
+            if to_store > 0:
+                bottles_to_store.append({"size": size_label, "quantity": to_store})
+                not_stored_by_size[str(size_id)] = to_store
+                not_stored += to_store
 
         data = wine.to_dict(include_cepages=True)
+        data['bottles'] = bottles
+        data['bottlesToStore'] = bottles_to_store
         data['not_stored'] = not_stored
         data['not_stored_by_size'] = not_stored_by_size
-        data['bottlesToStore'] = []
-        for size_id_str, qty in not_stored_by_size.items():
-            if qty > 0:
-                size = Size.query.get(int(size_id_str))
-                data['bottlesToStore'].append({
-                    "size": size.label if size else "Inconnu",
-                    "quantity": qty
-                })
 
         return jsonify(convert({
             "success": True,

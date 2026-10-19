@@ -858,7 +858,7 @@ function appendWineList(wines, page) {
 }
 
 async function showWineDetail(id) {
-    const response = await fetch(`${API_BASE}/wines/${id}`);
+    const response = await fetch(`${API_BASE}/wines/${id}`, { cache: 'no-store' });
     const result = await response.json();
     
     if (!result.success) {
