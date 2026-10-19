@@ -822,7 +822,7 @@ function wineCardsHtml(wines) {
                 '<p class="wine-propriete">', escapeHtml(wine.propriete || ''), '</p>',
                 '<p class="wine-region">', escapeHtml(wine.region || ''), '</p>',
 		avPriceHtml ? ''.concat('<p class="wine-av-price">', avPriceHtml, '</p>') : '',
-                bottlesHtml ? ''.concat('<p class="wine-bottles"><span class="bottle-label">Bouteilles</span>', bottlesHtml, '</p>') : '',
+                bottlesHtml ? ''.concat('<p class="wine-bottles">', bottlesHtml, '</p>') : '',
                 bottlesToStoreHtml ? ''.concat('<p class="wine-bottles"><span class="bottle-label bottle-label-store">À ranger</span>', bottlesToStoreHtml, '</p>') : '',
             '</div>',
             '</div>',
