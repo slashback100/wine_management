@@ -1,39 +1,212 @@
+/* =========================================================================
+   Cave à Vin — Feuille de styles
+   Thème "cave à vin" : bordeaux, laiton, parchemin.
+   Deux modes : sombre (par défaut) et clair via [data-theme="light"].
+   ========================================================================= */
+
+/* -------------------------------------------------------------------------
+   1. Design tokens
+   ------------------------------------------------------------------------- */
 :root {
-    --bg-primary: #1a1a2e;
-    --bg-secondary: #16213e;
-    --bg-card: #0f3460;
-    --text-primary: #e8e8e8;
-    --text-secondary: #a0a0a0;
-    --accent: #e94560;
-    --accent-hover: #ff6b6b;
-    --border: #2a2a4a;
-    --success: #4caf50;
-    --warning: #ff9800;
-    --danger: #f44336;
-    --input-bg: #252545;
-    --shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    color-scheme: dark;
+
+    /* Surfaces */
+    --bg-primary: #17100f;
+    --bg-secondary: #1f1716;
+    --bg-card: #271d1c;
+    --bg-elevated: #2f2322;
+    --bg-sunken: #120c0c;
+
+    /* Texte */
+    --text-primary: #f2e8db;
+    --text-secondary: #bda898;
+    --text-muted: #8a7466;
+
+    /* Accents */
+    --accent: #a23b47;
+    --accent-hover: #bf4c59;
+    --accent-soft: rgba(162, 59, 71, 0.18);
+    --gold: #c9a35a;
+    --gold-hover: #dcb76c;
+    --gold-soft: rgba(201, 163, 90, 0.16);
+
+    --success: #6f8f56;
+    --success-hover: #7fa064;
+    --success-soft: rgba(111, 143, 86, 0.18);
+    --warning: #c78b3e;
+    --warning-hover: #d69b4d;
+    --warning-soft: rgba(199, 139, 62, 0.18);
+    --danger: #b8443a;
+    --danger-hover: #cc5347;
+    --danger-soft: rgba(184, 68, 58, 0.18);
+    --info: #5f7d8c;
+    --info-hover: #6f8f9f;
+    --info-soft: rgba(95, 125, 140, 0.18);
+
+    /* Texte sur fond plein */
+    --on-accent: #ffffff;
+    --on-success: #ffffff;
+    --on-warning: #1c1206;
+    --on-danger: #ffffff;
+    --on-info: #ffffff;
+    --on-gold: #2a1e08;
+
+    /* Bordures */
+    --border: #3a2c2a;
+    --border-strong: #4f3c39;
+    --input-bg: #2a1f1e;
+
+    /* Ombres */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow: 0 6px 16px rgba(0, 0, 0, 0.45);
+    --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.55);
+    --overlay: rgba(10, 6, 6, 0.72);
+
+    /* Rayons */
+    --radius-sm: 6px;
+    --radius: 10px;
+    --radius-lg: 16px;
+    --radius-pill: 999px;
+
+    /* Typographie */
+    --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    --font-display: Georgia, 'Palatino Linotype', 'Times New Roman', serif;
+
+    /* Couleurs des vins */
+    --wine-1: #8c2f3b; /* rouge */
+    --wine-2: #e8d59a; /* blanc */
+    --wine-3: #e59f8f; /* rosé */
+    --wine-4: #d4b483; /* moelleux */
+    --wine-5: #6b4a3a; /* oxydatif */
 }
 
+[data-theme="light"] {
+    color-scheme: light;
+
+    --bg-primary: #f6efe4;
+    --bg-secondary: #efe4d4;
+    --bg-card: #fffaf3;
+    --bg-elevated: #ffffff;
+    --bg-sunken: #e7dac6;
+
+    --text-primary: #2a1c18;
+    --text-secondary: #6b584d;
+    --text-muted: #8f7a6d;
+
+    --accent: #8c2f3b;
+    --accent-hover: #a23b47;
+    --accent-soft: rgba(140, 47, 59, 0.12);
+    --gold: #9a7530;
+    --gold-hover: #b08838;
+    --gold-soft: rgba(154, 117, 48, 0.14);
+
+    --success: #4f7238;
+    --success-hover: #5d8542;
+    --success-soft: rgba(79, 114, 56, 0.14);
+    --warning: #a86f22;
+    --warning-hover: #bd7f2a;
+    --warning-soft: rgba(168, 111, 34, 0.16);
+    --danger: #a8342a;
+    --danger-hover: #bf4237;
+    --danger-soft: rgba(168, 52, 42, 0.12);
+    --info: #4a6b7a;
+    --info-hover: #587e8f;
+    --info-soft: rgba(74, 107, 122, 0.12);
+
+    --on-warning: #ffffff;
+    --on-gold: #fffdf7;
+
+    --border: #dccbb4;
+    --border-strong: #c7b299;
+    --input-bg: #fffdf9;
+
+    --shadow-sm: 0 1px 2px rgba(80, 50, 30, 0.12);
+    --shadow: 0 6px 16px rgba(80, 50, 30, 0.14);
+    --shadow-lg: 0 16px 40px rgba(80, 50, 30, 0.18);
+    --overlay: rgba(50, 30, 20, 0.45);
+}
+
+/* -------------------------------------------------------------------------
+   2. Reset & base
+   ------------------------------------------------------------------------- */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
+html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+}
+
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-    background: var(--bg-primary);
+    font-family: var(--font-body);
+    background: radial-gradient(1200px 700px at 50% -15%, var(--bg-secondary), var(--bg-primary)) fixed;
     color: var(--text-primary);
     line-height: 1.6;
     min-height: 100vh;
 }
 
+h1, h2, h3, .nav-brand a, .stat-value, .wine-name {
+    font-family: var(--font-display);
+    letter-spacing: 0.01em;
+}
+
+img {
+    max-width: 100%;
+}
+
+a {
+    color: var(--accent);
+}
+
+button, input, select, textarea {
+    font: inherit;
+    color: inherit;
+}
+
+:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.icon {
+    width: 1.15em;
+    height: 1.15em;
+    flex: none;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+/* -------------------------------------------------------------------------
+   3. Navigation
+   ------------------------------------------------------------------------- */
 .navbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem 2rem;
+    gap: 1rem;
+    padding: 0.85rem 2rem;
     background: var(--bg-secondary);
+    background: color-mix(in srgb, var(--bg-secondary) 92%, transparent);
+    backdrop-filter: blur(8px);
     border-bottom: 1px solid var(--border);
     position: sticky;
     top: 0;
@@ -41,23 +214,25 @@ body {
 }
 
 .nav-brand a {
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: var(--accent);
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--gold);
     text-decoration: none;
 }
 
 .nav-menu {
     display: flex;
-    gap: 1rem;
+    align-items: center;
+    gap: 0.35rem;
 }
 
 .nav-item {
     color: var(--text-secondary);
     text-decoration: none;
     padding: 0.5rem 1rem;
-    border-radius: 4px;
-    transition: all 0.2s;
+    border-radius: var(--radius-pill);
+    font-size: 0.95rem;
+    transition: color 0.18s, background 0.18s;
 }
 
 .nav-item:hover {
@@ -65,6 +240,43 @@ body {
     background: var(--bg-card);
 }
 
+.nav-item.active,
+.nav-item[aria-current="page"] {
+    color: var(--text-primary);
+    background: var(--accent-soft);
+}
+
+.theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    margin-left: 0.25rem;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: color 0.18s, border-color 0.18s, background 0.18s;
+}
+
+.theme-toggle:hover {
+    color: var(--gold);
+    border-color: var(--gold);
+}
+
+.theme-toggle .icon-sun { display: none; }
+.theme-toggle .icon-moon { display: inline-flex; }
+
+[data-theme="dark"] .theme-toggle .icon-sun { display: inline-flex; }
+[data-theme="dark"] .theme-toggle .icon-moon { display: none; }
+[data-theme="light"] .theme-toggle .icon-sun { display: none; }
+[data-theme="light"] .theme-toggle .icon-moon { display: inline-flex; }
+
+/* -------------------------------------------------------------------------
+   4. Layout
+   ------------------------------------------------------------------------- */
 .main-content {
     padding: 2rem;
     max-width: 1400px;
@@ -80,538 +292,159 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2rem;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.75rem;
 }
 
-.page-header h1 {
-    font-size: 2rem;
+.page-header h1,
+.container > h1 {
+    font-size: clamp(1.6rem, 1.2rem + 1.6vw, 2.3rem);
 }
 
+/* -------------------------------------------------------------------------
+   5. Boutons
+   ------------------------------------------------------------------------- */
 .btn {
-    padding: 0.75rem 1.5rem;
-    border: none;
-    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    padding: 0.7rem 1.35rem;
+    border: 1px solid transparent;
+    border-radius: var(--radius-pill);
     cursor: pointer;
-    font-size: 1rem;
-    transition: all 0.2s;
+    font-size: 0.95rem;
+    font-weight: 600;
+    line-height: 1.2;
+    text-decoration: none;
+    transition: background 0.18s, color 0.18s, border-color 0.18s, transform 0.12s, box-shadow 0.18s;
+}
+
+.btn:active {
+    transform: translateY(1px);
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
 }
 
 .btn-primary {
     background: var(--accent);
-    color: white;
+    color: var(--on-accent);
 }
 
-.btn-primary:hover {
+.btn-primary:hover:not(:disabled) {
     background: var(--accent-hover);
 }
 
 .btn-position {
-    background: #1a007a;
-    color: var(--text-primary);
+    background: var(--gold);
+    color: var(--on-gold);
 }
 
-.btn-position:hover {
-    background: #2a108a;
+.btn-position:hover:not(:disabled) {
+    background: var(--gold-hover);
 }
 
 .btn-secondary {
-    background: var(--bg-card);
+    background: var(--bg-elevated);
     color: var(--text-primary);
+    border-color: var(--border-strong);
 }
 
-.btn-secondary:hover {
-    background: #1a4a7a;
+.btn-secondary:hover:not(:disabled) {
+    background: var(--bg-card);
+    border-color: var(--accent);
 }
 
 .btn-danger {
     background: var(--danger);
-    color: white;
+    color: var(--on-danger);
+}
+
+.btn-danger:hover:not(:disabled) {
+    background: var(--danger-hover);
 }
 
 .btn-success {
-    background: #28a745;
-    color: white;
+    background: var(--success);
+    color: var(--on-success);
 }
 
-.btn-success:hover {
-    background: #218838;
+.btn-success:hover:not(:disabled) {
+    background: var(--success-hover);
 }
 
 .btn-warning {
-    background: #ffc107;
-    color: #212529;
+    background: var(--warning);
+    color: var(--on-warning);
 }
 
-.btn-warning:hover {
-    background: #e0a800;
+.btn-warning:hover:not(:disabled) {
+    background: var(--warning-hover);
 }
 
 .btn-info {
-    background: #17a2b8;
-    color: white;
+    background: var(--info);
+    color: var(--on-info);
 }
 
-.btn-info:hover {
-    background: #138496;
+.btn-info:hover:not(:disabled) {
+    background: var(--info-hover);
 }
 
 .btn-sm {
-    padding: 0.4rem 0.8rem;
-    font-size: 0.875rem;
-}
-
-.data-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 0.5rem;
-}
-
-.data-table th,
-.data-table td {
-    padding: 0.5rem;
-    text-align: left;
-    border-bottom: 1px solid var(--border);
-}
-
-.data-table th {
-    background: var(--bg-card);
-    font-weight: 600;
+    padding: 0.4rem 0.85rem;
+    font-size: 0.82rem;
 }
 
 .btn-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
     background: none;
-    border: none;
+    color: var(--text-secondary);
     cursor: pointer;
-    font-size: 1.2rem;
-    padding: 0.25rem;
-    opacity: 0.7;
-    transition: opacity 0.2s;
+    transition: color 0.18s, background 0.18s, border-color 0.18s;
 }
 
 .btn-icon:hover {
-    opacity: 1;
-}
-
-.search-bar {
-    display: flex;
-    gap: 1rem;
-    flex-wrap: wrap;
-    margin-bottom: 1.5rem;
-    padding: 1rem;
-    background: var(--bg-secondary);
-    border-radius: 8px;
-}
-
-.search-bar input,
-.search-bar select {
-    padding: 0.75rem;
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    background: var(--input-bg);
     color: var(--text-primary);
-    font-size: 1rem;
-}
-
-.search-bar input {
-    flex: 1;
-    min-width: 200px;
-}
-
-.search-bar select {
-    min-width: 120px;
-}
-
-.filter-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-}
-
-.filter-group label {
-    font-size: 0.75rem;
-    color: var(--text-secondary);
-    font-weight: 500;
-}
-
-.wine-count {
-    margin-bottom: 1rem;
-    color: var(--text-secondary);
-    font-size: 0.9rem;
-}
-
-.wine-list {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1.5rem;
-    min-height: 200px;
-}
-
-.wine-page {
-    display: contents;
-}
-
-.pagination {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-}
-
-.pagination .btn {
-    padding: 0.5rem 1rem;
-}
-
-.advanced-filters {
-    background: var(--bg-secondary);
-    padding: 1rem;
-    border-radius: 8px;
-    margin-bottom: 1rem;
-}
-
-.advanced-filters .filter-row {
-    display: flex;
-    gap: 1rem;
-    flex-wrap: wrap;
-    margin-bottom: 0.5rem;
-}
-
-.advanced-filters .filter-group {
-    min-width: 120px;
-}
-
-.advanced-filters input[type="text"] {
-    padding: 0.5rem;
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    background: var(--input-bg);
-    color: var(--text-primary);
-}
-
-.mini-cellar-filter {
-    display: grid;
-    grid-template-columns: 1fr;
-    grid-template-rows: auto 1fr auto;
-    gap: 2px;
-    width: 140px;
-    height: 100px;
-    background: var(--bg-card);
-    padding: 4px;
-    border-radius: 4px;
-}
-
-.mini-center {
-    display: flex;
-    justify-content: space-between;
-}
-
-.mini-wall {
-    background: var(--bg-secondary);
-    border: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 0.65rem;
-    font-weight: bold;
-    padding: 2px;
-    border-radius: 2px;
-    transition: all 0.2s;
-    text-align: center;
-}
-
-.mini-wall:hover {
-    background: var(--input-bg);
-    color: var(--text-primary);
-    border-color: var(--accent);
-}
-
-.mini-wall.active,
-.mini-wall.active:hover {
-    background: var(--accent);
-    color: white;
-    border-color: var(--accent);
-}
-
-.mini-wall#mini-north,
-.mini-wall#mini-south {
-    height: 24px;
-}
-
-.mini-wall#mini-west,
-.mini-wall#mini-east {
-    width: 48%;
-    height: 36px;
-}
-
-.location-filter-container {
-    display: flex;
-    gap: 1rem;
-    align-items: flex-start;
-}
-
-.casier-grid {
-    display: block;
-    min-width: 100px;
-}
-
-.casier-wall-grid {
-    display: none;
-}
-
-.casier-wall-grid.active {
-    display: block;
-    gap: 4px;
-    max-width: 140px;
-}
-
-.casier-cell-filter {
-    width: 28px;
-    height: 24px;
-    background: var(--bg-secondary);
-    border: 1px solid var(--border);
-    border-radius: 2px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.55rem;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.casier-cell-filter:hover {
-    background: var(--input-bg);
-    color: var(--text-primary);
-    border-color: var(--accent);
-}
-
-.casier-cell-filter.selected,
-.casier-cell-filter.selected:hover {
-    background: var(--accent);
-    color: white;
-    border-color: var(--accent);
-    box-shadow: 0 0 0 2px rgba(233, 69, 96, 0.4);
-}
-
-.checkbox-group {
-    display: flex;
-    align-items: center;
-    min-width: auto !important;
-}
-
-.checkbox-group label {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    cursor: pointer;
-    white-space: nowrap;
-}
-
-.wine-card {
-    background: var(--bg-card);
-    border-radius: 8px;
-    padding: 1.25rem;
-    cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
-    box-shadow: var(--shadow);
-}
-
-.wine-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.4);
-}
-
-.wine-card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.75rem;
-}
-
-.wine-color {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    display: inline-block;
-}
-
-.wine-color-1 { background: #722f37; }
-.wine-color-2 { background: #f7e7ce; }
-.wine-color-3 { background: #e9967a; }
-
-.wine-year {
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-}
-
-.wine-card-body {
-    flex: 1;
-}
-
-.wine-bottles {
-    margin-top: 0.5rem;
-}
-
-.wine-bottle-to-store-count {
-    display: inline-block;
-    background: var(--accent);
-    color: white;
-    padding: 0.15rem 0.5rem;
-    border-radius: 12px;
-    font-size: 0.75rem;
-    margin-right: 0.25rem;
-}
-
-.wine-bottle-count {
-    display: inline-block;
-    background: #228822; 
-    color: white;
-    padding: 0.15rem 0.5rem;
-    border-radius: 12px;
-    font-size: 0.75rem;
-    margin-right: 0.25rem;
-}
-
-.select-with-add {
-    display: flex;
-    gap: 0.25rem;
-}
-
-.select-with-add select {
-    flex: 1;
-}
-
-.wine-card-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-top: 0.75rem;
-    border-top: 1px solid var(--border);
-}
-
-.wine-note {
-    font-weight: 600;
-    color: var(--accent);
-}
-
-.wine-actions {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.empty-state,
-.loading {
-    text-align: center;
-    padding: 3rem;
-    color: var(--text-secondary);
-}
-
-.wine-list.loading {
-    position: relative;
-    opacity: 0.5;
-    pointer-events: none;
-}
-
-.wine-list.loading::before {
-    content: 'Chargement...';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: var(--bg-card);
-    padding: 1rem 2rem;
-    border-radius: 8px;
-    z-index: 10;
-}
-
-.modal {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.7);
-    z-index: 1000;
-    align-items: center;
-    justify-content: center;
-    padding: 1rem;
-}
-
-.modal.modal-active {
-    z-index: 1002;
-}
-
-.modal-large {
-    max-width: 800px;
-}
-
-.modal-content {
-    background: var(--bg-secondary);
-    border-radius: 8px;
-    max-width: 500px;
-    width: 100%;
-    max-height: 90vh;
-    overflow-y: auto;
-    overflow-x: hidden;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-}
-
-#position-modal .modal-content {
-    max-width: 1000px;
-    min-width: 900px;
-}
-
-#position-modal .cellar-plan {
-    min-height: 400px;
-}
-
-.modal-large {
-    max-width: 800px;
-}
-
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1.25rem;
-    border-bottom: 1px solid var(--border);
-}
-
-.modal-header h2 {
-    font-size: 1.25rem;
+    background: var(--bg-elevated);
+    border-color: var(--border);
 }
 
 .btn-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border: 1px solid transparent;
+    border-radius: var(--radius-pill);
     background: none;
-    border: none;
-    font-size: 1.5rem;
     color: var(--text-secondary);
-    cursor: pointer;
-    padding: 0;
+    font-size: 1.5rem;
     line-height: 1;
+    cursor: pointer;
+    transition: color 0.18s, background 0.18s;
 }
 
 .btn-close:hover {
     color: var(--text-primary);
+    background: var(--bg-elevated);
 }
 
-.wine-form,
-.position-form {
-    padding: 1.25rem;
-}
-
-.position-availability {
-    margin-bottom: 0.75rem;
-    padding: 0.5rem 0.75rem;
-    border-radius: 4px;
-    background: var(--input-bg);
-    border: 1px solid var(--border);
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: var(--text-secondary);
-}
-
+/* -------------------------------------------------------------------------
+   6. Formulaires
+   ------------------------------------------------------------------------- */
 .form-row {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -624,21 +457,39 @@ body {
 
 .form-group label {
     display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 500;
+    margin-bottom: 0.4rem;
+    font-size: 0.85rem;
+    font-weight: 600;
     color: var(--text-secondary);
 }
 
 .form-group input,
 .form-group select,
-.form-group textarea {
+.form-group textarea,
+input[type="text"],
+input[type="number"],
+input[type="date"],
+input[type="password"],
+select,
+textarea {
     width: 100%;
-    padding: 0.75rem;
+    padding: 0.7rem 0.8rem;
     border: 1px solid var(--border);
-    border-radius: 4px;
+    border-radius: var(--radius-sm);
     background: var(--input-bg);
     color: var(--text-primary);
-    font-size: 1rem;
+    transition: border-color 0.18s, box-shadow 0.18s;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus,
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px var(--gold-soft);
 }
 
 .form-group textarea {
@@ -655,16 +506,28 @@ body {
 .form-section h3 {
     margin-bottom: 1rem;
     font-size: 1rem;
-    color: var(--accent);
+    color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
 }
 
 .form-actions {
     display: flex;
     justify-content: flex-end;
-    gap: 1rem;
+    gap: 0.75rem;
     margin-top: 1.5rem;
     padding-top: 1rem;
     border-top: 1px solid var(--border);
+}
+
+.select-with-add {
+    display: flex;
+    gap: 0.35rem;
+}
+
+.select-with-add select {
+    flex: 1;
+    min-width: 0;
 }
 
 .cepage-row {
@@ -683,217 +546,649 @@ body {
     min-width: 60px;
 }
 
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
+/* -------------------------------------------------------------------------
+   7. Barre de recherche & filtres
+   ------------------------------------------------------------------------- */
+.search-bar {
+    display: flex;
+    align-items: flex-end;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.25rem;
+    padding: 1rem 1.15rem;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
 }
 
-.stat-card {
-    background: var(--bg-card);
-    border-radius: 8px;
-    padding: 1.5rem;
-    text-align: center;
-    box-shadow: var(--shadow);
+.search-bar > input[type="text"] {
+    flex: 1 1 220px;
 }
 
-.stat-value {
-    font-size: 2.5rem;
-    font-weight: bold;
-    color: var(--accent);
+.search-bar .filter-group {
+    flex: 0 1 auto;
 }
 
-.stat-label {
+.search-bar select {
+    width: auto;
+    min-width: 130px;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.filter-group label {
+    font-size: 0.75rem;
     color: var(--text-secondary);
-    margin-top: 0.5rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
 }
 
-.charts-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-    gap: 1.5rem;
+.filter-toggles {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
 }
 
-.chart-card {
-    background: var(--bg-card);
-    border-radius: 8px;
-    padding: 1.5rem;
-    box-shadow: var(--shadow);
+.checkbox-group {
+    min-width: auto;
 }
 
-.chart-card h3 {
-    margin-bottom: 1rem;
-    font-size: 1.1rem;
-}
-
-.bar-item {
+.checkbox-group label {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    cursor: pointer;
+    white-space: nowrap;
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.checkbox-group input[type="checkbox"] {
+    width: 1.05rem;
+    height: 1.05rem;
+    accent-color: var(--accent);
+    cursor: pointer;
+}
+
+.advanced-filters {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    padding: 1rem 1.15rem;
+    border-radius: var(--radius);
+    margin-bottom: 1.25rem;
+}
+
+.advanced-filters .filter-row {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
     margin-bottom: 0.75rem;
 }
 
-.bar-label {
+.advanced-filters .filter-row:last-child {
+    margin-bottom: 0;
+}
+
+.advanced-filters .filter-group {
+    min-width: 130px;
+}
+
+.advanced-filters input[type="text"] {
+    padding: 0.6rem 0.7rem;
+}
+
+/* Mini plan de cave (filtre) */
+.location-filter-container {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    flex-wrap: wrap;
+}
+
+.mini-cellar-filter {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr auto;
+    gap: 3px;
+    width: 150px;
+    height: 108px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 5px;
+    border-radius: var(--radius-sm);
+}
+
+.mini-center {
+    display: flex;
+    justify-content: space-between;
+    gap: 3px;
+}
+
+.mini-wall {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 0.62rem;
+    font-weight: 700;
+    padding: 2px;
+    border-radius: 4px;
+    transition: background 0.18s, color 0.18s, border-color 0.18s;
+    text-align: center;
+}
+
+.mini-wall:hover {
+    background: var(--bg-elevated);
+    color: var(--text-primary);
+    border-color: var(--gold);
+}
+
+.mini-wall.active,
+.mini-wall.active:hover {
+    background: var(--accent);
+    color: var(--on-accent);
+    border-color: var(--accent);
+}
+
+.mini-wall#mini-en_face,
+.mini-wall#mini-arriere {
+    height: 26px;
+}
+
+.mini-wall#mini-gauche,
+.mini-wall#mini-droite {
+    width: 50%;
+    height: 40px;
+}
+
+.casier-grid {
+    display: block;
     min-width: 100px;
+}
+
+.casier-wall-grid {
+    display: none;
+}
+
+.casier-wall-grid.active {
+    display: block;
+    max-width: 150px;
+}
+
+.casier-cell-filter {
+    width: 28px;
+    height: 24px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.58rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: background 0.18s, color 0.18s, border-color 0.18s;
+}
+
+.casier-cell-filter:hover {
+    background: var(--bg-elevated);
+    color: var(--text-primary);
+    border-color: var(--gold);
+}
+
+.casier-cell-filter.selected,
+.casier-cell-filter.selected:hover {
+    background: var(--accent);
+    color: var(--on-accent);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent-soft);
+}
+
+.wine-count {
+    margin-bottom: 1rem;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+/* -------------------------------------------------------------------------
+   8. Liste des vins & cartes
+   ------------------------------------------------------------------------- */
+.wine-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1.5rem;
+    min-height: 200px;
+}
+
+.wine-page {
+    display: contents;
+}
+
+.wine-card {
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    cursor: pointer;
+    text-align: left;
+    transition: transform 0.18s, box-shadow 0.18s, border-color 0.18s;
+    box-shadow: var(--shadow-sm);
+}
+
+.wine-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--gold);
+    box-shadow: var(--shadow);
+}
+
+.wine-card:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+}
+
+.wine-card-main {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    border-radius: var(--radius-sm);
+}
+
+.wine-card-main:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 4px;
+}
+
+.wine-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.wine-color {
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    display: inline-block;
+    box-shadow: 0 0 0 1px var(--border-strong);
+    background: var(--gold);
+}
+
+.wine-color-1 { background: var(--wine-1); }
+.wine-color-2 { background: var(--wine-2); }
+.wine-color-3 { background: var(--wine-3); }
+.wine-color-4 { background: var(--wine-4); }
+.wine-color-5 { background: var(--wine-5); }
+
+.wine-year {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-variant-numeric: tabular-nums;
+}
+
+.wine-card-body {
+    flex: 1;
+}
+
+.wine-name {
+    font-size: 1.1rem;
+    margin-bottom: 0.15rem;
+}
+
+.wine-propriete {
     font-size: 0.9rem;
     color: var(--text-secondary);
 }
 
-.bar-container {
-    flex: 1;
-    height: 20px;
-    background: var(--input-bg);
-    border-radius: 4px;
-    overflow: hidden;
+.wine-region {
+    font-size: 0.85rem;
+    color: var(--text-muted);
 }
 
-.bar {
-    height: 100%;
-    background: var(--accent);
-    border-radius: 4px;
-    transition: width 0.3s;
-}
-
-.bar-value {
-    min-width: 40px;
-    text-align: right;
+.wine-av-price {
+    margin-top: 0.35rem;
+    font-size: 0.85rem;
+    color: var(--gold);
     font-weight: 600;
 }
 
+.wine-bottles {
+    margin-top: 0.6rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+
+.wine-bottle-to-store-count,
+.wine-bottle-count {
+    display: inline-block;
+    padding: 0.15rem 0.55rem;
+    border-radius: var(--radius-pill);
+    font-size: 0.72rem;
+    font-weight: 600;
+}
+
+.wine-bottle-to-store-count {
+    background: var(--accent);
+    color: var(--on-accent);
+}
+
+.wine-bottle-count {
+    background: var(--success);
+    color: var(--on-success);
+}
+
+.wine-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+    padding-top: 0.75rem;
+    margin-top: 0.75rem;
+    border-top: 1px solid var(--border);
+}
+
+.wine-note {
+    font-weight: 700;
+    color: var(--gold);
+}
+
+.wine-actions {
+    display: flex;
+    gap: 0.15rem;
+}
+
+/* Étiquette de quantité dans le détail */
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.15rem 0.6rem;
+    border-radius: var(--radius-pill);
+    background: var(--accent-soft);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+/* -------------------------------------------------------------------------
+   9. Pagination
+   ------------------------------------------------------------------------- */
+.pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin: 1.75rem 0;
+}
+
+.pagination .btn {
+    padding: 0.5rem 1.15rem;
+}
+
+#page-info {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    min-width: 5.5rem;
+    text-align: center;
+}
+
+/* -------------------------------------------------------------------------
+   10. Tableaux
+   ------------------------------------------------------------------------- */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0.5rem;
+}
+
+.data-table th,
+.data-table td {
+    padding: 0.55rem 0.6rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+}
+
+.data-table th {
+    background: var(--bg-elevated);
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.data-table tr:hover td {
+    background: var(--bg-secondary);
+}
+
+.buy-price-input {
+    width: 80px;
+}
+
+.data-table .buy-price-input {
+    width: 80px;
+}
+
+/* -------------------------------------------------------------------------
+   11. État vide / chargement
+   ------------------------------------------------------------------------- */
+.empty-state,
+.loading,
+.detail-loading {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text-secondary);
+}
+
+.wine-list.loading {
+    position: relative;
+    opacity: 0.45;
+    pointer-events: none;
+}
+
+.wine-list.loading::before {
+    content: 'Chargement...';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 1rem 2rem;
+    border-radius: var(--radius);
+    z-index: 10;
+}
+
+.error,
+.alert {
+    padding: 0.9rem 1rem;
+    border-radius: var(--radius-sm);
+    margin-bottom: 1rem;
+}
+
+.alert-error,
+.error {
+    background: var(--danger-soft);
+    border: 1px solid var(--danger);
+    color: var(--danger);
+}
+
+/* -------------------------------------------------------------------------
+   12. Modales
+   ------------------------------------------------------------------------- */
+.modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: var(--overlay);
+    backdrop-filter: blur(2px);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.modal.modal-active {
+    z-index: 1002;
+}
+
+.modal-content {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-lg);
+    max-width: 500px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    box-shadow: var(--shadow-lg);
+}
+
+.modal-large {
+    max-width: 820px;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.15rem 1.35rem;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: var(--bg-secondary);
+    z-index: 1;
+}
+
+.modal-header h2 {
+    font-size: 1.2rem;
+}
+
+.wine-form,
+.position-form {
+    padding: 1.35rem;
+}
+
+/* Modal Position Cave */
+#position-modal .modal-content {
+    max-width: 1000px;
+}
+
+#position-modal .cellar-plan {
+    min-height: 400px;
+}
+
+.position-form {
+    margin-top: 1rem;
+    border-top: 1px solid var(--border);
+    padding-top: 1rem;
+}
+
+.position-availability {
+    margin-bottom: 0.85rem;
+    padding: 0.6rem 0.8rem;
+    border-radius: var(--radius-sm);
+    background: var(--gold-soft);
+    border: 1px solid var(--border);
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* -------------------------------------------------------------------------
+   13. Détail d'un vin
+   ------------------------------------------------------------------------- */
 .detail-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 1.5rem;
-    padding: 1.25rem;
+    gap: 1.25rem 1.75rem;
+    padding: 1.35rem;
 }
 
 .detail-section h3 {
-    font-size: 0.9rem;
-    color: var(--accent);
-    margin-bottom: 0.75rem;
+    font-size: 0.8rem;
+    color: var(--gold);
+    margin-bottom: 0.6rem;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.07em;
+    font-family: var(--font-body);
+    font-weight: 700;
+}
+
+.detail-section h3:not(:first-child) {
+    margin-top: 1rem;
 }
 
 .detail-section p {
-    margin-bottom: 0.5rem;
-    font-size: 0.95rem;
+    margin-bottom: 0.4rem;
+    font-size: 0.92rem;
+}
+
+.detail-section p strong {
+    color: var(--text-secondary);
+    font-weight: 600;
 }
 
 .detail-actions {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 0.5rem;
-    padding: 1rem;
+    gap: 0.6rem;
+    padding: 1.15rem 1.35rem;
     border-top: 1px solid var(--border);
 }
 
 .detail-actions .btn {
-    display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 0.25rem;
+    gap: 0.3rem;
     min-width: 0;
     width: auto;
-    padding: 0.6rem 0.4rem;
+    padding: 0.65rem 0.4rem;
     font-size: 0.78rem;
-    line-height: 1.1;
+    line-height: 1.15;
     text-align: center;
 }
 
-.detail-actions .detail-action-icon {
-    font-size: 1.15rem;
-    line-height: 1;
-}
-
-.cellar-plan {
-    padding: 1rem;
-}
-
-.cellar-room {
-    display: flex;
-    gap: 1rem;
-    margin-top: 1rem;
-}
-
-.cellar-wall {
-    flex: 1;
-    background: var(--bg-primary);
-    border-radius: 8px;
-    padding: 0.75rem;
-    border: 2px solid var(--border);
-}
-
-.cellar-wall-label {
-    text-align: center;
-    font-weight: 600;
-    margin-bottom: 0.75rem;
-    color: var(--accent);
-    text-transform: uppercase;
-    font-size: 0.85rem;
-}
-
-.cellar-casiers {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 0.4rem;
-}
-
-.casier-cell {
-    aspect-ratio: 1;
-    background: var(--input-bg);
-    border: 1px solid var(--border);
-    border-radius: 2px;
-    display: flex;
-    flex-direction: column;
+.detail-action-icon {
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
-    font-size: 0.6rem;
-    min-height: 28px;
-    padding: 2px;
-    transition: all 0.2s;
-    position: relative;
 }
 
-.casier-cell:hover {
-    border-color: var(--accent);
-    background: var(--bg-card);
+.detail-action-icon .icon {
+    width: 1.25em;
+    height: 1.25em;
 }
 
-.casier-cell.occupied {
-    background: var(--bg-card);
-    border-color: var(--success);
-}
-
-.casier-cell.partial {
-    background: rgba(76, 175, 80, 0.2);
-    border-color: var(--success);
-}
-
-.casier-number {
-    font-weight: 600;
-    color: var(--text-primary);
-}
-
-.casier-count {
-    color: var(--text-secondary);
-    font-size: 0.65rem;
-}
-
-.casier-cell.selected {
-    border-color: var(--accent);
-    box-shadow: 0 0 8px var(--accent);
+/* -------------------------------------------------------------------------
+   14. Position Cave — plan visuel
+   ------------------------------------------------------------------------- */
+.cellar-plan {
+    padding: 1.15rem;
 }
 
 .cellar-summary {
     display: flex;
     justify-content: space-around;
-    padding: 0.75rem;
+    gap: 1rem;
+    padding: 0.85rem;
     background: var(--bg-card);
-    border-radius: 4px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
     margin-bottom: 1rem;
 }
 
@@ -902,52 +1197,49 @@ body {
 }
 
 .cellar-stat-value {
-    font-size: 1.25rem;
-    font-weight: bold;
-    color: var(--accent);
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--gold);
+    font-variant-numeric: tabular-nums;
 }
 
 .cellar-stat-label {
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     color: var(--text-secondary);
-}
-
-.cellar-wall-tabs {
-    display: none;
-}
-
-.cellar-plan {
-    padding: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
 }
 
 .cellar-visual {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     grid-template-rows: 1fr 1fr 1fr;
-    gap: 4px;
-    margin-bottom: 1rem;
-    max-width: 500px;
+    gap: 5px;
+    max-width: 520px;
     margin: 0 auto 1rem;
-    min-height: 350px;
-    background: #222;
+    min-height: 360px;
+    background: var(--bg-sunken);
+    border: 1px solid var(--border);
     padding: 8px;
-    border-radius: 8px;
+    border-radius: var(--radius);
 }
 
 .cellar-visual .wall-north { grid-column: 2; grid-row: 1; }
 .cellar-visual .wall-south { grid-column: 2; grid-row: 3; }
 .cellar-visual .wall-west { grid-column: 1; grid-row: 2; }
 .cellar-visual .wall-east { grid-column: 3; grid-row: 2; }
-.cellar-visual .room-center { 
-    grid-column: 2; 
-    grid-row: 2; 
+
+.cellar-visual .room-center {
+    grid-column: 2;
+    grid-row: 2;
     background: var(--bg-primary);
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--text-secondary);
+    color: var(--text-muted);
     font-size: 0.8rem;
+    font-style: italic;
     border: 2px dashed var(--border);
 }
 
@@ -955,18 +1247,25 @@ body {
     display: flex;
     flex-direction: column;
     gap: 2px;
-    padding: 4px;
+    padding: 5px;
     background: var(--bg-card);
     border: 2px solid var(--border);
-    border-radius: 4px;
+    border-radius: var(--radius-sm);
     height: 100%;
+    transition: border-color 0.18s, box-shadow 0.18s;
+}
+
+.cellar-wall-visual.active {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 2px var(--gold-soft);
 }
 
 .wall-label-visual {
-    font-size: 0.7rem;
-    font-weight: bold;
+    font-size: 0.64rem;
+    font-weight: 700;
     text-align: center;
-    color: var(--accent);
+    color: var(--gold);
+    letter-spacing: 0.08em;
     margin-bottom: 2px;
 }
 
@@ -978,62 +1277,53 @@ body {
 
 .casier-cell {
     flex: 1;
-    min-height: 25px;
+    min-height: 26px;
     background: var(--input-bg);
     border: 1px solid var(--border);
-    border-radius: 2px;
+    border-radius: 3px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.6rem;
-    color: var(--text-primary);
+    font-size: 0.62rem;
+    color: var(--text-secondary);
     cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
 }
 
 .casier-cell:hover {
-    border-color: var(--accent);
+    border-color: var(--gold);
+    background: var(--bg-elevated);
 }
 
-.cellar-visual .wall-east,
-.cellar-visual .wall-west {
-    writing-mode: horizontal-tb;
+.casier-cell.occupied {
+    background: var(--success-soft);
+    border-color: var(--success);
+    color: var(--success);
 }
 
-.cellar-visual .wall-east .cellar-wall-row,
-.cellar-visual .wall-west .cellar-wall-row {
-    flex-direction: row;
+.casier-cell.partial {
+    background: var(--gold-soft);
+    border-color: var(--gold);
+    color: var(--gold);
 }
 
-.cellar-visual .wall-east .wall-label-visual,
-.cellar-visual .wall-west .wall-label-visual {
-    transform: none;
+.casier-number {
+    font-weight: 700;
+    color: inherit;
 }
 
-.cellar-wall-row {
-    display: flex;
-    gap: 1px;
-    flex: 1;
-}
-
-.cellar-wall-row .casier-cell {
-    flex: 1;
+.casier-count {
+    color: var(--text-muted);
+    font-size: 0.62rem;
 }
 
 .casier-cell.selected,
 .casier-cell.selected:hover {
     border: 2px solid var(--accent);
-    box-shadow: 0 0 0 2px var(--accent), 0 0 12px var(--accent);
-    background: var(--bg-card);
+    box-shadow: 0 0 0 2px var(--accent-soft), 0 0 12px var(--accent-soft);
+    background: var(--bg-elevated);
     position: relative;
     z-index: 2;
-}
-
-.wall-label-visual {
-    font-size: 0.65rem;
-    font-weight: 600;
-    text-align: center;
-    color: var(--accent);
-    margin-bottom: 2px;
 }
 
 .cellar-grid {
@@ -1041,22 +1331,123 @@ body {
     grid-template-columns: repeat(4, 1fr);
     gap: 0.5rem;
     padding: 1rem;
-    background: var(--bg-primary);
-    border-radius: 4px;
+    background: var(--bg-sunken);
+    border-radius: var(--radius-sm);
     margin-top: 1rem;
 }
 
+.cellar-wall-tabs {
+    display: none;
+}
+
+/* -------------------------------------------------------------------------
+   15. Statistiques
+   ------------------------------------------------------------------------- */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 1.75rem;
+}
+
+.stat-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem 1rem;
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+}
+
+.stat-value {
+    font-size: clamp(2rem, 1.5rem + 2vw, 2.8rem);
+    font-weight: 700;
+    color: var(--gold);
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+}
+
+.stat-label {
+    color: var(--text-secondary);
+    margin-top: 0.4rem;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.charts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+    gap: 1.25rem;
+}
+
+.chart-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.35rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.chart-card h3 {
+    margin-bottom: 1rem;
+    font-size: 1.05rem;
+}
+
+.bar-item {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 0.7rem;
+}
+
+.bar-label {
+    flex: 0 0 150px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.bar-container {
+    flex: 1;
+    height: 18px;
+    background: var(--bg-sunken);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-pill);
+    overflow: hidden;
+}
+
+.bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--gold));
+    border-radius: var(--radius-pill);
+    transition: width 0.4s ease;
+}
+
+.bar-value {
+    flex: 0 0 40px;
+    text-align: right;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+/* -------------------------------------------------------------------------
+   16. Toasts
+   ------------------------------------------------------------------------- */
 .toast {
     position: fixed;
     bottom: 2rem;
     left: 50%;
-    transform: translateX(-50%) translateY(100px);
-    background: var(--bg-card);
+    transform: translateX(-50%) translateY(120px);
+    background: var(--bg-elevated);
     color: var(--text-primary);
-    padding: 1rem 2rem;
-    border-radius: 4px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-    transition: transform 0.3s;
+    border: 1px solid var(--border-strong);
+    padding: 0.9rem 1.6rem;
+    border-radius: var(--radius-pill);
+    box-shadow: var(--shadow-lg);
+    transition: transform 0.3s ease;
     z-index: 2000;
 }
 
@@ -1064,24 +1455,15 @@ body {
     transform: translateX(-50%) translateY(0);
 }
 
-.alert {
-    padding: 1rem;
-    border-radius: 4px;
-    margin-bottom: 1rem;
-}
-
-.alert-error {
-    background: rgba(244, 67, 54, 0.2);
-    border: 1px solid var(--danger);
-    color: var(--danger);
-}
-
+/* -------------------------------------------------------------------------
+   17. Connexion
+   ------------------------------------------------------------------------- */
 .login-page {
     display: flex;
     align-items: center;
     justify-content: center;
     min-height: 100vh;
-    background: var(--bg-primary);
+    background: radial-gradient(900px 600px at 50% 0%, var(--bg-secondary), var(--bg-primary)) fixed;
 }
 
 .login-container {
@@ -1091,102 +1473,119 @@ body {
 }
 
 .login-box {
-    background: var(--bg-secondary);
-    padding: 2rem;
-    border-radius: 8px;
-    box-shadow: var(--shadow);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 2.25rem;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
 }
 
 .login-box h1 {
     text-align: center;
-    margin-bottom: 2rem;
-    color: var(--accent);
+    margin-bottom: 1.75rem;
+    color: var(--gold);
+    font-size: 1.9rem;
 }
 
 .login-box .form-group {
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.35rem;
 }
 
-.login-box button {
+.login-box button[type="submit"] {
     width: 100%;
+}
+
+.millesime-container {
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+}
+
+.millesime-actions {
+    margin-top: 1rem;
+}
+
+/* -------------------------------------------------------------------------
+   18. Responsive
+   ------------------------------------------------------------------------- */
+@media (max-width: 900px) {
+    .main-content {
+        padding: 1.25rem;
+    }
+
+    .bar-label {
+        flex-basis: 110px;
+    }
 }
 
 @media (max-width: 768px) {
     .navbar {
         flex-direction: column;
-        gap: 1rem;
-        padding: 1rem;
+        gap: 0.75rem;
+        padding: 0.85rem 1rem;
     }
-    
+
     .nav-brand {
         width: 100%;
         text-align: center;
     }
-    
+
     .nav-menu {
         width: 100%;
         justify-content: center;
         flex-wrap: wrap;
-        gap: 0.5rem;
+        gap: 0.25rem;
     }
-    
+
     .nav-item {
-        padding: 0.5rem 0.75rem;
+        padding: 0.45rem 0.7rem;
         font-size: 0.9rem;
     }
-    
+
     .search-bar {
         flex-direction: column;
+        align-items: stretch;
     }
-    
-    .search-bar input,
-    .search-bar select {
+
+    .search-bar select,
+    .search-bar > input[type="text"] {
         width: 100%;
     }
-    
+
     .form-row {
         grid-template-columns: 1fr;
     }
-    
+
     .detail-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .charts-grid {
         grid-template-columns: 1fr;
     }
-    
-    .wine-list {
-        grid-template-columns: repeat(3, 1fr);
-    }
-    
-    .wine-list {
-        grid-template-columns: 1fr;
-    }
-    
+
     .modal {
         padding: 0.5rem;
     }
-    
+
     .modal-content {
         max-width: 100%;
         max-height: 95vh;
     }
-    
+
     #position-modal .modal-content {
         width: 100%;
-        min-width: 0;
     }
-    
+
     #position-modal .cellar-visual {
         display: flex;
         flex-direction: column;
-        gap: 1rem;
+        gap: 0.75rem;
         min-height: auto;
         max-width: 100%;
         padding: 0.5rem;
     }
-    
+
     #position-modal .cellar-visual .wall-north,
     #position-modal .cellar-visual .wall-south,
     #position-modal .cellar-visual .wall-west,
@@ -1194,64 +1593,44 @@ body {
         grid-column: auto;
         grid-row: auto;
     }
-    
+
     #position-modal .cellar-visual .room-center {
         display: none;
     }
-    
-    #detail-modal .modal-content {
-        max-width: 100%;
-        width: 100%;
-    }
-    
-    #detail-modal .wine-detail {
-        overflow-x: hidden;
-    }
-    
-    #detail-modal .wine-detail .detail-actions {
+
+    .detail-actions {
         grid-template-columns: repeat(3, 1fr);
-        gap: 0.4rem;
-    }
-    
-    #detail-modal .wine-detail .detail-actions .btn {
-        width: auto;
-        flex: none;
-    }
-    
-    .btn-close {
-        font-size: 1.25rem;
-        padding: 0.5rem;
-        min-width: 44px;
-        min-height: 44px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        gap: 0.5rem;
     }
 }
 
 @media (max-width: 480px) {
-    #detail-modal .modal-content {
-        max-width: 100% !important;
-        width: 100% !important;
+    .detail-actions {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
+        padding: 0.85rem;
     }
-    
-    #detail-modal .wine-detail {
-        overflow-x: hidden !important;
+
+    .detail-actions .btn {
+        padding: 0.6rem 0.4rem;
+        font-size: 0.74rem;
     }
-    
-    #detail-modal .wine-detail .detail-actions {
-        display: grid !important;
-        grid-template-columns: repeat(2, 1fr) !important;
-        gap: 8px !important;
-        padding: 12px !important;
+
+    .cellar-summary {
+        flex-wrap: wrap;
+        gap: 0.5rem;
     }
-    
-    #detail-modal .wine-detail .detail-actions .btn {
-        display: flex !important;
-        width: auto !important;
-        max-width: 100% !important;
-        flex: none !important;
-        padding: 10px 8px !important;
-        font-size: 13px !important;
+
+    .bar-label {
+        flex-basis: 90px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
     }
 }

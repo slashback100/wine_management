@@ -4,10 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Cave à Vin{% endblock %}</title>
+    <script>
+    (function () {
+        var theme = 'dark';
+        try {
+            theme = localStorage.getItem('wine-theme')
+                || (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+        } catch (e) { theme = 'dark'; }
+        document.documentElement.setAttribute('data-theme', theme);
+    })();
+    </script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     {% block extra_css %}{% endblock %}
 </head>
 <body>
+    <a class="sr-only" href="#main">Aller au contenu</a>
     <nav class="navbar">
         <div class="nav-brand">
             <a href="/wine/">Cave à Vin</a>
@@ -17,10 +28,20 @@
             <a href="/wine/millesime" class="nav-item" data-page="millesime">Not. millésime</a>
             <a href="/wine/stats" class="nav-item" data-page="stats">Stat</a>
             <a href="/wine/logout" class="nav-item">Déconnexion</a>
+            <button type="button" class="theme-toggle" id="theme-toggle"
+                    aria-label="Basculer le thème clair/sombre" title="Thème clair / sombre">
+                <svg class="icon icon-sun" viewBox="0 0 24 24" aria-hidden="true">
+                    <circle cx="12" cy="12" r="4"></circle>
+                    <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path>
+                </svg>
+                <svg class="icon icon-moon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                </svg>
+            </button>
         </div>
     </nav>
 
-    <main class="main-content">
+    <main class="main-content" id="main">
         {% block content %}{% endblock %}
     </main>
 

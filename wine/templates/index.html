@@ -10,41 +10,47 @@
     </div>
 
     <div class="search-bar">
-        <input type="text" id="search-input" placeholder="Rechercher un vin..." oninput="debouncedSearch()">
+        <input type="text" id="search-input" placeholder="Rechercher un vin..." aria-label="Rechercher un vin" oninput="debouncedSearch()">
         <div class="filter-group">
-            <label>Pays</label>
+            <label for="filter-country">Pays</label>
             <select id="filter-country" onchange="filterWines()">
                 <option value="">Tous</option>
             </select>
         </div>
         <div class="filter-group">
-            <label>Région</label>
+            <label for="filter-region">Région</label>
             <select id="filter-region" onchange="filterWines()">
                 <option value="">Toutes</option>
             </select>
         </div>
         <div class="filter-group">
-            <label>Couleur</label>
+            <label for="filter-color">Couleur</label>
             <select id="filter-color" onchange="filterWines()">
                 <option value="">Toutes</option>
             </select>
         </div>
         <div class="filter-group">
-            <label>Catégorie</label>
+            <label for="filter-category">Catégorie</label>
             <select id="filter-category" onchange="filterWines()">
                 <option value="">Toutes</option>
             </select>
         </div>
-        <button class="btn btn-sm" onclick="toggleAdvancedFilters()">+ Filtres</button>
-        <button class="btn btn-sm" onclick="toggleResetFilters()">Réinitialiser</button>
-	<br/>
-	    <div class="filter-group">
+        <div class="filter-toggles">
+            <div class="filter-group checkbox-group">
                 <label>
-			<!--<input type="checkbox" style="min-width: 20px;font-size: 0.75rem" checked id="filter-in-stock" onchange="filterWines()">-->
-                    <input type="checkbox" style="min-width: 20px" checked id="filter-in-stock" onchange="filterWines()">
+                    <input type="checkbox" checked id="filter-in-stock" onchange="filterWines()">
                     Uniquement les vins en stock
                 </label>
             </div>
+            <button type="button" class="btn btn-sm btn-secondary" onclick="toggleAdvancedFilters()">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h10M4 18h6"/></svg>
+                Filtres
+            </button>
+            <button type="button" class="btn btn-sm btn-secondary" onclick="toggleResetFilters()">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+                Réinitialiser
+            </button>
+        </div>
     </div>
 
     <div class="advanced-filters" id="advanced-filters" style="display: none;">
@@ -279,9 +285,15 @@
 </div>
 <div class="container">
     <div class="pagination" id="pagination">
-        <button class="btn btn-sm" id="prev-page" onclick="changePage(-1)" disabled>Précédent</button>
+        <button class="btn btn-sm btn-secondary" id="prev-page" onclick="changePage(-1)" disabled>
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+            Précédent
+        </button>
         <span id="page-info">Page 1</span>
-        <button class="btn btn-sm" id="next-page" onclick="changePage(1)" disabled>Suivant</button>
+        <button class="btn btn-sm btn-secondary" id="next-page" onclick="changePage(1)" disabled>
+            Suivant
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
     </div>
 </div>
 
@@ -441,6 +453,24 @@
 {% block extra_js %}
 <script>
 const API_BASE = '/wine/api';
+
+function svgIcon(paths) {
+    return `<svg class="icon" viewBox="0 0 24 24" aria-hidden="true">${paths}</svg>`;
+}
+
+const ICONS = {
+    edit: svgIcon('<path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>'),
+    trash: svgIcon('<path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/>'),
+    copy: svgIcon('<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>'),
+    pin: svgIcon('<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/>'),
+    plus: svgIcon('<path d="M12 5v14M5 12h14"/>'),
+    minus: svgIcon('<path d="M5 12h14"/>'),
+    history: svgIcon('<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/>'),
+    filter: svgIcon('<path d="M4 6h16M4 12h10M4 18h6"/>'),
+    reset: svgIcon('<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/>'),
+    chevronLeft: svgIcon('<path d="M15 18l-6-6 6-6"/>'),
+    chevronRight: svgIcon('<path d="M9 18l6-6-6-6"/>')
+};
 
 let lookupData = {};
 
@@ -781,7 +811,8 @@ function wineCardsHtml(wines) {
 		avPriceHtml = escapeHtml(parseFloat(wine.average_price).toFixed(2) || '')+' €';
 	}
         return ''.concat(
-        '<div class="wine-card" onclick="showWineDetail(', wine.id, ')">',
+        '<div class="wine-card">',
+            '<div class="wine-card-main" role="button" tabindex="0" aria-label="Voir ' + escapeAttr(wine.name_climat || '') + '" onclick="showWineDetail(' + wine.id + ')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();showWineDetail(' + wine.id + ');}">',
             '<div class="wine-card-header">',
                 '<span class="wine-color wine-color-', wine.color_id, '"></span>',
                 '<span class="wine-year">', wine.year || '', '</span>',
@@ -794,12 +825,13 @@ function wineCardsHtml(wines) {
                 bottlesHtml ? ''.concat('<p class="wine-bottles">', bottlesHtml, '</p>') : '',
                 bottlesToStoreHtml ? ''.concat('<p class="wine-bottles">', bottlesToStoreHtml, '</p>') : '',
             '</div>',
+            '</div>',
             '<div class="wine-card-footer">',
                 '<span class="wine-note">', wine.my_note ? ''.concat(wine.my_note, '/20') : '', '</span>',
                 '<div class="wine-actions">',
-                    '<button class="btn-icon" onclick="event.stopPropagation();duplicateWine(', wine.id, ')" title="Dupliquer">📋</button>',
-                    '<button class="btn-icon" onclick="event.stopPropagation();editWine(', wine.id, ')" title="Modifier">✏️</button>',
-                    '<button class="btn-icon" onclick="event.stopPropagation();deleteWine(', wine.id, ')" title="Supprimer">🗑️</button>',
+                    '<button type="button" class="btn-icon" onclick="event.stopPropagation();duplicateWine(', wine.id, ')" title="Dupliquer" aria-label="Dupliquer">', ICONS.copy, '</button>',
+                    '<button type="button" class="btn-icon" onclick="event.stopPropagation();editWine(', wine.id, ')" title="Modifier" aria-label="Modifier">', ICONS.edit, '</button>',
+                    '<button type="button" class="btn-icon" onclick="event.stopPropagation();deleteWine(', wine.id, ')" title="Supprimer" aria-label="Supprimer">', ICONS.trash, '</button>',
                 '</div>',
             '</div>',
         '</div>');
@@ -850,10 +882,10 @@ async function showWineDetail(id) {
                 <p><strong>Appellation:</strong> ${escapeHtml(wine.apellation || '-')}</p>
                 <p><strong>Couleur:</strong> ${escapeHtml(wine.color || '-')}</p>
                 <p><strong>Catégorie:</strong> ${escapeHtml(wine.category || '-')}</p>
-                <p><strong>Quantité:</strong> ${wine.bottles && wine.bottles.length ? wine.bottles.map(b => `${b.quantity} ${b.size}`).join(', ') : '0'}</p>
+                <p><strong>Quantité:</strong> ${wine.bottles && wine.bottles.length ? wine.bottles.map(b => `<span class="chip">${b.quantity} ${escapeHtml(b.size || '')}</span>`).join(' ') : '0'}</p>
             </div>
             <div class="detail-section">
-                <h3>-garde</h3>
+                <h3>À garder</h3>
                 <p><strong>À:</strong> ${escapeHtml(wine.to_keep || '-')}</p>
                 <p><strong>Date optimum:</strong> ${wine.date_optimum || '-'}</p>
                 <p><strong>Fin optimum:</strong> ${wine.end_optimum || '-'}</p>
@@ -876,12 +908,12 @@ async function showWineDetail(id) {
             </div>
         </div>
         <div class="detail-actions">
-            <button class="btn btn-primary" title="Modifier" onclick="editWine(${wine.id}); closeDetailModal();"><span class="detail-action-icon">✏️</span><span>Modifier</span></button>
-            <button class="btn btn-position" title="Position cave" onclick="showPositionModal(${wine.id})"><span class="detail-action-icon">📍</span><span>Position cave</span></button>
-            <button class="btn btn-success" title="Ajouter des bouteilles" onclick="showAddBottleModal(${wine.id})"><span class="detail-action-icon">➕</span><span>Ajouter</span></button>
-            <button class="btn btn-warning" title="Enlever des bouteilles" onclick="showRemoveBottleModal(${wine.id})"><span class="detail-action-icon">➖</span><span>Enlever</span></button>
-            <button class="btn btn-info" title="Historique" onclick="showHistoryModal(${wine.id})"><span class="detail-action-icon">🕘</span><span>Historique</span></button>
-            <button class="btn btn-secondary" title="Dupliquer" onclick="duplicateWine(${wine.id}); closeDetailModal();"><span class="detail-action-icon">📄</span><span>Dupliquer</span></button>
+            <button type="button" class="btn btn-primary" title="Modifier" aria-label="Modifier" onclick="editWine(${wine.id}); closeDetailModal();"><span class="detail-action-icon">${ICONS.edit}</span><span>Modifier</span></button>
+            <button type="button" class="btn btn-position" title="Position cave" aria-label="Position cave" onclick="showPositionModal(${wine.id})"><span class="detail-action-icon">${ICONS.pin}</span><span>Position cave</span></button>
+            <button type="button" class="btn btn-success" title="Ajouter des bouteilles" aria-label="Ajouter des bouteilles" onclick="showAddBottleModal(${wine.id})"><span class="detail-action-icon">${ICONS.plus}</span><span>Ajouter</span></button>
+            <button type="button" class="btn btn-warning" title="Enlever des bouteilles" aria-label="Enlever des bouteilles" onclick="showRemoveBottleModal(${wine.id})"><span class="detail-action-icon">${ICONS.minus}</span><span>Enlever</span></button>
+            <button type="button" class="btn btn-info" title="Historique" aria-label="Historique" onclick="showHistoryModal(${wine.id})"><span class="detail-action-icon">${ICONS.history}</span><span>Historique</span></button>
+            <button type="button" class="btn btn-secondary" title="Dupliquer" aria-label="Dupliquer" onclick="duplicateWine(${wine.id}); closeDetailModal();"><span class="detail-action-icon">${ICONS.copy}</span><span>Dupliquer</span></button>
         </div>
     `;
     
@@ -1728,6 +1760,10 @@ function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+function escapeAttr(text) {
+    return escapeHtml(text).replace(/"/g, '&quot;');
 }
 
 function showToast(message) {
