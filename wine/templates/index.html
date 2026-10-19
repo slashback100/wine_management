@@ -1181,10 +1181,13 @@ async function showPositionModal(wineId) {
     document.getElementById('detail-modal').style.display = 'none';
     document.getElementById('position-modal').style.display = 'flex';
     document.getElementById('position-modal').classList.add('modal-active');
-    document.getElementById('position-quantity').value = document.getElementById('bottles-to-store').value;
-    document.getElementById('position-quantity-immutable').value = document.getElementById('bottles-to-store').value;
     
     document.getElementById('position-wine-id').value = wineId;
+    
+    const bottlesToStore = document.getElementById('bottles-to-store');
+    const initialQuantity = bottlesToStore ? bottlesToStore.value : '1';
+    document.getElementById('position-quantity').value = initialQuantity;
+    document.getElementById('position-quantity-immutable').value = initialQuantity;
     
     selectedCasier = null;
     document.getElementById('btn-save-position').textContent = 'Enregistrer';
