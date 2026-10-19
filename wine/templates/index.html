@@ -875,13 +875,13 @@ async function showWineDetail(id) {
                 <p>${escapeHtml(wine.comment || '-')}</p>
             </div>
         </div>
-        <div class="detail-actions" style="display: flex; flex-direction: column; gap: 8px; padding: 1rem;">
-            <button class="btn btn-primary" onclick="editWine(${wine.id}); closeDetailModal();" style="width: 100%;">Modifier</button>
-            <button class="btn btn-position" onclick="showPositionModal(${wine.id})">Position cave</button>
-            <button class="btn btn-secondary" onclick="duplicateWine(${wine.id}); closeDetailModal();" style="width: 100%;">Dupliquer</button>
-            <button class="btn btn-success" onclick="showAddBottleModal(${wine.id})" style="width: 100%;">Ajouter bouteilles</button>
-            <button class="btn btn-warning" onclick="showRemoveBottleModal(${wine.id})" style="width: 100%;">Enlever bouteilles</button>
-            <button class="btn btn-info" onclick="showHistoryModal(${wine.id})" style="width: 100%;">Historique</button>
+        <div class="detail-actions">
+            <button class="btn btn-primary" title="Modifier" onclick="editWine(${wine.id}); closeDetailModal();"><span class="detail-action-icon">✏️</span><span>Modifier</span></button>
+            <button class="btn btn-position" title="Position cave" onclick="showPositionModal(${wine.id})"><span class="detail-action-icon">📍</span><span>Position cave</span></button>
+            <button class="btn btn-success" title="Ajouter des bouteilles" onclick="showAddBottleModal(${wine.id})"><span class="detail-action-icon">➕</span><span>Ajouter</span></button>
+            <button class="btn btn-warning" title="Enlever des bouteilles" onclick="showRemoveBottleModal(${wine.id})"><span class="detail-action-icon">➖</span><span>Enlever</span></button>
+            <button class="btn btn-info" title="Historique" onclick="showHistoryModal(${wine.id})"><span class="detail-action-icon">🕘</span><span>Historique</span></button>
+            <button class="btn btn-secondary" title="Dupliquer" onclick="duplicateWine(${wine.id}); closeDetailModal();"><span class="detail-action-icon">📄</span><span>Dupliquer</span></button>
         </div>
     `;
     

@@ -782,16 +782,30 @@ body {
 }
 
 .detail-actions {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
     gap: 0.5rem;
-    padding: 1.25rem;
+    padding: 1rem;
     border-top: 1px solid var(--border);
 }
 
 .detail-actions .btn {
-    flex: 1 1 calc(50% - 0.5rem);
-    min-width: 120px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    min-width: 0;
+    width: auto;
+    padding: 0.6rem 0.4rem;
+    font-size: 0.78rem;
+    line-height: 1.1;
+    text-align: center;
+}
+
+.detail-actions .detail-action-icon {
+    font-size: 1.15rem;
+    line-height: 1;
 }
 
 .cellar-plan {
@@ -1195,12 +1209,12 @@ body {
     }
     
     #detail-modal .wine-detail .detail-actions {
-        flex-direction: column;
-        gap: 0.5rem;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.4rem;
     }
     
     #detail-modal .wine-detail .detail-actions .btn {
-        width: 100%;
+        width: auto;
         flex: none;
     }
     
@@ -1226,18 +1240,18 @@ body {
     }
     
     #detail-modal .wine-detail .detail-actions {
-        display: flex !important;
-        flex-direction: column !important;
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
         gap: 8px !important;
         padding: 12px !important;
     }
     
     #detail-modal .wine-detail .detail-actions .btn {
-        display: block !important;
-        width: 100% !important;
+        display: flex !important;
+        width: auto !important;
         max-width: 100% !important;
         flex: none !important;
         padding: 10px 8px !important;
-        font-size: 14px !important;
+        font-size: 13px !important;
     }
 }
