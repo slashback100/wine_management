@@ -1,6 +1,8 @@
 import logging
 import hashlib
+import hmac
 
+from werkzeug.security import check_password_hash
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for
 from flask_cors import CORS
 import os
@@ -74,15 +76,21 @@ def create_app():
         if request.method == 'POST':
             username = request.form.get('username', '')
             password = request.form.get('password', '')
-            
-            password_hash = hashlib.md5(password.encode()).hexdigest()
-            
+
             user = User.query.filter_by(username=username).first()
-            if user and user.password_hash == password_hash:
+            authenticated = False
+            if user:
+                stored_hash = user.password_hash
+                if stored_hash.startswith(('$2a$', '$2b$', '$2y$', '$argon2')):
+                    authenticated = check_password_hash(stored_hash, password)
+                else:
+                    authenticated = hmac.compare_digest(stored_hash, hashlib.md5(password.encode()).hexdigest())
+
+            if authenticated:
                 session['logged'] = True
                 session['user'] = username
                 return redirect('/wine/')
-            
+
             return render_template('login.html', error='Identifiants invalides')
         
         return render_template('login.html')
