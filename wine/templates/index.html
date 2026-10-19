@@ -890,6 +890,10 @@ async function showWineDetail(id) {
 
 function closeDetailModal() {
     document.getElementById('detail-modal').style.display = 'none';
+    if (stockDirty) {
+        stockDirty = false;
+        filterWines();
+    }
 }
 
 document.getElementById('detail-modal').addEventListener('click', function(e) {
@@ -1199,6 +1203,7 @@ let selectedCasier = null;
 let positionData = {};
 let winePositions = {};
 let positionModalSource = null;
+let stockDirty = false;
 let positionBaseAvailable = 0;
 let positionBaseBySize = {};
 let positionCaseQty = 0;
@@ -1252,12 +1257,14 @@ function closePositionModal() {
     } else if (positionModalSource === 'detail') {
         document.getElementById('detail-modal').style.display = 'flex';
     } else if (positionModalSource === 'addBottle') {
+        stockDirty = false;
         filterWines();
     } else if (positionModalSource === 'removeBottle') {
         if (pendingOutRecord) {
             showToast('Bouteilles retirées');
             pendingOutRecord = null;
         }
+        stockDirty = false;
         filterWines();
     }
     positionModalSource = null;
@@ -1625,6 +1632,7 @@ async function savePosition() {
         }
         
         pendingOutRecord = null;
+        stockDirty = true;
         showToast('Bouteilles retirées');
         await loadCellarData();
         selectWall(currentWall);
@@ -1666,6 +1674,7 @@ async function savePosition() {
             return;
         }
     }
+    stockDirty = true;
     // if we are adding new bottle, it would be great to : close of all bottles are stored, or show the remaining number of bottle to store
     if(positionModalSource === 'addBottle'){
         if(origQuantity > quantity){
@@ -1704,6 +1713,7 @@ async function deletePosition() {
     const result = await response.json();
     
     if (result.success) {
+        stockDirty = true;
         showToast('Position supprimée');
         await loadCellarData();
         selectWall(currentWall);
@@ -1786,6 +1796,7 @@ document.getElementById('add-bottle-form').addEventListener('submit', async func
     const result = await response.json();
     
     if (result.success) {
+        stockDirty = true;
         showToast('Bouteilles ajoutées');
         closeAddBottleModal();
         await showPositionModalFromAdd(wineId, quantity, sizeId);
