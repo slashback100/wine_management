@@ -317,13 +317,16 @@ body {
 }
 
 .mini-wall:hover {
-    background: var(--accent);
-    color: white;
+    background: var(--input-bg);
+    color: var(--text-primary);
+    border-color: var(--accent);
 }
 
-.mini-wall.active {
+.mini-wall.active,
+.mini-wall.active:hover {
     background: var(--accent);
     color: white;
+    border-color: var(--accent);
 }
 
 .mini-wall#mini-north,
@@ -373,14 +376,17 @@ body {
 }
 
 .casier-cell-filter:hover {
-    background: var(--accent);
-    color: white;
+    background: var(--input-bg);
+    color: var(--text-primary);
+    border-color: var(--accent);
 }
 
-.casier-cell-filter.selected {
+.casier-cell-filter.selected,
+.casier-cell-filter.selected:hover {
     background: var(--accent);
     color: white;
     border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(233, 69, 96, 0.4);
 }
 
 .checkbox-group {
