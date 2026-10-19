@@ -401,9 +401,19 @@ def create_app():
             return auth_check
         
         wine = Wine.query.get_or_404(wine_id)
+
+        from sqlalchemy import func
+        bought = db.session.query(func.coalesce(func.sum(Buy.quantity), 0)).filter(Buy.wine_id == wine_id).scalar() or 0
+        removed = db.session.query(func.coalesce(func.sum(OutRecord.quantity), 0)).filter(OutRecord.wine_id == wine_id).scalar() or 0
+        positioned = db.session.query(func.coalesce(func.sum(PositionCave.quantity), 0)).filter(PositionCave.wine_id == wine_id).scalar() or 0
+        not_stored = int(bought) - int(removed) - int(positioned)
+
+        data = wine.to_dict(include_cepages=True)
+        data['not_stored'] = not_stored
+
         return jsonify(convert({
             "success": True,
-            "data": wine.to_dict(include_cepages=True)
+            "data": data
         }))
     
     @app.route('/wine/api/wines', methods=['POST'])

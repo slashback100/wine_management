@@ -601,6 +601,17 @@ body {
     padding: 1.25rem;
 }
 
+.position-availability {
+    margin-bottom: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 4px;
+    background: var(--input-bg);
+    border: 1px solid var(--border);
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
 .form-row {
     display: grid;
     grid-template-columns: repeat(2, 1fr);

@@ -302,10 +302,11 @@
             </div>
             <div class="position-form" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border);">
                 <input type="hidden" id="position-wine-id">
+                <div class="position-availability" id="position-availability">Bouteilles encore à ranger : -</div>
                 <div class="form-row">
                     <div class="form-group">
                         <label for="position-quantity">Quantité</label>
-                        <input type="number" id="position-quantity" value="1" min="0">
+                        <input type="number" id="position-quantity" value="1" min="0" oninput="updatePositionAvailability()">
                         <input type="number" id="position-quantity-immutable" value="1" style="display: none"/>
                     </div>
                     <div class="form-group">
@@ -1198,6 +1199,8 @@ let selectedCasier = null;
 let positionData = {};
 let winePositions = {};
 let positionModalSource = null;
+let positionBaseAvailable = 0;
+let positionCaseQty = 0;
 
 function openPositionFromWine() {
     positionModalSource = 'wine';
@@ -1258,6 +1261,38 @@ function closePositionModal() {
     positionModalSource = null;
 }
 
+function updatePositionAvailability() {
+    const el = document.getElementById('position-availability');
+    if (!el) return true;
+    if (positionModalSource === 'removeBottle') {
+        el.style.display = 'none';
+        return true;
+    }
+    el.style.display = '';
+    let available;
+    if (positionModalSource === 'addBottle') {
+        available = parseInt(document.getElementById('position-quantity-immutable').value) || 0;
+    } else {
+        available = positionBaseAvailable + positionCaseQty;
+    }
+    if (!selectedCasier && positionModalSource !== 'removeBottle') {
+        const base = (positionModalSource === 'addBottle') ? available : positionBaseAvailable;
+        el.textContent = `Bouteilles encore à ranger : ${base}`;
+        el.style.color = 'var(--text-secondary)';
+        return true;
+    }
+    const q = parseInt(document.getElementById('position-quantity').value) || 0;
+    const remaining = available - q;
+    if (remaining < 0) {
+        el.textContent = `Dépassement : seulement ${available} bouteille(s) disponible(s)`;
+        el.style.color = 'var(--danger)';
+        return false;
+    }
+    el.textContent = `Bouteilles encore à ranger : ${remaining}`;
+    el.style.color = 'var(--text-secondary)';
+    return true;
+}
+
 async function loadCellarData() {
     const response = await fetch(`${API_BASE}/capacity`);
     const result = await response.json();
@@ -1303,7 +1338,25 @@ async function loadCellarData() {
     }
     
     const wineId = document.getElementById('position-wine-id').value;
+    positionBaseAvailable = 0;
+    if (wineId) {
+        try {
+            const wineRes = await fetch(`${API_BASE}/wines/${wineId}`);
+            const wineResult = await wineRes.json();
+            if (wineResult && wineResult.success && wineResult.data) {
+                positionBaseAvailable = parseInt(wineResult.data.not_stored) || 0;
+            }
+        } catch (e) {
+            console.log('Error loading wine availability:', e);
+        }
+    }
+    positionCaseQty = 0;
+    if (selectedCasier && winePositions[selectedCasier.wall] && winePositions[selectedCasier.wall][selectedCasier.casier]) {
+        const pos = winePositions[selectedCasier.wall][selectedCasier.casier].find(p => p.wine_id === parseInt(wineId));
+        positionCaseQty = pos ? pos.quantity : 0;
+    }
     renderAllWalls(wineId);
+    updatePositionAvailability();
 }
 
 function renderAllWalls(wineId) {
@@ -1440,13 +1493,14 @@ function selectCasier(wall, casier) {
     const addBottleModal = document.getElementById('add-bottle-modal');
     
     if (positionModal && positionModal.style.display !== 'none') {
+        const wineId = parseInt(document.getElementById('position-wine-id').value);
+        const wallPositions = winePositions[wall] || {};
+        const casierPositions = wallPositions[casier] || [];
+        
+        const winePosition = casierPositions.find(p => p.wine_id === wineId);
+        positionCaseQty = winePosition ? winePosition.quantity : 0;
+        
         if (positionModalSource !== 'addBottle' && positionModalSource !== 'removeBottle') {
-            const wineId = parseInt(document.getElementById('position-wine-id').value);
-            const wallPositions = winePositions[wall] || {};
-            const casierPositions = wallPositions[casier] || [];
-            
-            const winePosition = casierPositions.find(p => p.wine_id === wineId);
-            
             if (winePosition) {
                 document.getElementById('position-quantity').value = winePosition.quantity;
                 document.getElementById('position-size').value = winePosition.size_id || '';
@@ -1454,6 +1508,7 @@ function selectCasier(wall, casier) {
                 document.getElementById('position-quantity').value = 1;
             }
         }
+        updatePositionAvailability();
     }
     
 
@@ -1471,6 +1526,11 @@ async function savePosition() {
     const sizeId = parseInt(document.getElementById('position-size').value) || null;
     if(origQuantity < quantity && positionModalSource === 'addBottle'){
         showToast("Trop de bouteille rangée, seul "+origQuantity+" sont encore à ranger");
+        return;
+    }
+    
+    if ((positionModalSource === 'detail' || positionModalSource === 'wine') && quantity > positionBaseAvailable + positionCaseQty) {
+        showToast("Trop de bouteilles : " + (positionBaseAvailable + positionCaseQty) + " disponible(s) à ranger");
         return;
     }
 
