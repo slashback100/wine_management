@@ -8,6 +8,7 @@ from datetime import datetime
 
 from models import db, Wine, WineCepage, Buy, OutRecord, PositionCave, CasierCapacity, Millesime, StockAll, StockAllAgregated
 from models import Country, Region, Apellation, Color, Category, Cepage, Size, ToKeep
+from models import User
 from sqlalchemy.orm import aliased
 from decimal import Decimal
 
@@ -49,6 +50,19 @@ def create_app():
             return redirect('/wine/login')
         return None
     
+    def wine_net_stock(wine_id):
+        from sqlalchemy import func
+        bought = db.session.query(func.coalesce(func.sum(Buy.quantity), 0)).filter(Buy.wine_id == wine_id).scalar() or 0
+        consumed = db.session.query(func.coalesce(func.sum(OutRecord.quantity), 0)).filter(OutRecord.wine_id == wine_id).scalar() or 0
+        return int(bought) - int(consumed)
+    
+    def wine_stored_quantity(wine_id, exclude_position_id=None):
+        from sqlalchemy import func
+        query = db.session.query(func.coalesce(func.sum(PositionCave.quantity), 0)).filter(PositionCave.wine_id == wine_id)
+        if exclude_position_id:
+            query = query.filter(PositionCave.id != exclude_position_id)
+        return int(query.scalar() or 0)
+    
     @app.route('/wine/')
     def index():
         if not is_logged_in():
@@ -63,11 +77,11 @@ def create_app():
             
             password_hash = hashlib.md5(password.encode()).hexdigest()
             
-            if username in app.config.get('USERS', {}):
-                if app.config['USERS'][username] == password_hash:
-                    session['logged'] = True
-                    session['user'] = username
-                    return redirect('/wine/')
+            user = User.query.filter_by(username=username).first()
+            if user and user.password_hash == password_hash:
+                session['logged'] = True
+                session['user'] = username
+                return redirect('/wine/')
             
             return render_template('login.html', error='Identifiants invalides')
         
@@ -193,7 +207,7 @@ def create_app():
         
         query = Wine.query
         
-        search = request.args.get('search', '')
+        search = request.args.get('search', '').strip()
         if search:
             search_term = '%{}%'.format(search)
             query = query.filter(
@@ -207,6 +221,10 @@ def create_app():
         country_id = request.args.get('country_id', type=int)
         if country_id:
             query = query.filter_by(country_id=country_id)
+        
+        apellation_id = request.args.get('apellation_id', type=int)
+        if apellation_id:
+            query = query.filter_by(apellation_id=apellation_id)
         
         region_id = request.args.get('region_id', type=int)
         if region_id:
@@ -245,7 +263,8 @@ def create_app():
             )
         
         in_stock = request.args.get('in_stock', type=int)
-        if in_stock:
+        location_active = bool(request.args.get('wall', '')) or bool(request.args.get('casier', ''))
+        if in_stock or location_active:
             from sqlalchemy import func
             StockAllA1 = aliased(StockAllAgregated)
             query = query.outerjoin(StockAllA1, Wine.id == StockAllA1.wine_id).filter(
@@ -374,10 +393,10 @@ def create_app():
             return auth_check
         
         wine = Wine.query.get_or_404(wine_id)
-        return jsonify({
+        return jsonify(convert({
             "success": True,
             "data": wine.to_dict(include_cepages=True)
-        })
+        }))
     
     @app.route('/wine/api/wines', methods=['POST'])
     def create_wine():
@@ -528,17 +547,37 @@ def create_app():
             "data": serialize_model(buy)
         }), 201
     
-    @app.route('/wine/api/buys/<int:buy_id>', methods=['DELETE'])
-    def delete_buy(buy_id):
+    @app.route('/wine/api/buys/<int:buy_id>', methods=['PUT', 'DELETE'])
+    def handle_buy(buy_id):
         auth_check = check_auth()
         if auth_check:
             return auth_check
         
         buy = Buy.query.get_or_404(buy_id)
-        db.session.delete(buy)
+        
+        if request.method == 'DELETE':
+            db.session.delete(buy)
+            db.session.commit()
+            return jsonify({"success": True})
+        
+        data = request.get_json() or {}
+        if 'unit_price' in data:
+            buy.unit_price = data.get('unit_price')
+        if 'quantity' in data:
+            buy.quantity = data.get('quantity', buy.quantity)
+        if 'location' in data:
+            buy.location = data.get('location') or None
+        if 'size_id' in data:
+            buy.size_id = data.get('size_id')
+        if data.get('date'):
+            buy.buy_date = datetime.strptime(data['date'], '%Y-%m-%d').date()
+        
         db.session.commit()
         
-        return jsonify({"success": True})
+        return jsonify({
+            "success": True,
+            "data": serialize_model(buy)
+        })
     
     @app.route('/wine/api/out_records', methods=['GET', 'POST'])
     def handle_out_records():
@@ -592,15 +631,41 @@ def create_app():
         
         data = request.get_json()
         
+        wine_id = data.get('wine_id')
+        wall = data.get('wall')
+        casier = data.get('casier')
+        quantity = int(data.get('quantity', 1) or 0)
+        size_id = data.get('size_id')
+        
+        if quantity < 0:
+            return jsonify({"success": False, "error": "Quantité invalide"}), 400
+        
         existing = PositionCave.query.filter_by(
-            wine_id=data.get('wine_id'),
-            wall=data.get('wall'),
-            casier=data.get('casier')
+            wine_id=wine_id,
+            wall=wall,
+            casier=casier
         ).first()
         
+        if quantity == 0:
+            if existing:
+                db.session.delete(existing)
+                db.session.commit()
+            return jsonify({"success": True})
+        
+        other_stored = wine_stored_quantity(wine_id, existing.id if existing else None)
+        old_total = wine_stored_quantity(wine_id)
+        net_stock = wine_net_stock(wine_id)
+        new_total = other_stored + quantity
+        if new_total > net_stock and new_total > old_total:
+            max_qty = net_stock - other_stored
+            return jsonify({
+                "success": False,
+                "error": "Quantité trop élevée : maximum {} bouteille(s) à ranger (stock possédé {}, déjà en cave {})".format(max_qty, net_stock, other_stored)
+            }), 400
+        
         if existing:
-            existing.quantity = data.get('quantity', 1)
-            existing.size_id = data.get('size_id')
+            existing.quantity = quantity
+            existing.size_id = size_id
             db.session.commit()
             return jsonify({
                 "success": True,
@@ -608,11 +673,11 @@ def create_app():
             })
         
         position = PositionCave(
-            wine_id=data.get('wine_id'),
-            wall=data.get('wall'),
-            casier=data.get('casier'),
-            quantity=data.get('quantity', 1),
-            size_id=data.get('size_id')
+            wine_id=wine_id,
+            wall=wall,
+            casier=casier,
+            quantity=quantity,
+            size_id=size_id
         )
         db.session.add(position)
         db.session.commit()
@@ -635,10 +700,31 @@ def create_app():
             db.session.commit()
             return jsonify({"success": True})
         
-        data = request.get_json()
+        data = request.get_json() or {}
+        
+        quantity = int(data.get('quantity', position.quantity) or 0)
+        if quantity < 0:
+            return jsonify({"success": False, "error": "Quantité invalide"}), 400
+        
+        if quantity == 0:
+            db.session.delete(position)
+            db.session.commit()
+            return jsonify({"success": True})
+        
+        other_stored = wine_stored_quantity(position.wine_id, position.id)
+        old_total = wine_stored_quantity(position.wine_id)
+        net_stock = wine_net_stock(position.wine_id)
+        new_total = other_stored + quantity
+        if new_total > net_stock and new_total > old_total:
+            max_qty = net_stock - other_stored
+            return jsonify({
+                "success": False,
+                "error": "Quantité trop élevée : maximum {} bouteille(s) à ranger (stock possédé {}, déjà en cave {})".format(max_qty, net_stock, other_stored)
+            }), 400
+        
         position.wall = data.get('wall', position.wall)
         position.casier = data.get('casier', position.casier)
-        position.quantity = data.get('quantity', position.quantity)
+        position.quantity = quantity
         position.size_id = data.get('size_id', position.size_id)
         
         db.session.commit()
@@ -662,7 +748,7 @@ def create_app():
         if auth_check:
             return auth_check
         
-        total_wines = Wine.query.count()
+        total_wines = db.session.query(StockAllAgregated.wine_id).filter(StockAllAgregated.quantity > 0).distinct().count()
         
         positions = PositionCave.query.all()
         total_bottles = sum(p.quantity for p in positions)
@@ -670,18 +756,45 @@ def create_app():
         capacities = CasierCapacity.query.all()
         total_capacity = sum(c.capacity for c in capacities)
         
+        from sqlalchemy import func
+        color_bottles = db.session.query(
+            Wine.color_id,
+            func.coalesce(func.sum(PositionCave.quantity), 0)
+        ).join(PositionCave, PositionCave.wine_id == Wine.id).group_by(Wine.color_id).all()
+        
+        color_map = {}
+        for color_id, qty in color_bottles:
+            color_map[color_id] = (color_map.get(color_id, 0) or 0) + (qty or 0)
+        
         colors = Color.query.all()
+        label_by_id = {c.id: c.label for c in colors}
         color_counts = []
-        for color in colors:
-            count = Wine.query.filter_by(color_id=color.id).count()
-            color_counts.append({"label": color.label, "count": count})
+        for color_id, qty in sorted(color_map.items(), key=lambda kv: -(kv[1] or 0)):
+            if color_id is None:
+                label = "Inconnu"
+            else:
+                label = label_by_id.get(color_id, "Inconnu")
+            color_counts.append({"label": label, "count": qty})
+        
+        region_bottles = db.session.query(
+            Wine.region_id,
+            func.coalesce(func.sum(PositionCave.quantity), 0)
+        ).join(PositionCave, PositionCave.wine_id == Wine.id).group_by(Wine.region_id).all()
+        
+        region_map = {}
+        for region_id, qty in region_bottles:
+            region_map[region_id] = (region_map.get(region_id, 0) or 0) + (qty or 0)
         
         regions = Region.query.all()
+        region_label_by_id = {r.id: r.label for r in regions}
         region_counts = []
-        for region in regions[:10]:
-            count = Wine.query.filter_by(region_id=region.id).count()
-            if count > 0:
-                region_counts.append({"label": region.label, "count": count})
+        for region_id, qty in sorted(region_map.items(), key=lambda kv: -(kv[1] or 0))[:20]:
+            if region_id is None:
+                label = "Inconnu"
+            else:
+                label = region_label_by_id.get(region_id, "Inconnu")
+            if qty > 0:
+                region_counts.append({"label": label, "count": qty})
         
         return jsonify({
             "success": True,
