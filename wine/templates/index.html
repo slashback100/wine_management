@@ -673,6 +673,7 @@ function populateSelect(id, items, addEmpty = false) {
 let searchTimeout;
 let currentPage = 1;
 let totalPages = 1;
+let appendNextPage = false;
 
 function debouncedSearch() {
     clearTimeout(searchTimeout);
@@ -681,7 +682,12 @@ function debouncedSearch() {
 
 async function filterWines() {
     const container = document.getElementById('wine-list');
-    container.classList.add('loading');
+    const append = appendNextPage;
+    appendNextPage = false;
+    if (!append) {
+        currentPage = 1;
+        container.classList.add('loading');
+    }
     
     const search = document.getElementById('search-input').value;
     const country_id = document.getElementById('filter-country').value;
@@ -720,18 +726,33 @@ async function filterWines() {
     container.classList.remove('loading');
     
     if (result.success) {
-        renderWineList(result.data);
         totalPages = result.total_pages || 1;
+        if (append) {
+            appendWineList(result.data, currentPage);
+        } else {
+            renderWineList(result.data);
+        }
         document.getElementById('wine-count').textContent = ''.concat(result.count, ' vin(s)', result.total_bottles ? ''.concat(' - ', result.total_bottles, ' bouteille(s)') : '');
         updatePagination();
     }
 }
 
 function changePage(delta) {
-    currentPage += delta;
-    if (currentPage < 1) currentPage = 1;
-    if (currentPage > totalPages) currentPage = totalPages;
-    filterWines();
+    if (delta > 0) {
+        if (currentPage >= totalPages) return;
+        appendNextPage = true;
+        currentPage += 1;
+        filterWines();
+    } else {
+        if (currentPage <= 1) return;
+        const container = document.getElementById('wine-list');
+        const blocks = container.querySelectorAll('.wine-page');
+        if (blocks.length > 1) {
+            blocks[blocks.length - 1].remove();
+        }
+        currentPage -= 1;
+        updatePagination();
+    }
 }
 
 function updatePagination() {
@@ -740,15 +761,12 @@ function updatePagination() {
     document.getElementById('next-page').disabled = currentPage >= totalPages;
 }
 
-function renderWineList(wines) {
-    const container = document.getElementById('wine-list');
-    
+function wineCardsHtml(wines) {
     if (wines.length === 0) {
-        container.innerHTML = '<div class="empty-state">Aucun vin trouvé</div>';
-        return;
+        return '<div class="empty-state">Aucun vin trouvé</div>';
     }
     
-    container.innerHTML = wines.map(wine => {
+    return wines.map(wine => {
         let bottlesHtml = '';
         if (wine.bottles && wine.bottles.length) {
             bottlesHtml = wine.bottles.map(b => ''.concat('<span class="wine-bottle-count">', b.quantity, ' ', b.size, '</span>')).join(' ');
@@ -785,6 +803,25 @@ function renderWineList(wines) {
             '</div>',
         '</div>');
     }).join('');
+}
+
+function renderWineList(wines) {
+    const container = document.getElementById('wine-list');
+    container.innerHTML = '';
+    const block = document.createElement('div');
+    block.className = 'wine-page';
+    block.dataset.page = '1';
+    block.innerHTML = wineCardsHtml(wines);
+    container.appendChild(block);
+}
+
+function appendWineList(wines, page) {
+    const container = document.getElementById('wine-list');
+    const block = document.createElement('div');
+    block.className = 'wine-page';
+    block.dataset.page = String(page);
+    block.innerHTML = wineCardsHtml(wines);
+    container.appendChild(block);
 }
 
 async function showWineDetail(id) {

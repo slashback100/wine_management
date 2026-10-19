@@ -246,6 +246,10 @@ body {
     min-height: 200px;
 }
 
+.wine-page {
+    display: contents;
+}
+
 .pagination {
     display: flex;
     align-items: center;
