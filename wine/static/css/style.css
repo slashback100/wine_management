@@ -1005,6 +1005,15 @@ body {
     flex: 1;
 }
 
+.casier-cell.selected,
+.casier-cell.selected:hover {
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 0 2px var(--accent), 0 0 12px var(--accent);
+    background: var(--bg-card);
+    position: relative;
+    z-index: 2;
+}
+
 .wall-label-visual {
     font-size: 0.65rem;
     font-weight: 600;

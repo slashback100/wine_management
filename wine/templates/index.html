@@ -311,7 +311,7 @@
                     </div>
                     <div class="form-group">
                         <label for="position-size">Taille</label>
-                        <select id="position-size">
+                        <select id="position-size" onchange="updatePositionAvailability()">
                             <option value="">Sélectionner...</option>
                         </select>
                     </div>
@@ -1200,7 +1200,9 @@ let positionData = {};
 let winePositions = {};
 let positionModalSource = null;
 let positionBaseAvailable = 0;
+let positionBaseBySize = {};
 let positionCaseQty = 0;
+let positionCaseSizeId = null;
 
 function openPositionFromWine() {
     positionModalSource = 'wine';
@@ -1261,6 +1263,21 @@ function closePositionModal() {
     positionModalSource = null;
 }
 
+function getSizeLabel(sizeId) {
+    if (sizeId === null || sizeId === undefined || sizeId === '') return 'toutes tailles';
+    const sizes = (typeof lookupData !== 'undefined' && lookupData.sizes) ? lookupData.sizes : [];
+    const found = sizes.find(s => String(s.id) === String(sizeId));
+    return found ? found.label : 'taille inconnue';
+}
+
+function getAvailableForSize(sizeId) {
+    if (sizeId === null || sizeId === undefined || sizeId === '') {
+        return positionBaseAvailable;
+    }
+    const v = positionBaseBySize[String(sizeId)];
+    return (v === undefined || v === null) ? 0 : parseInt(v);
+}
+
 function updatePositionAvailability() {
     const el = document.getElementById('position-availability');
     if (!el) return true;
@@ -1269,26 +1286,43 @@ function updatePositionAvailability() {
         return true;
     }
     el.style.display = '';
-    let available;
+
+    const sizeId = document.getElementById('position-size').value;
+    const sizeLabel = getSizeLabel(sizeId);
+
     if (positionModalSource === 'addBottle') {
-        available = parseInt(document.getElementById('position-quantity-immutable').value) || 0;
-    } else {
-        available = positionBaseAvailable + positionCaseQty;
-    }
-    if (!selectedCasier && positionModalSource !== 'removeBottle') {
-        const base = (positionModalSource === 'addBottle') ? available : positionBaseAvailable;
-        el.textContent = `Bouteilles encore à ranger : ${base}`;
+        const available = parseInt(document.getElementById('position-quantity-immutable').value) || 0;
+        const q = parseInt(document.getElementById('position-quantity').value) || 0;
+        const remaining = available - q;
+        if (remaining < 0) {
+            el.textContent = `Dépassement : seulement ${available} bouteille(s) à ranger (${sizeLabel})`;
+            el.style.color = 'var(--danger)';
+            return false;
+        }
+        el.textContent = `Bouteilles encore à ranger (${sizeLabel}) : ${remaining}`;
         el.style.color = 'var(--text-secondary)';
         return true;
     }
+
+    let available = getAvailableForSize(sizeId);
+    if (selectedCasier && String(positionCaseSizeId) === String(sizeId)) {
+        available += positionCaseQty;
+    }
+
+    if (!selectedCasier) {
+        el.textContent = `Bouteilles encore à ranger (${sizeLabel}) : ${available}`;
+        el.style.color = 'var(--text-secondary)';
+        return true;
+    }
+
     const q = parseInt(document.getElementById('position-quantity').value) || 0;
     const remaining = available - q;
     if (remaining < 0) {
-        el.textContent = `Dépassement : seulement ${available} bouteille(s) disponible(s)`;
+        el.textContent = `Dépassement : seulement ${available} bouteille(s) disponible(s) en ${sizeLabel}`;
         el.style.color = 'var(--danger)';
         return false;
     }
-    el.textContent = `Bouteilles encore à ranger : ${remaining}`;
+    el.textContent = `Bouteilles encore à ranger (${sizeLabel}) : ${remaining}`;
     el.style.color = 'var(--text-secondary)';
     return true;
 }
@@ -1339,21 +1373,27 @@ async function loadCellarData() {
     
     const wineId = document.getElementById('position-wine-id').value;
     positionBaseAvailable = 0;
+    positionBaseBySize = {};
     if (wineId) {
         try {
             const wineRes = await fetch(`${API_BASE}/wines/${wineId}`);
             const wineResult = await wineRes.json();
             if (wineResult && wineResult.success && wineResult.data) {
                 positionBaseAvailable = parseInt(wineResult.data.not_stored) || 0;
+                positionBaseBySize = wineResult.data.not_stored_by_size || {};
             }
         } catch (e) {
             console.log('Error loading wine availability:', e);
         }
     }
     positionCaseQty = 0;
+    positionCaseSizeId = null;
     if (selectedCasier && winePositions[selectedCasier.wall] && winePositions[selectedCasier.wall][selectedCasier.casier]) {
         const pos = winePositions[selectedCasier.wall][selectedCasier.casier].find(p => p.wine_id === parseInt(wineId));
-        positionCaseQty = pos ? pos.quantity : 0;
+        if (pos) {
+            positionCaseQty = pos.quantity;
+            positionCaseSizeId = pos.size_id;
+        }
     }
     renderAllWalls(wineId);
     updatePositionAvailability();
@@ -1499,6 +1539,7 @@ function selectCasier(wall, casier) {
         
         const winePosition = casierPositions.find(p => p.wine_id === wineId);
         positionCaseQty = winePosition ? winePosition.quantity : 0;
+        positionCaseSizeId = winePosition ? winePosition.size_id : null;
         
         if (positionModalSource !== 'addBottle' && positionModalSource !== 'removeBottle') {
             if (winePosition) {
@@ -1529,9 +1570,15 @@ async function savePosition() {
         return;
     }
     
-    if ((positionModalSource === 'detail' || positionModalSource === 'wine') && quantity > positionBaseAvailable + positionCaseQty) {
-        showToast("Trop de bouteilles : " + (positionBaseAvailable + positionCaseQty) + " disponible(s) à ranger");
-        return;
+    if (positionModalSource === 'detail' || positionModalSource === 'wine') {
+        let maxAvailable = getAvailableForSize(sizeId);
+        if (selectedCasier && String(positionCaseSizeId) === String(sizeId)) {
+            maxAvailable += positionCaseQty;
+        }
+        if (quantity > maxAvailable) {
+            showToast("Trop de bouteilles : " + maxAvailable + " disponible(s) à ranger en " + getSizeLabel(sizeId));
+            return;
+        }
     }
 
     

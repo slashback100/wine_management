@@ -52,15 +52,18 @@ def create_app():
             return redirect('/wine/login')
         return None
     
-    def wine_net_stock(wine_id):
+    def wine_net_stock(wine_id, size_id=None):
         from sqlalchemy import func
-        bought = db.session.query(func.coalesce(func.sum(Buy.quantity), 0)).filter(Buy.wine_id == wine_id).scalar() or 0
-        consumed = db.session.query(func.coalesce(func.sum(OutRecord.quantity), 0)).filter(OutRecord.wine_id == wine_id).scalar() or 0
+        bought = db.session.query(func.coalesce(func.sum(Buy.quantity), 0)).filter(
+            Buy.wine_id == wine_id, Buy.size_id == size_id).scalar() or 0
+        consumed = db.session.query(func.coalesce(func.sum(OutRecord.quantity), 0)).filter(
+            OutRecord.wine_id == wine_id, OutRecord.size_id == size_id).scalar() or 0
         return int(bought) - int(consumed)
     
-    def wine_stored_quantity(wine_id, exclude_position_id=None):
+    def wine_stored_quantity(wine_id, exclude_position_id=None, size_id=None):
         from sqlalchemy import func
-        query = db.session.query(func.coalesce(func.sum(PositionCave.quantity), 0)).filter(PositionCave.wine_id == wine_id)
+        query = db.session.query(func.coalesce(func.sum(PositionCave.quantity), 0)).filter(
+            PositionCave.wine_id == wine_id, PositionCave.size_id == size_id)
         if exclude_position_id:
             query = query.filter(PositionCave.id != exclude_position_id)
         return int(query.scalar() or 0)
@@ -403,13 +406,27 @@ def create_app():
         wine = Wine.query.get_or_404(wine_id)
 
         from sqlalchemy import func
-        bought = db.session.query(func.coalesce(func.sum(Buy.quantity), 0)).filter(Buy.wine_id == wine_id).scalar() or 0
-        removed = db.session.query(func.coalesce(func.sum(OutRecord.quantity), 0)).filter(OutRecord.wine_id == wine_id).scalar() or 0
-        positioned = db.session.query(func.coalesce(func.sum(PositionCave.quantity), 0)).filter(PositionCave.wine_id == wine_id).scalar() or 0
-        not_stored = int(bought) - int(removed) - int(positioned)
+        bought_rows = db.session.query(Buy.size_id, func.sum(Buy.quantity)).filter(Buy.wine_id == wine_id).group_by(Buy.size_id).all()
+        removed_rows = db.session.query(OutRecord.size_id, func.sum(OutRecord.quantity)).filter(OutRecord.wine_id == wine_id).group_by(OutRecord.size_id).all()
+        positioned_rows = db.session.query(PositionCave.size_id, func.sum(PositionCave.quantity)).filter(PositionCave.wine_id == wine_id).group_by(PositionCave.size_id).all()
+
+        bought_by_size = {r[0]: int(r[1] or 0) for r in bought_rows}
+        removed_by_size = {r[0]: int(r[1] or 0) for r in removed_rows}
+        positioned_by_size = {r[0]: int(r[1] or 0) for r in positioned_rows}
+
+        size_ids = set(bought_by_size) | set(removed_by_size) | set(positioned_by_size)
+        not_stored_by_size = {}
+        for size_id in size_ids:
+            not_stored_by_size[str(size_id)] = (
+                bought_by_size.get(size_id, 0)
+                - removed_by_size.get(size_id, 0)
+                - positioned_by_size.get(size_id, 0)
+            )
+        not_stored = sum(not_stored_by_size.values())
 
         data = wine.to_dict(include_cepages=True)
         data['not_stored'] = not_stored
+        data['not_stored_by_size'] = not_stored_by_size
 
         return jsonify(convert({
             "success": True,
@@ -670,9 +687,9 @@ def create_app():
                 db.session.commit()
             return jsonify({"success": True})
         
-        other_stored = wine_stored_quantity(wine_id, existing.id if existing else None)
-        old_total = wine_stored_quantity(wine_id)
-        net_stock = wine_net_stock(wine_id)
+        other_stored = wine_stored_quantity(wine_id, existing.id if existing else None, size_id)
+        old_total = wine_stored_quantity(wine_id, None, size_id)
+        net_stock = wine_net_stock(wine_id, size_id)
         new_total = other_stored + quantity
         if new_total > net_stock and new_total > old_total:
             max_qty = net_stock - other_stored
@@ -729,9 +746,10 @@ def create_app():
             db.session.commit()
             return jsonify({"success": True})
         
-        other_stored = wine_stored_quantity(position.wine_id, position.id)
-        old_total = wine_stored_quantity(position.wine_id)
-        net_stock = wine_net_stock(position.wine_id)
+        new_size_id = data.get('size_id', position.size_id)
+        other_stored = wine_stored_quantity(position.wine_id, position.id, new_size_id)
+        old_total = wine_stored_quantity(position.wine_id, None, new_size_id)
+        net_stock = wine_net_stock(position.wine_id, new_size_id)
         new_total = other_stored + quantity
         if new_total > net_stock and new_total > old_total:
             max_qty = net_stock - other_stored
@@ -743,7 +761,7 @@ def create_app():
         position.wall = data.get('wall', position.wall)
         position.casier = data.get('casier', position.casier)
         position.quantity = quantity
-        position.size_id = data.get('size_id', position.size_id)
+        position.size_id = new_size_id
         
         db.session.commit()
         
