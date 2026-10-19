@@ -822,8 +822,8 @@ function wineCardsHtml(wines) {
                 '<p class="wine-propriete">', escapeHtml(wine.propriete || ''), '</p>',
                 '<p class="wine-region">', escapeHtml(wine.region || ''), '</p>',
 		avPriceHtml ? ''.concat('<p class="wine-av-price">', avPriceHtml, '</p>') : '',
-                bottlesHtml ? ''.concat('<p class="wine-bottles">', bottlesHtml, '</p>') : '',
-                bottlesToStoreHtml ? ''.concat('<p class="wine-bottles">', bottlesToStoreHtml, '</p>') : '',
+                bottlesHtml ? ''.concat('<p class="wine-bottles"><span class="bottle-label">Bouteilles</span>', bottlesHtml, '</p>') : '',
+                bottlesToStoreHtml ? ''.concat('<p class="wine-bottles"><span class="bottle-label bottle-label-store">À ranger</span>', bottlesToStoreHtml, '</p>') : '',
             '</div>',
             '</div>',
             '<div class="wine-card-footer">',
@@ -882,7 +882,8 @@ async function showWineDetail(id) {
                 <p><strong>Appellation:</strong> ${escapeHtml(wine.apellation || '-')}</p>
                 <p><strong>Couleur:</strong> ${escapeHtml(wine.color || '-')}</p>
                 <p><strong>Catégorie:</strong> ${escapeHtml(wine.category || '-')}</p>
-                <p><strong>Quantité:</strong> ${wine.bottles && wine.bottles.length ? wine.bottles.map(b => `<span class="chip">${b.quantity} ${escapeHtml(b.size || '')}</span>`).join(' ') : '0'}</p>
+                <p><strong>Bouteilles:</strong> ${wine.bottles && wine.bottles.length ? wine.bottles.map(b => `<span class="chip chip-stock">${b.quantity} ${escapeHtml(b.size || '')}</span>`).join(' ') : '0'}</p>
+                <p><strong>À ranger:</strong> ${wine.bottlesToStore && wine.bottlesToStore.length ? wine.bottlesToStore.map(b => `<span class="chip chip-to-store">${b.quantity} ${escapeHtml(b.size || '')}</span>`).join(' ') : '0'}</p>
             </div>
             <div class="detail-section">
                 <h3>À garder</h3>

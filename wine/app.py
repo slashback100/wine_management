@@ -427,6 +427,14 @@ def create_app():
         data = wine.to_dict(include_cepages=True)
         data['not_stored'] = not_stored
         data['not_stored_by_size'] = not_stored_by_size
+        data['bottlesToStore'] = []
+        for size_id_str, qty in not_stored_by_size.items():
+            if qty > 0:
+                size = Size.query.get(int(size_id_str))
+                data['bottlesToStore'].append({
+                    "size": size.label if size else "Inconnu",
+                    "quantity": qty
+                })
 
         return jsonify(convert({
             "success": True,

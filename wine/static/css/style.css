@@ -868,6 +868,7 @@ textarea:focus {
     margin-top: 0.6rem;
     display: flex;
     flex-wrap: wrap;
+    align-items: center;
     gap: 0.3rem;
 }
 
@@ -922,6 +923,31 @@ textarea:focus {
     border: 1px solid var(--border);
     font-size: 0.78rem;
     font-weight: 600;
+}
+
+.chip-stock {
+    background: var(--success-soft);
+    border-color: var(--success);
+    color: var(--success);
+}
+
+.chip-to-store {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.bottle-label {
+    align-self: center;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+}
+
+.bottle-label-store {
+    color: var(--accent);
 }
 
 /* -------------------------------------------------------------------------
