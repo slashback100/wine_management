@@ -473,7 +473,8 @@
             <div class="form-row">
                 <div class="form-group" style="flex: 2;">
                     <label for="wine-lookup-query">Nom, producteur, appellation...</label>
-                    <input type="text" id="wine-lookup-query" placeholder="Ex: Château Margaux 2015" autocomplete="off">
+                    <input type="text" id="wine-lookup-query" placeholder="Ex: Château Margaux 2015" autocomplete="off"
+                       onkeydown="if (event.key === 'Enter') { event.preventDefault(); runWineLookup(); }">
                 </div>
                 <div class="form-group" style="flex: 0; align-self: flex-end;">
                     <button type="button" class="btn btn-primary" onclick="runWineLookup()">Rechercher</button>
@@ -523,6 +524,23 @@ const ICONS = {
 let lookupData = {};
 let currentLookupWineId = null;
 let currentLookupFields = null;
+let currentLookupOrigin = null;
+let currentLookupExisting = null;
+let currentLookupPrepared = null;
+
+const LOOKUP_UPDATE_FIELDS = [
+    { key: 'name_climat', label: 'Nom / Climat', type: 'text' },
+    { key: 'year', label: 'Année', type: 'text' },
+    { key: 'producer', label: 'Producteur', type: 'text' },
+    { key: 'country', label: 'Pays', type: 'lookup', local: 'country_id' },
+    { key: 'region', label: 'Région', type: 'lookup', local: 'region_id' },
+    { key: 'apellation', label: 'Appellation', type: 'lookup', local: 'apellation_id' },
+    { key: 'color', label: 'Couleur', type: 'lookup', local: 'color_id' },
+    { key: 'my_note', label: 'Note (/20)', type: 'text' },
+    { key: 'meal', label: 'Accords mets', type: 'text' },
+    { key: 'comment', label: 'Commentaire', type: 'text' },
+    { key: 'cepages', label: 'Cépages', type: 'cepages' }
+];
 
 window.addEventListener('DOMContentLoaded', init);
 
@@ -1037,6 +1055,12 @@ async function runWineLookup() {
             return;
         }
         resultsBox.innerHTML = '';
+        if (result.fallback) {
+            const hint = document.createElement('p');
+            hint.className = 'lookup-hint lookup-note';
+            hint.textContent = `Aucun résultat direct pour « ${query} » : recherche élargie par mots-clés.`;
+            resultsBox.appendChild(hint);
+        }
         result.data.forEach(item => {
             const row = document.createElement('button');
             row.type = 'button';
@@ -1073,29 +1097,93 @@ async function showWineLookupDetail(externalId) {
     const { fields, missing } = result.data;
     currentLookupWineId = externalId;
     currentLookupFields = fields;
+    currentLookupPrepared = null;
 
-    const wine = fields;
+    const origin = document.getElementById('wine-lookup-origin').value;
+    currentLookupOrigin = origin;
+    currentLookupExisting = null;
+
+    if (origin !== 'form') {
+        try {
+            const existing = await fetch(`${API_BASE}/wines/${origin}`, { cache: 'no-store' }).then(r => r.json());
+            currentLookupExisting = existing.success ? existing.data : null;
+        } catch (e) {
+            currentLookupExisting = null;
+        }
+    }
+
+    renderWineLookupDetail(missing);
+}
+
+function lookupFieldValue(fields, field) {
+    if (field.type === 'cepages') {
+        return (fields.cepages || []).map(c => c.cepage).filter(Boolean).join(', ');
+    }
+    return fields[field.key];
+}
+
+function lookupCurrentValue(existing, field) {
+    if (!existing) return '';
+    if (field.type === 'cepages') {
+        return (existing.cepages || []).map(c => c.cepage).filter(Boolean).join(', ');
+    }
+    if (field.type === 'lookup') {
+        return existing[field.key] || '';
+    }
+    const value = existing[field.key];
+    return value === null || value === undefined ? '' : String(value);
+}
+
+function lookupFieldChanged(existing, field, fields) {
+    if (!existing) return true;
+    const external = String(lookupFieldValue(fields, field) || '').trim();
+    if (!external) return false;
+    const current = String(lookupCurrentValue(existing, field) || '').trim();
+    return external.toLowerCase() !== current.toLowerCase();
+}
+
+function renderWineLookupDetail(missing) {
+    const body = document.getElementById('wine-lookup-detail-body');
+    const wine = currentLookupFields || {};
+    const existing = currentLookupExisting;
+    const canUpdate = !!existing;
+
     const cepages = (wine.cepages || []).map(c =>
         `<span class="chip chip-stock${c.cepage_id ? '' : ' chip-new'}">${escapeHtml(c.cepage)}${c.cepage_id ? '' : ' (nouveau)'}</span>`
     ).join(' ') || '-';
     const flags = [];
-    if (missing.country) flags.push(`Pays « ${escapeHtml(wine.country)} »`);
-    if (missing.region) flags.push(`Région « ${escapeHtml(wine.region)} »`);
-    if (missing.apellation) flags.push(`Appellation « ${escapeHtml(wine.apellation)} »`);
-    if (missing.color) flags.push(`Couleur « ${escapeHtml(wine.color)} »`);
-    if (missing.cepages && missing.cepages.length) flags.push(`Cépages : ${missing.cepages.map(escapeHtml).join(', ')}`);
+    if (missing && missing.country) flags.push(`Pays « ${escapeHtml(wine.country)} »`);
+    if (missing && missing.region) flags.push(`Région « ${escapeHtml(wine.region)} »`);
+    if (missing && missing.apellation) flags.push(`Appellation « ${escapeHtml(wine.appellation)} »`);
+    if (missing && missing.color) flags.push(`Couleur « ${escapeHtml(wine.color)} »`);
+    if (missing && missing.cepages && missing.cepages.length) flags.push(`Cépages : ${missing.cepages.map(escapeHtml).join(', ')}`);
+
+    const rows = LOOKUP_UPDATE_FIELDS.map(field => {
+        const external = lookupFieldValue(wine, field);
+        const value = (external === null || external === undefined || external === '') ? '-' : escapeHtml(external);
+        const current = canUpdate ? lookupCurrentValue(existing, field) : '';
+        const changed = canUpdate ? lookupFieldChanged(existing, field, wine) : false;
+        const button = canUpdate
+            ? `<button type="button" class="lookup-field-update${changed ? '' : ' is-same'}"
+                       title="${changed ? 'Mettre à jour' : 'Déjà identique'} : ${escapeHtml(field.label)}"
+                       onclick="applyLookupField('${field.key}')">&#8635;</button>`
+            : '';
+        const currentHtml = canUpdate
+            ? `<span class="lookup-field-current">actuel : ${current ? escapeHtml(current) : '-'}</span>`
+            : '';
+        return `<div class="lookup-field">
+                    <span class="lookup-field-label">${escapeHtml(field.label)}:</span>
+                    <span class="lookup-field-value">${value}</span>
+                    ${button}
+                    ${currentHtml}
+                </div>`;
+    }).join('');
 
     body.innerHTML = `
         <div class="detail-grid">
             <div class="detail-section">
                 <h3>Informations</h3>
-                <p><strong>Nom:</strong> ${escapeHtml(wine.name_climat || '-')}</p>
-                <p><strong>Année:</strong> ${wine.year || '-'}</p>
-                <p><strong>Producteur:</strong> ${escapeHtml(wine.producer || '-')}</p>
-                <p><strong>Pays:</strong> ${escapeHtml(wine.country || '-')}</p>
-                <p><strong>Région:</strong> ${escapeHtml(wine.region || '-')}</p>
-                <p><strong>Appellation:</strong> ${escapeHtml(wine.apellation || '-')}</p>
-                <p><strong>Couleur:</strong> ${escapeHtml(wine.color || '-')}</p>
+                ${rows}
                 <p><strong>Classification:</strong> ${escapeHtml(wine.classification || '-')}</p>
                 <p><strong>Alcool:</strong> ${wine.alcohol ? escapeHtml(String(wine.alcohol)) + ' %' : '-'}</p>
             </div>
@@ -1112,17 +1200,18 @@ async function showWineLookupDetail(externalId) {
                 <p>${escapeHtml(wine.comment || '-')}</p>
             </div>
         </div>
+        ${canUpdate ? '<div class="lookup-warning">La petite icône &#8635; à côté d\'une donnée met à jour ce champ seul dans la fiche. « actuel » indique la valeur en base.</div>' : ''}
         ${flags.length ? `<div class="lookup-warning">Valeurs absentes de vos listes et qui seront créées : ${flags.join(', ')}.</div>` : ''}
     `;
 
-    const origin = document.getElementById('wine-lookup-origin').value;
     const actions = document.getElementById('wine-lookup-detail-actions');
-    const label = origin === 'form' ? 'Compléter le formulaire' : 'Mettre à jour la fiche';
+    const label = currentLookupOrigin === 'form' ? 'Compléter le formulaire' : 'Mettre à jour la fiche';
     actions.innerHTML = `
         <button type="button" class="btn btn-secondary" onclick="closeWineLookupDetail()">Annuler</button>
         <button type="button" class="btn btn-primary" onclick="applyWineLookup()">${label}</button>
     `;
 }
+
 
 function closeWineLookupDetail() {
     document.getElementById('wine-lookup-detail-modal').style.display = 'none';
@@ -1174,6 +1263,80 @@ async function applyWineLookup(createLookups = true) {
         showWineDetail(wineId);
     } else {
         showToast(saveResult.error || 'Erreur lors de la mise à jour');
+    }
+}
+
+async function prepareLookupFields() {
+    if (currentLookupPrepared) return currentLookupPrepared;
+    const response = await fetch(`${API_BASE}/wineapi/detail/${encodeURIComponent(currentLookupWineId)}?create_lookups=1`);
+    const result = await response.json();
+    if (!result.success) {
+        showToast(result.error || 'Erreur lors de la préparation');
+        return null;
+    }
+    currentLookupPrepared = result.data.fields;
+    await loadLookups();
+    return currentLookupPrepared;
+}
+
+function applyFieldToWine(merged, field, fields) {
+    if (field.type === 'lookup') {
+        const id = fields[field.key + '_id'];
+        if (id) merged[field.local] = id;
+        return;
+    }
+    if (field.type === 'cepages') {
+        const cepages = (fields.cepages || []).filter(c => c.cepage_id);
+        if (cepages.length) {
+            merged.cepages = cepages.map(c => ({ cepage_id: c.cepage_id, percentage: null }));
+        }
+        return;
+    }
+    const value = fields[field.key];
+    if (value !== null && value !== undefined && value !== '') {
+        merged[field.key] = value;
+    }
+}
+
+async function applyLookupField(key) {
+    const origin = currentLookupOrigin;
+    if (!origin || origin === 'form') return;
+    const field = LOOKUP_UPDATE_FIELDS.find(f => f.key === key);
+    if (!field) return;
+
+    try {
+        let fields = currentLookupFields;
+        if (field.type === 'lookup' || field.type === 'cepages') {
+            fields = await prepareLookupFields();
+            if (!fields) return;
+        }
+        let existing = currentLookupExisting;
+        if (!existing) {
+            const loaded = await fetch(`${API_BASE}/wines/${origin}`, { cache: 'no-store' }).then(r => r.json());
+            if (!loaded.success) {
+                showToast('Erreur chargement du vin');
+                return;
+            }
+            existing = loaded.data;
+        }
+        const merged = Object.assign({}, existing);
+        applyFieldToWine(merged, field, fields);
+        const response = await fetch(`${API_BASE}/wines/${origin}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(merged)
+        });
+        const result = await response.json();
+        if (!result.success) {
+            showToast(result.error || 'Erreur lors de la mise à jour');
+            return;
+        }
+        currentLookupExisting = result.data;
+        showToast(`${field.label} mis à jour`);
+        renderWineLookupDetail();
+        showWineDetail(origin);
+    } catch (e) {
+        showToast('Erreur lors de la mise à jour');
     }
 }
 

@@ -593,7 +593,7 @@ def create_app():
             return jsonify({"success": False, "error": "Recherche externe non configurée"}), 400
 
         try:
-            data = client.search(query, limit=15)
+            data = client.search_resilient(query, limit=15)
         except WineApiError as exc:
             return jsonify({"success": False, "error": str(exc)}), 502
 
@@ -611,7 +611,13 @@ def create_app():
                 "ratingsCount": item.get('ratingsCount'),
                 "confidence": item.get('confidence'),
             })
-        return jsonify({"success": True, "data": results, "total": data.get('total')})
+        return jsonify({
+            "success": True,
+            "data": results,
+            "total": data.get('total'),
+            "query": data.get('query'),
+            "fallback": data.get('fallback', False),
+        })
 
     @app.route('/wine/api/wineapi/detail/<wine_id>')
     def wineapi_detail(wine_id):

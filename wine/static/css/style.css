@@ -1017,6 +1017,68 @@ textarea:focus {
     font-size: 0.85rem;
 }
 
+.lookup-note {
+    color: var(--gold);
+}
+
+.lookup-field {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-bottom: 0.45rem;
+    font-size: 0.92rem;
+}
+
+.lookup-field-label {
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+.lookup-field-value {
+    color: var(--text-primary);
+    word-break: break-word;
+}
+
+.lookup-field-current {
+    color: var(--text-muted);
+    font-size: 0.78rem;
+}
+
+.lookup-field-update {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 1.35rem;
+    height: 1.35rem;
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    background: var(--bg-card);
+    color: var(--accent);
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.85rem;
+    line-height: 1;
+    transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.lookup-field-update:hover {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+}
+
+.lookup-field-update.is-same {
+    opacity: 0.35;
+    cursor: default;
+}
+
+.lookup-field-update.is-same:hover {
+    border-color: var(--border);
+    background: var(--bg-card);
+}
+
 .chip-new {
     background: var(--gold-soft);
     border-color: var(--gold);
