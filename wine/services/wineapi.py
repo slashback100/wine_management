@@ -15,6 +15,17 @@ STOP_WORDS = {
     'de', 'du', 'des', 'la', 'le', 'les', 'un', 'une', 'et', 'a', 'au', 'aux',
     'en', 'the', 'of', 'and', 'd', 'l', 'sur', 'par', 'en'
 }
+COLOR_LABELS = {
+    'red': 'rouge',
+    'white': 'blanc',
+    'rosé': 'rose',
+    'rose': 'rose',
+    'sparkling': 'bulles',
+    'champagne': 'bulles',
+    'dessert': 'liquoreux',
+    'fortified': 'fortifie',
+    'orange': 'orange',
+}
 
 
 def normalize(text):
@@ -147,11 +158,14 @@ class WineApiClient:
         wanted = [normalize(token) for token in tokens]
         matches = []
         for item in merged:
+            wine_type = (item.get('type') or '').lower()
             haystack = normalize(' '.join([
                 item.get('name') or '',
                 item.get('winery') or '',
                 item.get('region') or '',
                 item.get('country') or '',
+                COLOR_LABELS.get(wine_type, ''),
+                wine_type,
             ]))
             score = sum(1 for word in wanted if word in haystack)
             if score:
