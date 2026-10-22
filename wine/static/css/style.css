@@ -562,7 +562,7 @@ textarea:focus {
 }
 
 .search-bar > input[type="text"] {
-    flex: 1 1 220px;
+    flex: 1 1 auto;
     height: 2.8rem;
     min-height: 2.8rem;
     line-height: 1.2;
