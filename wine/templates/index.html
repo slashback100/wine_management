@@ -133,7 +133,13 @@
             <input type="hidden" id="wine-id">
             <input type="hidden" id="wine-position-wall">
             <input type="hidden" id="wine-position-casier">
-            
+
+            <div class="form-group">
+                <button type="button" class="btn btn-info btn-block" onclick="openWineLookup()">
+                    Rechercher sur WineAPI (compléter automatiquement)
+                </button>
+            </div>
+
             <div class="form-row">
                 <div class="form-group">
                     <label for="name_climat">Nom / Climat</label>
@@ -456,6 +462,39 @@
         </form>
     </div>
 </div>
+
+<div class="modal" id="wine-lookup-modal">
+    <div class="modal-content modal-large">
+        <div class="modal-header">
+            <h2>Rechercher un vin (WineAPI)</h2>
+            <button class="btn-close" onclick="closeWineLookup()">&times;</button>
+        </div>
+        <div class="wine-form">
+            <div class="form-row">
+                <div class="form-group" style="flex: 2;">
+                    <label for="wine-lookup-query">Nom, producteur, appellation...</label>
+                    <input type="text" id="wine-lookup-query" placeholder="Ex: Château Margaux 2015" autocomplete="off">
+                </div>
+                <div class="form-group" style="flex: 0; align-self: flex-end;">
+                    <button type="button" class="btn btn-primary" onclick="runWineLookup()">Rechercher</button>
+                </div>
+            </div>
+            <input type="hidden" id="wine-lookup-origin">
+            <div id="wine-lookup-results" class="lookup-results"></div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="wine-lookup-detail-modal">
+    <div class="modal-content modal-large">
+        <div class="modal-header">
+            <h2 id="wine-lookup-detail-title">Fiche externe</h2>
+            <button class="btn-close" onclick="closeWineLookupDetail()">&times;</button>
+        </div>
+        <div id="wine-lookup-detail-body" class="wine-detail"></div>
+        <div class="form-actions" id="wine-lookup-detail-actions"></div>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
@@ -477,10 +516,13 @@ const ICONS = {
     filter: svgIcon('<path d="M4 6h16M4 12h10M4 18h6"/>'),
     reset: svgIcon('<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/>'),
     chevronLeft: svgIcon('<path d="M15 18l-6-6 6-6"/>'),
-    chevronRight: svgIcon('<path d="M9 18l6-6-6-6"/>')
+    chevronRight: svgIcon('<path d="M9 18l6-6-6-6"/>'),
+    search: svgIcon('<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>')
 };
 
 let lookupData = {};
+let currentLookupWineId = null;
+let currentLookupFields = null;
 
 window.addEventListener('DOMContentLoaded', init);
 
@@ -922,6 +964,7 @@ async function showWineDetail(id) {
             <button type="button" class="btn btn-success" title="Ajouter des bouteilles" aria-label="Ajouter des bouteilles" onclick="showAddBottleModal(${wine.id})"><span class="detail-action-icon">${ICONS.plus}</span><span>Ajouter</span></button>
             <button type="button" class="btn btn-warning" title="Enlever des bouteilles" aria-label="Enlever des bouteilles" onclick="showRemoveBottleModal(${wine.id})"><span class="detail-action-icon">${ICONS.minus}</span><span>Enlever</span></button>
             <button type="button" class="btn btn-info" title="Historique" aria-label="Historique" onclick="showHistoryModal(${wine.id})"><span class="detail-action-icon">${ICONS.history}</span><span>Historique</span></button>
+            <button type="button" class="btn btn-success" title="Enrichir via WineAPI" aria-label="Enrichir" onclick="enrichWine(${wine.id})"><span class="detail-action-icon">${ICONS.search}</span><span>Enrichir</span></button>
             <button type="button" class="btn btn-secondary" title="Dupliquer" aria-label="Dupliquer" onclick="duplicateWine(${wine.id}); closeDetailModal();"><span class="detail-action-icon">${ICONS.copy}</span><span>Dupliquer</span></button>
         </div>
     `;
@@ -951,6 +994,244 @@ function showWineForm() {
     document.getElementById('wine-position-casier').value = '';
     resetCepages();
     document.getElementById('wine-modal').style.display = 'flex';
+}
+
+/* ----- Recherche externe WineAPI ----- */
+function openWineLookup() {
+    document.getElementById('wine-lookup-origin').value = 'form';
+    document.getElementById('wine-lookup-query').value = document.getElementById('name_climat').value || '';
+    document.getElementById('wine-lookup-results').innerHTML = '';
+    document.getElementById('wine-lookup-modal').style.display = 'flex';
+    document.getElementById('wine-lookup-query').focus();
+}
+
+function enrichWine(id) {
+    document.getElementById('wine-lookup-origin').value = id;
+    document.getElementById('wine-lookup-query').value = document.getElementById('detail-title').textContent || '';
+    document.getElementById('wine-lookup-results').innerHTML = '';
+    document.getElementById('wine-lookup-modal').style.display = 'flex';
+    document.getElementById('wine-lookup-query').focus();
+}
+
+function closeWineLookup() {
+    document.getElementById('wine-lookup-modal').style.display = 'none';
+}
+
+async function runWineLookup() {
+    const query = document.getElementById('wine-lookup-query').value.trim();
+    const resultsBox = document.getElementById('wine-lookup-results');
+    if (query.length < 3) {
+        resultsBox.innerHTML = '<p class="lookup-hint">Saisissez au moins 3 caractères.</p>';
+        return;
+    }
+    resultsBox.innerHTML = '<p class="lookup-hint">Recherche en cours...</p>';
+    try {
+        const response = await fetch(`${API_BASE}/wineapi/search?q=${encodeURIComponent(query)}`);
+        const result = await response.json();
+        if (!result.success) {
+            resultsBox.innerHTML = `<p class="lookup-hint lookup-error">${escapeHtml(result.error || 'Erreur')}</p>`;
+            return;
+        }
+        if (!result.data.length) {
+            resultsBox.innerHTML = '<p class="lookup-hint">Aucun vin trouvé.</p>';
+            return;
+        }
+        resultsBox.innerHTML = '';
+        result.data.forEach(item => {
+            const row = document.createElement('button');
+            row.type = 'button';
+            row.className = 'lookup-result';
+            const meta = [item.winery, item.region, item.country].filter(Boolean).join(' · ');
+            const rating = item.averageRating ? `★ ${item.averageRating.toFixed(1)} (${item.ratingsCount || 0})` : '';
+            row.innerHTML = `
+                <span class="lookup-result-main">
+                    <strong>${escapeHtml(item.name || '')}${item.vintage ? ' ' + item.vintage : ''}</strong>
+                    <small>${escapeHtml(meta)}</small>
+                </span>
+                <span class="lookup-result-side">${escapeHtml(rating)}</span>
+            `;
+            row.addEventListener('click', () => showWineLookupDetail(item.id));
+            resultsBox.appendChild(row);
+        });
+    } catch (e) {
+        resultsBox.innerHTML = '<p class="lookup-hint lookup-error">Erreur réseau.</p>';
+    }
+}
+
+async function showWineLookupDetail(externalId) {
+    const body = document.getElementById('wine-lookup-detail-body');
+    body.innerHTML = '<div class="detail-loading">Chargement...</div>';
+    document.getElementById('wine-lookup-detail-actions').innerHTML = '';
+    document.getElementById('wine-lookup-detail-modal').style.display = 'flex';
+
+    const response = await fetch(`${API_BASE}/wineapi/detail/${encodeURIComponent(externalId)}`);
+    const result = await response.json();
+    if (!result.success) {
+        body.innerHTML = `<p class="lookup-hint lookup-error">${escapeHtml(result.error || 'Erreur')}</p>`;
+        return;
+    }
+    const { fields, missing } = result.data;
+    currentLookupWineId = externalId;
+    currentLookupFields = fields;
+
+    const wine = fields;
+    const cepages = (wine.cepages || []).map(c =>
+        `<span class="chip chip-stock${c.cepage_id ? '' : ' chip-new'}">${escapeHtml(c.cepage)}${c.cepage_id ? '' : ' (nouveau)'}</span>`
+    ).join(' ') || '-';
+    const flags = [];
+    if (missing.country) flags.push(`Pays « ${escapeHtml(wine.country)} »`);
+    if (missing.region) flags.push(`Région « ${escapeHtml(wine.region)} »`);
+    if (missing.apellation) flags.push(`Appellation « ${escapeHtml(wine.apellation)} »`);
+    if (missing.color) flags.push(`Couleur « ${escapeHtml(wine.color)} »`);
+    if (missing.cepages && missing.cepages.length) flags.push(`Cépages : ${missing.cepages.map(escapeHtml).join(', ')}`);
+
+    body.innerHTML = `
+        <div class="detail-grid">
+            <div class="detail-section">
+                <h3>Informations</h3>
+                <p><strong>Nom:</strong> ${escapeHtml(wine.name_climat || '-')}</p>
+                <p><strong>Année:</strong> ${wine.year || '-'}</p>
+                <p><strong>Producteur:</strong> ${escapeHtml(wine.producer || '-')}</p>
+                <p><strong>Pays:</strong> ${escapeHtml(wine.country || '-')}</p>
+                <p><strong>Région:</strong> ${escapeHtml(wine.region || '-')}</p>
+                <p><strong>Appellation:</strong> ${escapeHtml(wine.apellation || '-')}</p>
+                <p><strong>Couleur:</strong> ${escapeHtml(wine.color || '-')}</p>
+                <p><strong>Classification:</strong> ${escapeHtml(wine.classification || '-')}</p>
+                <p><strong>Alcool:</strong> ${wine.alcohol ? escapeHtml(String(wine.alcohol)) + ' %' : '-'}</p>
+            </div>
+            <div class="detail-section">
+                <h3>Cépages</h3>
+                <p>${cepages}</p>
+                <h3>Accords mets</h3>
+                <p>${escapeHtml(wine.meal || '-')}</p>
+                <h3>Note (convertie /20)</h3>
+                <p>${wine.my_note ? wine.my_note + '/20' : '-'}</p>
+            </div>
+            <div class="detail-section" style="grid-column: 1 / -1;">
+                <h3>Description</h3>
+                <p>${escapeHtml(wine.comment || '-')}</p>
+            </div>
+        </div>
+        ${flags.length ? `<div class="lookup-warning">Valeurs absentes de vos listes et qui seront créées : ${flags.join(', ')}.</div>` : ''}
+    `;
+
+    const origin = document.getElementById('wine-lookup-origin').value;
+    const actions = document.getElementById('wine-lookup-detail-actions');
+    const label = origin === 'form' ? 'Compléter le formulaire' : 'Mettre à jour la fiche';
+    actions.innerHTML = `
+        <button type="button" class="btn btn-secondary" onclick="closeWineLookupDetail()">Annuler</button>
+        <button type="button" class="btn btn-primary" onclick="applyWineLookup()">${label}</button>
+    `;
+}
+
+function closeWineLookupDetail() {
+    document.getElementById('wine-lookup-detail-modal').style.display = 'none';
+}
+
+async function applyWineLookup(createLookups = true) {
+    const origin = document.getElementById('wine-lookup-origin').value;
+    const body = document.getElementById('wine-lookup-detail-body');
+
+    let fields = currentLookupFields;
+    if (createLookups) {
+        body.innerHTML = '<div class="detail-loading">Préparation...</div>';
+        const response = await fetch(`${API_BASE}/wineapi/detail/${encodeURIComponent(currentLookupWineId)}?create_lookups=1`);
+        const result = await response.json();
+        if (!result.success) {
+            body.innerHTML = `<p class="lookup-hint lookup-error">${escapeHtml(result.error || 'Erreur')}</p>`;
+            return;
+        }
+        fields = result.data.fields;
+        await loadLookups();
+    }
+
+    if (origin === 'form') {
+        fillWineFormFromLookup(fields);
+        closeWineLookupDetail();
+        closeWineLookup();
+        showToast('Formulaire complété - vérifiez et enregistrez');
+        return;
+    }
+
+    const wineId = parseInt(origin);
+    const existing = await fetch(`${API_BASE}/wines/${wineId}`, { cache: 'no-store' }).then(r => r.json());
+    if (!existing.success) {
+        showToast('Erreur chargement du vin');
+        return;
+    }
+    const merged = buildMergedWine(existing.data, fields);
+    const saveResponse = await fetch(`${API_BASE}/wines/${wineId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(merged)
+    });
+    const saveResult = await saveResponse.json();
+    if (saveResult.success) {
+        showToast('Fiche mise à jour');
+        closeWineLookupDetail();
+        closeWineLookup();
+        closeDetailModal();
+        showWineDetail(wineId);
+    } else {
+        showToast(saveResult.error || 'Erreur lors de la mise à jour');
+    }
+}
+
+function buildMergedWine(existing, fields) {
+    const merged = Object.assign({}, existing);
+    const fill = (key, value, current) => {
+        if (value === null || value === undefined || value === '') return current;
+        return value;
+    };
+    merged.name_climat = fill('name_climat', fields.name_climat, existing.name_climat);
+    merged.year = fill('year', fields.year, existing.year);
+    merged.producer = fill('producer', fields.producer, existing.producer);
+    merged.propriete = fill('propriete', fields.propriete, existing.propriete);
+    merged.country_id = fields.country_id || existing.country_id;
+    merged.region_id = fields.region_id || existing.region_id;
+    merged.apellation_id = fields.apellation_id || existing.apellation_id;
+    merged.color_id = fields.color_id || existing.color_id;
+    merged.comment = existing.comment || fields.comment;
+    merged.meal = fields.meal || existing.meal;
+
+    const existingCepages = new Map((existing.cepages || []).map(c => [c.cepage_id, c]));
+    fields.cepages.forEach(c => {
+        if (c.cepage_id && !existingCepages.has(c.cepage_id)) {
+            existingCepages.set(c.cepage_id, { cepage_id: c.cepage_id, percentage: null });
+        }
+    });
+    merged.cepages = Array.from(existingCepages.values()).map(c => ({
+        cepage_id: c.cepage_id,
+        percentage: c.percentage || null
+    }));
+    return merged;
+}
+
+function fillWineFormFromLookup(fields) {
+    if (fields.name_climat) document.getElementById('name_climat').value = fields.name_climat;
+    if (fields.year && !document.getElementById('year').value) document.getElementById('year').value = fields.year;
+    if (fields.propriete && !document.getElementById('propriete').value) document.getElementById('propriete').value = fields.propriete;
+    if (fields.producer && !document.getElementById('producer').value) document.getElementById('producer').value = fields.producer;
+    if (fields.country_id) {
+        document.getElementById('country_id').value = fields.country_id;
+        loadRegions(fields.region_id).then(() => {
+            if (fields.apellation_id) document.getElementById('apellation_id').value = fields.apellation_id;
+        });
+    }
+    if (fields.color_id && !document.getElementById('color_id').value) document.getElementById('color_id').value = fields.color_id;
+    if (fields.meal && !document.getElementById('meal').value) document.getElementById('meal').value = fields.meal;
+    if (fields.comment && !document.getElementById('comment').value) document.getElementById('comment').value = fields.comment;
+
+    if (fields.cepages && fields.cepages.length) {
+        resetCepages();
+        fields.cepages.forEach((c, i) => { if (i > 0) addCepage(); });
+        fields.cepages.forEach((c, i) => {
+            const rows = document.querySelectorAll('.cepage-row');
+            if (rows[i] && c.cepage_id) {
+                rows[i].querySelector('.cepage-select').value = c.cepage_id;
+            }
+        });
+    }
 }
 
 async function editWine(id) {

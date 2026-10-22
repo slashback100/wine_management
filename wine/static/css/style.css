@@ -321,6 +321,11 @@ button, input, select, textarea {
     transition: background 0.18s, color 0.18s, border-color 0.18s, transform 0.12s, box-shadow 0.18s;
 }
 
+.btn-block {
+    display: flex;
+    width: 100%;
+}
+
 .btn:active {
     transform: translateY(1px);
 }
@@ -397,8 +402,7 @@ button, input, select, textarea {
 }
 
 .btn-sm {
-    padding: 0.4rem 0.85rem;
-    font-size: 0.82rem;
+    padding: 0.4rem 0.85rem;    font-size: 0.82rem;
 }
 
 .btn-icon {
@@ -942,6 +946,81 @@ textarea:focus {
     background: var(--accent-soft);
     border-color: var(--accent);
     color: var(--accent);
+}
+
+/* Recherche externe WineAPI */
+.lookup-results {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    max-height: 55vh;
+    overflow-y: auto;
+    margin-top: 0.5rem;
+}
+
+.lookup-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+    text-align: left;
+    padding: 0.7rem 0.9rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg-card);
+    color: var(--text-primary);
+    cursor: pointer;
+    font: inherit;
+    transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.lookup-result:hover {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+}
+
+.lookup-result-main {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 0;
+}
+
+.lookup-result-main small {
+    color: var(--text-muted);
+    font-size: 0.78rem;
+}
+
+.lookup-result-side {
+    color: var(--gold);
+    font-size: 0.82rem;
+    white-space: nowrap;
+}
+
+.lookup-hint {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    padding: 0.5rem 0;
+}
+
+.lookup-error {
+    color: var(--danger, #e5484d);
+}
+
+.lookup-warning {
+    margin: 0 1.35rem 1rem;
+    padding: 0.6rem 0.8rem;
+    border-radius: var(--radius-sm);
+    background: var(--gold-soft);
+    border: 1px solid var(--border);
+    font-size: 0.85rem;
+}
+
+.chip-new {
+    background: var(--gold-soft);
+    border-color: var(--gold);
+    color: var(--gold);
 }
 
 .bottle-label {

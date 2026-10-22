@@ -18,3 +18,6 @@ class Config:
     }
 
     ALLOWED_IPS = ['w.x.y.z', '*']
+
+    # Clé API wineapi.io (https://wineapi.io). Laisser vide pour désactiver la recherche externe.
+    WINE_API_KEY = os.environ.get('WINE_API_KEY', '')

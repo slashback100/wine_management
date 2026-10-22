@@ -1,0 +1,12 @@
+ALTER TABLE `wine`
+  MODIFY `name_climat` VARCHAR(255) NULL,
+  MODIFY `propriete` VARCHAR(255) NULL,
+  MODIFY `producer` VARCHAR(255) NULL,
+  MODIFY `distinction` VARCHAR(255) NULL,
+  MODIFY `medal` VARCHAR(100) NULL,
+  MODIFY `view` TEXT NULL,
+  MODIFY `noze` TEXT NULL,
+  MODIFY `taste` TEXT NULL,
+  MODIFY `meal` TEXT NULL,
+  MODIFY `comment` TEXT NULL,
+  MODIFY `my_note` FLOAT NULL;

@@ -13,6 +13,9 @@ from models import Country, Region, Apellation, Color, Category, Cepage, Size, T
 from models import User
 from sqlalchemy.orm import aliased
 from decimal import Decimal
+import unicodedata
+
+from services.wineapi import WineApiClient, WineApiError
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +62,144 @@ def create_app():
         consumed = db.session.query(func.coalesce(func.sum(OutRecord.quantity), 0)).filter(
             OutRecord.wine_id == wine_id, OutRecord.size_id == size_id).scalar() or 0
         return int(bought) - int(consumed)
-    
+
+    def normalize_label(value):
+        if not value:
+            return ''
+        text = unicodedata.normalize('NFKD', str(value))
+        text = ''.join(c for c in text if not unicodedata.combining(c))
+        return ' '.join(text.lower().replace('-', ' ').split())
+
+    def match_or_lookup(model, label, create=False, **extra):
+        """Retrouve une entrée par label (insensible casse/accents).
+        Si create=True, crée l'entrée manquante. Retourne (id, label, created)."""
+        if not label:
+            return None, None, False
+        target = normalize_label(label)
+        for row in model.query.all():
+            if normalize_label(row.label) == target:
+                return row.id, row.label, False
+        if not create:
+            return None, None, False
+        row = model(label=label, **extra)
+        db.session.add(row)
+        db.session.flush()
+        return row.id, row.label, True
+
+    def resolve_country(name, create=False):
+        return match_or_lookup(Country, name, create=create)
+
+    def resolve_region(name, country_id, create=False):
+        if not name:
+            return None, None, False
+        target = normalize_label(name)
+        for row in Region.query.filter_by(country_id=country_id).all():
+            if normalize_label(row.label) == target:
+                return row.id, row.label, False
+        if not create:
+            return None, None, False
+        row = Region(label=name, country_id=country_id)
+        db.session.add(row)
+        db.session.flush()
+        return row.id, row.label, True
+
+    def resolve_apellation(name, region_id, create=False):
+        if not name:
+            return None, None, False
+        target = normalize_label(name)
+        query = Apellation.query
+        if region_id:
+            query = query.filter_by(region_id=region_id)
+        for row in query.all():
+            if normalize_label(row.label) == target:
+                return row.id, row.label, False
+        if not create:
+            return None, None, False
+        row = Apellation(label=name, region_id=region_id)
+        db.session.add(row)
+        db.session.flush()
+        return row.id, row.label, True
+
+    def resolve_color(name, create=False):
+        return match_or_lookup(Color, name, create=create)
+
+    def resolve_cepage(name, create=False):
+        return match_or_lookup(Cepage, name, create=create)
+
+    COLOR_FR = {
+        'red': 'Rouge',
+        'white': 'Blanc',
+        'rosé': 'Rosé',
+        'rose': 'Rosé',
+        'sparkling': 'Bulles',
+        'champagne': 'Bulles',
+        'dessert': 'Liquoreux',
+        'fortified': 'Fortifié',
+        'orange': 'Orange',
+    }
+
+    def external_wine_to_fields(external, create_lookups=False):
+        """Transforme une fiche wineapi.io en champs locaux (ids résolus)."""
+        country_name = None
+        region_name = None
+        if external.get('region') and isinstance(external.get('region'), dict):
+            country_name = external['region'].get('country')
+            region_name = external['region'].get('name')
+        elif external.get('country'):
+            country_name = external.get('country')
+            region_name = external.get('region')
+
+        country_id, country_label, _ = resolve_country(country_name, create=create_lookups)
+        region_id, region_label, _ = resolve_region(region_name, country_id, create=create_lookups)
+        apellation_id, apellation_label, _ = resolve_apellation(
+            external.get('appellation'), region_id, create=create_lookups)
+
+        color_label = COLOR_FR.get((external.get('type') or '').lower())
+        color_id = None
+        if color_label:
+            color_id, color_label, _ = resolve_color(color_label, create=create_lookups)
+
+        cepages = []
+        for grape in external.get('grapes') or []:
+            name = grape.get('name') if isinstance(grape, dict) else grape
+            gid, glabel, gcreated = resolve_cepage(name, create=create_lookups)
+            cepages.append({"cepage_id": gid, "cepage": glabel or name, "created": gcreated})
+
+        meal = None
+        pairings = external.get('pairings') or []
+        if pairings:
+            meal = ', '.join(
+                p.get('food') for p in pairings if isinstance(p, dict) and p.get('food')
+            ) or None
+
+        note = external.get('averageRating')
+        note_fr = round(float(note) * 4, 1) if note else None
+
+        winery = external.get('winery')
+        winery_name = winery.get('name') if isinstance(winery, dict) else winery
+
+        return {
+            "name_climat": external.get('name'),
+            "year": external.get('vintage'),
+            "propriete": winery_name,
+            "producer": winery_name,
+            "country_id": country_id,
+            "country": country_label or country_name,
+            "region_id": region_id,
+            "region": region_label or region_name,
+            "apellation_id": apellation_id,
+            "apellation": apellation_label or external.get('appellation'),
+            "color_id": color_id,
+            "color": color_label,
+            "cepages": cepages,
+            "meal": meal,
+            "my_note": note_fr,
+            "comment": external.get('description'),
+            "classification": external.get('classification'),
+            "alcohol": external.get('alcoholContent'),
+            "types": external.get('type'),
+        }
+
     def wine_stored_quantity(wine_id, exclude_position_id=None, size_id=None):
         from sqlalchemy import func
         query = db.session.query(func.coalesce(func.sum(PositionCave.quantity), 0)).filter(
@@ -438,6 +578,81 @@ def create_app():
             "data": data
         }))
     
+    @app.route('/wine/api/wineapi/search')
+    def wineapi_search():
+        auth_check = check_auth()
+        if auth_check:
+            return auth_check
+
+        query = request.args.get('q', '').strip()
+        if len(query) < 3:
+            return jsonify({"success": False, "error": "Saisissez au moins 3 caractères"}), 400
+
+        client = WineApiClient(app.config.get('WINE_API_KEY'))
+        if not client.enabled:
+            return jsonify({"success": False, "error": "Recherche externe non configurée"}), 400
+
+        try:
+            data = client.search(query, limit=15)
+        except WineApiError as exc:
+            return jsonify({"success": False, "error": str(exc)}), 502
+
+        results = []
+        for item in data.get('results', []):
+            results.append({
+                "id": item.get('id'),
+                "name": item.get('name'),
+                "vintage": item.get('vintage'),
+                "type": item.get('type'),
+                "winery": item.get('winery'),
+                "region": item.get('region'),
+                "country": item.get('country'),
+                "averageRating": item.get('averageRating'),
+                "ratingsCount": item.get('ratingsCount'),
+                "confidence": item.get('confidence'),
+            })
+        return jsonify({"success": True, "data": results, "total": data.get('total')})
+
+    @app.route('/wine/api/wineapi/detail/<wine_id>')
+    def wineapi_detail(wine_id):
+        auth_check = check_auth()
+        if auth_check:
+            return auth_check
+
+        client = WineApiClient(app.config.get('WINE_API_KEY'))
+        if not client.enabled:
+            return jsonify({"success": False, "error": "Recherche externe non configurée"}), 400
+
+        try:
+            external = client.detail(wine_id)
+        except WineApiError as exc:
+            return jsonify({"success": False, "error": str(exc)}), 502
+
+        preview = external_wine_to_fields(external, create_lookups=False)
+
+        apply_lookups = request.args.get('create_lookups', type=int) == 1
+        fields = external_wine_to_fields(external, create_lookups=apply_lookups)
+        if apply_lookups:
+            db.session.commit()
+
+        missing = {
+            "country": bool(fields['country'] and not fields['country_id']),
+            "region": bool(fields['region'] and not fields['region_id']),
+            "apellation": bool(fields['apellation'] and not fields['apellation_id']),
+            "color": bool(fields['color'] and not fields['color_id']),
+            "cepages": [c['cepage'] for c in fields['cepages'] if c['cepage'] and not c['cepage_id']],
+        }
+
+        return jsonify({
+            "success": True,
+            "data": {
+                "external": external,
+                "preview": preview,
+                "fields": fields,
+                "missing": missing,
+            }
+        })
+
     @app.route('/wine/api/wines', methods=['POST'])
     def create_wine():
         auth_check = check_auth()
