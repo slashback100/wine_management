@@ -563,6 +563,13 @@ textarea:focus {
 
 .search-bar > input[type="text"] {
     flex: 1 1 220px;
+    height: 2.8rem;
+    min-height: 2.8rem;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    resize: none;
 }
 
 .search-bar .filter-group {
@@ -1576,6 +1583,9 @@ textarea:focus {
     .search-bar select,
     .search-bar > input[type="text"] {
         width: 100%;
+        height: 2.8rem;
+        min-height: 2.8rem;
+        line-height: 1.2;
     }
 
     .form-row {
