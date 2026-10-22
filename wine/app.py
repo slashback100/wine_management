@@ -138,8 +138,13 @@ def create_app():
         'orange': 'Orange',
     }
 
-    def external_wine_to_fields(external, create_lookups=False):
+    def external_wine_to_fields(external, create_lookups=False, create_only=None):
         """Transforme une fiche wineapi.io en champs locaux (ids résolus)."""
+        selected = set(create_only) if create_only is not None else None
+
+        def can_create(key):
+            return bool(create_lookups and (selected is None or key in selected))
+
         country_name = None
         region_name = None
         if external.get('region') and isinstance(external.get('region'), dict):
@@ -149,20 +154,21 @@ def create_app():
             country_name = external.get('country')
             region_name = external.get('region')
 
-        country_id, country_label, _ = resolve_country(country_name, create=create_lookups)
-        region_id, region_label, _ = resolve_region(region_name, country_id, create=create_lookups)
+        country_create = can_create('country') or can_create('region') or can_create('apellation')
+        country_id, country_label, _ = resolve_country(country_name, create=country_create)
+        region_id, region_label, _ = resolve_region(region_name, country_id, create=can_create('region'))
         apellation_id, apellation_label, _ = resolve_apellation(
-            external.get('appellation'), region_id, create=create_lookups)
+            external.get('appellation'), region_id, create=can_create('apellation'))
 
         color_label = COLOR_FR.get((external.get('type') or '').lower())
         color_id = None
         if color_label:
-            color_id, color_label, _ = resolve_color(color_label, create=create_lookups)
+            color_id, color_label, _ = resolve_color(color_label, create=can_create('color'))
 
         cepages = []
         for grape in external.get('grapes') or []:
             name = grape.get('name') if isinstance(grape, dict) else grape
-            gid, glabel, gcreated = resolve_cepage(name, create=create_lookups)
+            gid, glabel, gcreated = resolve_cepage(name, create=can_create('cepages'))
             cepages.append({"cepage_id": gid, "cepage": glabel or name, "created": gcreated})
 
         meal = None
@@ -637,7 +643,9 @@ def create_app():
         preview = external_wine_to_fields(external, create_lookups=False)
 
         apply_lookups = request.args.get('create_lookups', type=int) == 1
-        fields = external_wine_to_fields(external, create_lookups=apply_lookups)
+        create_only = request.args.get('fields')
+        create_only = None if create_only is None else {f for f in create_only.split(',') if f}
+        fields = external_wine_to_fields(external, create_lookups=apply_lookups, create_only=create_only)
         if apply_lookups:
             db.session.commit()
 

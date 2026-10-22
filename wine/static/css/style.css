@@ -1045,6 +1045,22 @@ textarea:focus {
     font-size: 0.78rem;
 }
 
+.lookup-field-import {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    cursor: pointer;
+    user-select: none;
+}
+
+.lookup-field-import input {
+    margin: 0;
+    accent-color: var(--accent);
+    cursor: pointer;
+}
+
 .lookup-field-update {
     display: inline-flex;
     align-items: center;

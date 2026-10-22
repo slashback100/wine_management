@@ -531,6 +531,7 @@ let currentLookupPrepared = null;
 const LOOKUP_UPDATE_FIELDS = [
     { key: 'name_climat', label: 'Nom / Climat', type: 'text' },
     { key: 'year', label: 'Année', type: 'text' },
+    { key: 'propriete', label: 'Propriété', type: 'text' },
     { key: 'producer', label: 'Producteur', type: 'text' },
     { key: 'country', label: 'Pays', type: 'lookup', local: 'country_id' },
     { key: 'region', label: 'Région', type: 'lookup', local: 'region_id' },
@@ -1147,6 +1148,7 @@ function renderWineLookupDetail(missing) {
     const wine = currentLookupFields || {};
     const existing = currentLookupExisting;
     const canUpdate = !!existing;
+    const isCreate = currentLookupOrigin === 'form';
 
     const cepages = (wine.cepages || []).map(c =>
         `<span class="chip chip-stock${c.cepage_id ? '' : ' chip-new'}">${escapeHtml(c.cepage)}${c.cepage_id ? '' : ' (nouveau)'}</span>`
@@ -1168,12 +1170,20 @@ function renderWineLookupDetail(missing) {
                        title="${changed ? 'Mettre à jour' : 'Déjà identique'} : ${escapeHtml(field.label)}"
                        onclick="applyLookupField('${field.key}')">&#8635;</button>`
             : '';
+        const importer = isCreate
+            ? `<label class="lookup-field-import" title="Importer cette valeur dans le formulaire">
+                   <input type="checkbox" class="lookup-import-check" data-field="${field.key}" checked
+                          onchange="syncLookupImportDependencies(event)">
+                   <span>à importer</span>
+               </label>`
+            : '';
         const currentHtml = canUpdate
             ? `<span class="lookup-field-current">actuel : ${current ? escapeHtml(current) : '-'}</span>`
             : '';
         return `<div class="lookup-field">
                     <span class="lookup-field-label">${escapeHtml(field.label)}:</span>
                     <span class="lookup-field-value">${value}</span>
+                    ${importer}
                     ${button}
                     ${currentHtml}
                 </div>`;
@@ -1200,12 +1210,13 @@ function renderWineLookupDetail(missing) {
                 <p>${escapeHtml(wine.comment || '-')}</p>
             </div>
         </div>
+        ${isCreate ? '<div class="lookup-warning">Cochez les données à importer dans le formulaire. Décochez celles à ignorer.</div>' : ''}
         ${canUpdate ? '<div class="lookup-warning">La petite icône &#8635; à côté d\'une donnée met à jour ce champ seul dans la fiche. « actuel » indique la valeur en base.</div>' : ''}
         ${flags.length ? `<div class="lookup-warning">Valeurs absentes de vos listes et qui seront créées : ${flags.join(', ')}.</div>` : ''}
     `;
 
     const actions = document.getElementById('wine-lookup-detail-actions');
-    const label = currentLookupOrigin === 'form' ? 'Compléter le formulaire' : 'Mettre à jour la fiche';
+    const label = isCreate ? 'Importer la sélection' : 'Mettre à jour la fiche';
     actions.innerHTML = `
         <button type="button" class="btn btn-secondary" onclick="closeWineLookupDetail()">Annuler</button>
         <button type="button" class="btn btn-primary" onclick="applyWineLookup()">${label}</button>
@@ -1217,14 +1228,45 @@ function closeWineLookupDetail() {
     document.getElementById('wine-lookup-detail-modal').style.display = 'none';
 }
 
+function collectLookupImportSelection() {
+    const boxes = document.querySelectorAll('#wine-lookup-detail-body .lookup-import-check');
+    if (!boxes.length) return null;
+    const selected = new Set();
+    boxes.forEach(box => {
+        if (box.checked) selected.add(box.dataset.field);
+    });
+    if (selected.has('region') || selected.has('apellation')) selected.add('country');
+    return selected;
+}
+
+function syncLookupImportDependencies(event) {
+    const country = document.querySelector('.lookup-import-check[data-field="country"]');
+    const region = document.querySelector('.lookup-import-check[data-field="region"]');
+    const apellation = document.querySelector('.lookup-import-check[data-field="apellation"]');
+    if (!country) return;
+    const source = event && event.target;
+    if (source === country && !country.checked) {
+        if (region) region.checked = false;
+        if (apellation) apellation.checked = false;
+    }
+    if ((region && region.checked) || (apellation && apellation.checked)) {
+        country.checked = true;
+    }
+}
+
 async function applyWineLookup(createLookups = true) {
     const origin = document.getElementById('wine-lookup-origin').value;
     const body = document.getElementById('wine-lookup-detail-body');
+    const selection = origin === 'form' ? collectLookupImportSelection() : null;
 
     let fields = currentLookupFields;
     if (createLookups) {
         body.innerHTML = '<div class="detail-loading">Préparation...</div>';
-        const response = await fetch(`${API_BASE}/wineapi/detail/${encodeURIComponent(currentLookupWineId)}?create_lookups=1`);
+        let detailUrl = `${API_BASE}/wineapi/detail/${encodeURIComponent(currentLookupWineId)}?create_lookups=1`;
+        if (selection) {
+            detailUrl += `&fields=${encodeURIComponent(Array.from(selection).join(','))}`;
+        }
+        const response = await fetch(detailUrl);
         const result = await response.json();
         if (!result.success) {
             body.innerHTML = `<p class="lookup-hint lookup-error">${escapeHtml(result.error || 'Erreur')}</p>`;
@@ -1235,7 +1277,7 @@ async function applyWineLookup(createLookups = true) {
     }
 
     if (origin === 'form') {
-        fillWineFormFromLookup(fields);
+        fillWineFormFromLookup(fields, selection);
         closeWineLookupDetail();
         closeWineLookup();
         showToast('Formulaire complété - vérifiez et enregistrez');
@@ -1266,17 +1308,21 @@ async function applyWineLookup(createLookups = true) {
     }
 }
 
-async function prepareLookupFields() {
-    if (currentLookupPrepared) return currentLookupPrepared;
-    const response = await fetch(`${API_BASE}/wineapi/detail/${encodeURIComponent(currentLookupWineId)}?create_lookups=1`);
+async function prepareLookupFields(key) {
+    const cacheKey = key || '__all__';
+    if (currentLookupPrepared && currentLookupPrepared[cacheKey]) return currentLookupPrepared[cacheKey];
+    let detailUrl = `${API_BASE}/wineapi/detail/${encodeURIComponent(currentLookupWineId)}?create_lookups=1`;
+    if (key) detailUrl += `&fields=${encodeURIComponent(key)}`;
+    const response = await fetch(detailUrl);
     const result = await response.json();
     if (!result.success) {
         showToast(result.error || 'Erreur lors de la préparation');
         return null;
     }
-    currentLookupPrepared = result.data.fields;
+    if (!currentLookupPrepared) currentLookupPrepared = {};
+    currentLookupPrepared[cacheKey] = result.data.fields;
     await loadLookups();
-    return currentLookupPrepared;
+    return currentLookupPrepared[cacheKey];
 }
 
 function applyFieldToWine(merged, field, fields) {
@@ -1307,7 +1353,7 @@ async function applyLookupField(key) {
     try {
         let fields = currentLookupFields;
         if (field.type === 'lookup' || field.type === 'cepages') {
-            fields = await prepareLookupFields();
+            fields = await prepareLookupFields(field.key);
             if (!fields) return;
         }
         let existing = currentLookupExisting;
@@ -1370,22 +1416,27 @@ function buildMergedWine(existing, fields) {
     return merged;
 }
 
-function fillWineFormFromLookup(fields) {
-    if (fields.name_climat) document.getElementById('name_climat').value = fields.name_climat;
-    if (fields.year && !document.getElementById('year').value) document.getElementById('year').value = fields.year;
-    if (fields.propriete && !document.getElementById('propriete').value) document.getElementById('propriete').value = fields.propriete;
-    if (fields.producer && !document.getElementById('producer').value) document.getElementById('producer').value = fields.producer;
-    if (fields.country_id) {
+function fillWineFormFromLookup(fields, selection = null) {
+    const wants = key => !selection || selection.has(key);
+
+    if (wants('name_climat') && fields.name_climat) document.getElementById('name_climat').value = fields.name_climat;
+    if (wants('year') && fields.year && !document.getElementById('year').value) document.getElementById('year').value = fields.year;
+    if (wants('propriete') && fields.propriete && !document.getElementById('propriete').value) document.getElementById('propriete').value = fields.propriete;
+    if (wants('producer') && fields.producer && !document.getElementById('producer').value) document.getElementById('producer').value = fields.producer;
+    if (wants('country') && fields.country_id) {
         document.getElementById('country_id').value = fields.country_id;
-        loadRegions(fields.region_id).then(() => {
-            if (fields.apellation_id) document.getElementById('apellation_id').value = fields.apellation_id;
+        loadRegions(wants('region') ? fields.region_id : null).then(() => {
+            if (wants('apellation') && fields.apellation_id) {
+                loadApellations(fields.apellation_id);
+            }
         });
     }
-    if (fields.color_id && !document.getElementById('color_id').value) document.getElementById('color_id').value = fields.color_id;
-    if (fields.meal && !document.getElementById('meal').value) document.getElementById('meal').value = fields.meal;
-    if (fields.comment && !document.getElementById('comment').value) document.getElementById('comment').value = fields.comment;
+    if (wants('color') && fields.color_id && !document.getElementById('color_id').value) document.getElementById('color_id').value = fields.color_id;
+    if (wants('my_note') && fields.my_note && !document.getElementById('my_note').value) document.getElementById('my_note').value = fields.my_note;
+    if (wants('meal') && fields.meal && !document.getElementById('meal').value) document.getElementById('meal').value = fields.meal;
+    if (wants('comment') && fields.comment) document.getElementById('comment').value = fields.comment;
 
-    if (fields.cepages && fields.cepages.length) {
+    if (wants('cepages') && fields.cepages && fields.cepages.length) {
         resetCepages();
         fields.cepages.forEach((c, i) => { if (i > 0) addCepage(); });
         fields.cepages.forEach((c, i) => {
