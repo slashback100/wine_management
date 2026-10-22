@@ -8,12 +8,22 @@ logger = logging.getLogger(__name__)
 
 BASE_URL = "https://api.wineapi.io"
 TIMEOUT = 15
-MAX_SEARCH_CALLS = 8
+FALLBACK_LIMIT = 100
 
-WORD_RE = re.compile(r"[\w'À-ſ]+", re.UNICODE)
+WORD_RE = re.compile(r"[\w'’‘À-ſ]+", re.UNICODE)
 STOP_WORDS = {
     'de', 'du', 'des', 'la', 'le', 'les', 'un', 'une', 'et', 'a', 'au', 'aux',
-    'en', 'the', 'of', 'and', 'd', 'l', 'sur', 'par', 'en'
+    'en', 'the', 'of', 'and', 'd', 'l', 'sur', 'par', 'en',
+    'mon', 'ma', 'mes', 'ton', 'ta', 'tes', 'son', 'sa', 'ses',
+    'notre', 'nos', 'votre', 'vos', 'leur', 'leurs',
+}
+COMMON_WORDS = {
+    'domaine', 'domaines', 'chateau', 'chateaux', 'clos', 'cuvee', 'cuvees',
+    'reserve', 'reserves', 'grand', 'grande', 'grands', 'grandes', 'cru', 'crus',
+    'rouge', 'rouges', 'blanc', 'blancs', 'rose', 'roses', 'noir', 'noirs',
+    'vin', 'vins', 'wine', 'wines', 'sec', 'secs', 'doux', 'brut', 'bruts',
+    'premier', 'premiere', 'vieilles', 'vieille', 'vignes', 'vigne',
+    'cote', 'cotes', 'champagne', 'sparkling', 'red', 'white',
 }
 COLOR_LABELS = {
     'red': 'rouge',
@@ -29,8 +39,10 @@ COLOR_LABELS = {
 
 
 def normalize(text):
-    """Minuscules sans accents, espaces normalises."""
-    text = unicodedata.normalize('NFKD', str(text or ''))
+    """Minuscules sans accents, espaces et ligatures normalises."""
+    text = str(text or '').replace('’', "'").replace('‘', "'")
+    text = text.replace('œ', 'oe').replace('Œ', 'OE').replace('æ', 'ae').replace('Æ', 'AE')
+    text = unicodedata.normalize('NFKD', text)
     text = ''.join(c for c in text if not unicodedata.combining(c))
     return ' '.join(text.lower().split())
 
@@ -50,8 +62,43 @@ def tokenize(query):
     return tokens
 
 
+def distinctive_token(tokens):
+    """Mot le plus discriminant: hors termes generiques de vin et hors millesime."""
+    candidates = [
+        token for token in tokens
+        if normalize(token) not in COMMON_WORDS and not normalize(token).isdigit()
+    ]
+    if not candidates:
+        return None
+    return max(candidates, key=lambda token: len(normalize(token)))
+
+
 class WineApiError(Exception):
     pass
+
+
+class WineApiRateLimitError(WineApiError):
+    pass
+
+
+def raise_rate_limit(response):
+    logger.warning("wineapi.io rate limit exceeded")
+    retry_after = (response.headers.get('Retry-After') or '').strip()
+    message = "Limite de requêtes wineapi.io atteinte (quota journalier)."
+    if retry_after.isdigit():
+        seconds = int(retry_after)
+        if seconds >= 3600:
+            hours = (seconds + 3599) // 3600
+            delay = "{} heure{}".format(hours, 's' if hours > 1 else '')
+        elif seconds >= 60:
+            minutes = (seconds + 59) // 60
+            delay = "{} minute{}".format(minutes, 's' if minutes > 1 else '')
+        else:
+            delay = "{} seconde{}".format(seconds, 's' if seconds > 1 else '')
+        message += " Réessayez dans environ {}.".format(delay)
+    else:
+        message += " Réessayez plus tard."
+    raise WineApiRateLimitError(message)
 
 
 class WineApiClient:
@@ -81,7 +128,7 @@ class WineApiClient:
         if response.status_code == 401:
             raise WineApiError("Clé API wineapi.io invalide")
         if response.status_code == 429:
-            raise WineApiError("Limite de requêtes wineapi.io atteinte")
+            raise_rate_limit(response)
         if response.status_code != 200:
             logger.warning("wineapi search status %s: %s", response.status_code, response.text[:200])
             raise WineApiError("wineapi.io a renvoyé une erreur ({})".format(response.status_code))
@@ -90,6 +137,8 @@ class WineApiClient:
     def _search_safe(self, query, limit):
         try:
             data = self.search(query, limit=limit)
+        except WineApiRateLimitError:
+            raise
         except WineApiError as exc:
             logger.warning("wineapi search variant failed (%s): %s", query, exc)
             return None
@@ -105,84 +154,75 @@ class WineApiClient:
         return items
 
     def search_resilient(self, query, limit=15):
-        """Recherche elargie.
+        """Recherche elargie avec un maximum de 2 appels API.
 
-        L'API wineapi.io fait une recherche par phrase contiguous sur le nom du vin:
-        l'ordre des mots compte ("Callipyge rouge" trouve, "rouge Callipyge" non).
-        Si la requete ne donne rien, on retente avec l'ordre inverse puis avec une
-        recherche "tous les mots" filtree localement sur le nom du vin.
+        L'API wineapi.io fait une recherche par phrase contigue: l'ordre des mots
+        compte ("Callipyge rouge" trouve, "rouge Callipyge" non). Pour menager le
+        quota, on ne relance pas une requete par mot: soit la recherche directe
+        suffit, soit on fait un seul appel de secours sur le mot le plus
+        discriminant, puis on filtre localement.
         """
         query = (query or '').strip()
-        calls = 1
-        primary = self._search_safe(query, limit) or {}
-        total = int(primary.get('total') or 0)
-        if total:
-            return {
-                'results': self._clean(primary, total),
-                'total': total,
-                'query': query,
-                'fallback': False,
-            }
-
         tokens = tokenize(query)
-        if len(tokens) < 2:
-            return {'results': [], 'total': 0, 'query': query, 'fallback': False}
 
-        reversed_query = ' '.join(reversed(tokens))
-        if normalize(reversed_query) != normalize(query) and calls < MAX_SEARCH_CALLS:
-            calls += 1
-            data = self._search_safe(reversed_query, limit) or {}
-            total = int(data.get('total') or 0)
-            if total:
-                return {
-                    'results': self._clean(data, total),
-                    'total': total,
-                    'query': reversed_query,
-                    'fallback': True,
-                }
+        # Requete longue: la recherche par phrase a peu de chances d'aboutir et
+        # enchainerait les appels. On interroge directement le mot discriminant.
+        if len(tokens) > 3:
+            key = distinctive_token(tokens)
+            if key:
+                return self._token_search(key, tokens, limit)
+            return self._primary_search(query, limit)
 
-        merged = []
-        seen = set()
-        for token in sorted(tokens, key=len, reverse=True):
-            if calls >= MAX_SEARCH_CALLS:
-                break
-            calls += 1
-            data = self._search_safe(token, limit) or {}
-            for item in data.get('results') or []:
-                item_id = item.get('id')
-                if item_id in seen:
-                    continue
-                seen.add(item_id)
-                merged.append(item)
+        result = self._primary_search(query, limit)
+        if result['total'] or len(tokens) < 2:
+            return result
 
-        wanted = [normalize(token) for token in tokens]
+        key = distinctive_token(tokens)
+        if not key:
+            return result
+        return self._token_search(key, tokens, limit)
+
+    def _primary_search(self, query, limit):
+        data = self._search_safe(query, limit) or {}
+        total = int(data.get('total') or 0)
+        return {
+            'results': self._clean(data, total),
+            'total': total,
+            'query': query,
+            'fallback': False,
+        }
+
+    def _token_search(self, key, tokens, limit):
+        data = self._search_safe(key, FALLBACK_LIMIT) or {}
+        results = self._match_items(data.get('results') or [], tokens)
+        return {
+            'results': results[:limit],
+            'total': len(results),
+            'query': key,
+            'fallback': True,
+        }
+
+    @staticmethod
+    def _match_items(items, tokens):
+        wanted = [normalize(t) for t in tokens if normalize(t) not in COMMON_WORDS]
+        if not wanted:
+            wanted = [normalize(t) for t in tokens]
         matches = []
-        for item in merged:
+        for item in items:
             wine_type = (item.get('type') or '').lower()
-            haystack = normalize(' '.join([
+            haystack = normalize(' '.join(str(value or '') for value in [
                 item.get('name') or '',
                 item.get('winery') or '',
                 item.get('region') or '',
                 item.get('country') or '',
+                item.get('vintage') or '',
                 COLOR_LABELS.get(wine_type, ''),
                 wine_type,
             ]))
-            score = sum(1 for word in wanted if word in haystack)
-            if score:
-                matches.append((score, item))
-
-        if not matches:
-            return {'results': [], 'total': 0, 'query': query, 'fallback': False}
-
-        best = max(score for score, _ in matches)
-        results = [item for score, item in matches if score == best]
-        results.sort(key=lambda item: -(item.get('averageRating') or 0))
-        return {
-            'results': results[:limit],
-            'total': len(results),
-            'query': query,
-            'fallback': True,
-        }
+            if all(word in haystack for word in wanted):
+                matches.append(item)
+        matches.sort(key=lambda item: -(item.get('averageRating') or 0))
+        return matches
 
     def detail(self, wine_id):
         if not self.enabled:
@@ -199,7 +239,7 @@ class WineApiClient:
         if response.status_code == 401:
             raise WineApiError("Clé API wineapi.io invalide")
         if response.status_code == 429:
-            raise WineApiError("Limite de requêtes wineapi.io atteinte")
+            raise_rate_limit(response)
         if response.status_code == 404:
             raise WineApiError("Vin introuvable sur wineapi.io")
         if response.status_code != 200:

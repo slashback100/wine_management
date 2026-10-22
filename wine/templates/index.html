@@ -1020,7 +1020,9 @@ function showWineForm() {
 /* ----- Recherche externe WineAPI ----- */
 function openWineLookup() {
     document.getElementById('wine-lookup-origin').value = 'form';
-    document.getElementById('wine-lookup-query').value = document.getElementById('name_climat').value || '';
+    const name = String(document.getElementById('name_climat').value || '').trim();
+    const propriete = String(document.getElementById('propriete').value || '').trim();
+    document.getElementById('wine-lookup-query').value = name || propriete;
     document.getElementById('wine-lookup-results').innerHTML = '';
     document.getElementById('wine-lookup-modal').style.display = 'flex';
     document.getElementById('wine-lookup-query').focus();
@@ -1029,21 +1031,9 @@ function openWineLookup() {
 function enrichWine(id) {
     document.getElementById('wine-lookup-origin').value = id;
     const wine = currentDetailWine && currentDetailWine.id === id ? currentDetailWine : null;
-    const terms = [];
-    const usedWords = new Set();
-    const addTerm = value => {
-        const term = (value || '').toString().trim();
-        const words = term.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').match(/[\w']+/g) || [];
-        if (!words.length || words.every(word => usedWords.has(word))) return;
-        terms.push(term);
-        words.forEach(word => usedWords.add(word));
-    };
-    if (wine) {
-        addTerm(wine.name_climat);
-        addTerm(wine.propriete);
-        addTerm(wine.color);
-    }
-    document.getElementById('wine-lookup-query').value = terms.join(' ') || document.getElementById('detail-title').textContent || '';
+    const name = wine ? String(wine.name_climat || '').trim() : '';
+    const propriete = wine ? String(wine.propriete || '').trim() : '';
+    document.getElementById('wine-lookup-query').value = name || propriete;
     document.getElementById('wine-lookup-results').innerHTML = '';
     document.getElementById('wine-lookup-modal').style.display = 'flex';
     document.getElementById('wine-lookup-query').focus();
@@ -1076,7 +1066,7 @@ async function runWineLookup() {
         if (result.fallback) {
             const hint = document.createElement('p');
             hint.className = 'lookup-hint lookup-note';
-            hint.textContent = `Aucun résultat direct pour « ${query} » : recherche élargie par mots-clés.`;
+            hint.textContent = `Recherche élargie par mots-clés pour « ${query} ».`;
             resultsBox.appendChild(hint);
         }
         result.data.forEach(item => {

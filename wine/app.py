@@ -15,7 +15,7 @@ from sqlalchemy.orm import aliased
 from decimal import Decimal
 import unicodedata
 
-from services.wineapi import WineApiClient, WineApiError
+from services.wineapi import WineApiClient, WineApiError, WineApiRateLimitError
 
 logger = logging.getLogger(__name__)
 
@@ -600,6 +600,8 @@ def create_app():
 
         try:
             data = client.search_resilient(query, limit=15)
+        except WineApiRateLimitError as exc:
+            return jsonify({"success": False, "error": str(exc)}), 429
         except WineApiError as exc:
             return jsonify({"success": False, "error": str(exc)}), 502
 
@@ -637,6 +639,8 @@ def create_app():
 
         try:
             external = client.detail(wine_id)
+        except WineApiRateLimitError as exc:
+            return jsonify({"success": False, "error": str(exc)}), 429
         except WineApiError as exc:
             return jsonify({"success": False, "error": str(exc)}), 502
 
