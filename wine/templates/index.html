@@ -364,7 +364,15 @@
             </div>
             <div class="form-group">
                 <label for="add-bottle-location">Lieu d'achat</label>
-                <input type="text" id="add-bottle-location" placeholder="Magasin, cave, offre...">
+                <input type="text" id="add-bottle-location" list="purchase-locations" placeholder="Magasin, cave, offre..." autocomplete="off">
+                <datalist id="purchase-locations">
+                    <option value="Vins du Coeur">
+                    <option value="Les Vinicuriens">
+                    <option value="Delhaize">
+                    <option value="Cadeau">
+                    <option value="Bellum Fagetum">
+                    <option value="Chez le Vigneron">
+                </datalist>
             </div>
             <div class="form-group">
                 <label for="add-bottle-quantity">Quantité</label>
