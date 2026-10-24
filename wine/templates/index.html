@@ -2442,6 +2442,7 @@ async function showPositionModalFromRemove(wineId, quantity, sizeId, outDate) {
 let pendingOutRecord = null;
 
 async function showHistoryModal(wineId) {
+    document.getElementById('history-modal').dataset.wineId = wineId;
     document.getElementById('history-modal').style.display = 'flex';
     const content = document.getElementById('history-content');
     content.innerHTML = '<div class="loading">Chargement...</div>';
@@ -2469,6 +2470,7 @@ async function showHistoryModal(wineId) {
                     + `<td style="white-space: nowrap;">`
                     + `<input type="text" inputmode="decimal" pattern="[0-9]+([.,][0-9]+)?" class="buy-price-input" style="width: 90px;" placeholder="0,00" value="${priceValue}"> €`
                     + ` <button class="btn btn-sm btn-primary" onclick="updateBuyPrice(${b.id}, this)">OK</button>`
+                    + ` <button class="btn btn-sm btn-danger" title="Supprimer" onclick="deleteBuy(${b.id}, this)">✕</button>`
                     + `</td></tr>`;
             });
             html += '</tbody></table></div>';
@@ -2478,9 +2480,10 @@ async function showHistoryModal(wineId) {
         if (outs.length === 0) {
             html += '<p>Aucune sortie enregistrée</p>';
         } else {
-            html += '<div class="table-scroll"><table class="data-table"><thead><tr><th>Date</th><th>Quantité</th><th>Taille</th></tr></thead><tbody>';
+            html += '<div class="table-scroll"><table class="data-table"><thead><tr><th>Date</th><th>Quantité</th><th>Taille</th><th></th></tr></thead><tbody>';
             outs.forEach(o => {
-                html += `<tr><td>${formatDateFr(o.out_date)}</td><td>${o.quantity}</td><td>${o.size || '-'}</td></tr>`;
+                html += `<tr><td>${formatDateFr(o.out_date)}</td><td>${o.quantity}</td><td>${o.size || '-'}</td>`
+                    + `<td style="white-space: nowrap;"><button class="btn btn-sm btn-danger" title="Supprimer" onclick="deleteOut(${o.id}, this)">✕</button></td></tr>`;
             });
             html += '</tbody></table></div>';
         }
@@ -2493,6 +2496,7 @@ async function showHistoryModal(wineId) {
 
 function closeHistoryModal() {
     document.getElementById('history-modal').style.display = 'none';
+    delete document.getElementById('history-modal').dataset.wineId;
 }
 
 async function updateBuyPrice(buyId, btn) {
@@ -2523,6 +2527,50 @@ async function updateBuyPrice(buyId, btn) {
     } catch (e) {
         showToast('Erreur réseau');
     } finally {
+        btn.disabled = false;
+    }
+}
+
+async function deleteBuy(buyId, btn) {
+    if (!confirm('Supprimer cet achat ?')) return;
+    btn.disabled = true;
+    try {
+        const response = await fetch(`${API_BASE}/buys/${buyId}`, { method: 'DELETE' });
+        const result = await response.json();
+        if (!result.success) {
+            showToast(result.error || 'Erreur');
+            btn.disabled = false;
+            return;
+        }
+        showToast('Achat supprimé');
+        await loadCellarData();
+        const wineId = document.querySelector('#history-modal').dataset.wineId;
+        if (wineId) showHistoryModal(parseInt(wineId));
+        if (typeof filterWines === 'function') filterWines();
+    } catch (e) {
+        showToast('Erreur réseau');
+        btn.disabled = false;
+    }
+}
+
+async function deleteOut(recordId, btn) {
+    if (!confirm('Supprimer cette sortie ?')) return;
+    btn.disabled = true;
+    try {
+        const response = await fetch(`${API_BASE}/out_records/${recordId}`, { method: 'DELETE' });
+        const result = await response.json();
+        if (!result.success) {
+            showToast(result.error || 'Erreur');
+            btn.disabled = false;
+            return;
+        }
+        showToast('Sortie supprimée');
+        await loadCellarData();
+        const wineId = document.querySelector('#history-modal').dataset.wineId;
+        if (wineId) showHistoryModal(parseInt(wineId));
+        if (typeof filterWines === 'function') filterWines();
+    } catch (e) {
+        showToast('Erreur réseau');
         btn.disabled = false;
     }
 }

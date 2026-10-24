@@ -879,10 +879,16 @@ def create_app():
         db.session.add(record)
         db.session.commit()
         
-        return jsonify({
-            "success": True,
-            "data": serialize_model(record)
-        }), 201
+    @app.route('/wine/api/out_records/<int:record_id>', methods=['DELETE'])
+    def handle_out_record(record_id):
+        auth_check = check_auth()
+        if auth_check:
+            return auth_check
+
+        record = OutRecord.query.get_or_404(record_id)
+        db.session.delete(record)
+        db.session.commit()
+        return jsonify({"success": True})
     
     @app.route('/wine/api/positions', methods=['GET', 'POST'])
     def handle_positions():
