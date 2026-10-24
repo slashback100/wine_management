@@ -1141,8 +1141,20 @@ textarea:focus {
    ------------------------------------------------------------------------- */
 .data-table {
     width: 100%;
+    min-width: 540px;
     border-collapse: collapse;
     margin-top: 0.5rem;
+}
+
+.table-scroll .data-table {
+    margin-top: 0;
+    border: none;
+    border-radius: 0;
+}
+
+.table-scroll .data-table th,
+.table-scroll .data-table td {
+    white-space: nowrap;
 }
 
 .data-table th,
@@ -1269,9 +1281,18 @@ textarea:focus {
     font-size: 1.2rem;
 }
 
-.wine-form,
-.position-form {
-    padding: 1.35rem;
+#history-content {
+    padding: 1.25rem 1.35rem 1.5rem;
+    overflow-x: auto;
+}
+
+#history-content h3 {
+    margin: 0;
+}
+
+#history-content h3 + .table-scroll,
+#history-content h3 + p {
+    margin-top: 0.75rem;
 }
 
 /* Modal Position Cave */
@@ -1761,9 +1782,12 @@ textarea:focus {
         padding: 0.5rem;
     }
 
-    .modal-content {
+    .modal-large {
         max-width: 100%;
-        max-height: 95vh;
+    }
+
+    #history-content {
+        padding: 1rem;
     }
 
     #position-modal .modal-content {

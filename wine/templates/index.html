@@ -2462,7 +2462,7 @@ async function showHistoryModal(wineId) {
         if (buys.length === 0) {
             html += '<p>Aucun achat enregistré</p>';
         } else {
-            html += '<table class="data-table"><thead><tr><th>Date</th><th>Quantité</th><th>Taille</th><th>Lieu</th><th>Prix</th></tr></thead><tbody>';
+            html += '<div class="table-scroll"><table class="data-table"><thead><tr><th>Date</th><th>Quantité</th><th>Taille</th><th>Lieu</th><th>Prix</th></tr></thead><tbody>';
             buys.forEach(b => {
                 const priceValue = (b.unit_price !== null && b.unit_price !== undefined) ? b.unit_price : '';
                 html += `<tr><td>${formatDateFr(b.date)}</td><td>${b.quantity}</td><td>${b.size || '-'}</td><td>${escapeHtml(b.location || '-')}</td>`
@@ -2471,18 +2471,18 @@ async function showHistoryModal(wineId) {
                     + ` <button class="btn btn-sm btn-primary" onclick="updateBuyPrice(${b.id}, this)">OK</button>`
                     + `</td></tr>`;
             });
-            html += '</tbody></table>';
+            html += '</tbody></table></div>';
         }
         
         html += '<h3 style="margin-top: 1.5rem;">Sorties</h3>';
         if (outs.length === 0) {
             html += '<p>Aucune sortie enregistrée</p>';
         } else {
-            html += '<table class="data-table"><thead><tr><th>Date</th><th>Quantité</th><th>Taille</th></tr></thead><tbody>';
+            html += '<div class="table-scroll"><table class="data-table"><thead><tr><th>Date</th><th>Quantité</th><th>Taille</th></tr></thead><tbody>';
             outs.forEach(o => {
                 html += `<tr><td>${formatDateFr(o.out_date)}</td><td>${o.quantity}</td><td>${o.size || '-'}</td></tr>`;
             });
-            html += '</tbody></table>';
+            html += '</tbody></table></div>';
         }
         
         content.innerHTML = html;
