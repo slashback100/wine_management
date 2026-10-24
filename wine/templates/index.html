@@ -2467,7 +2467,7 @@ async function showHistoryModal(wineId) {
                 const priceValue = (b.unit_price !== null && b.unit_price !== undefined) ? b.unit_price : '';
                 html += `<tr><td>${formatDateFr(b.date)}</td><td>${b.quantity}</td><td>${b.size || '-'}</td><td>${escapeHtml(b.location || '-')}</td>`
                     + `<td style="white-space: nowrap;">`
-                    + `<input type="number" step="0.01" min="0" class="buy-price-input" style="width: 80px;" placeholder="-" value="${priceValue}"> €`
+                    + `<input type="text" inputmode="decimal" pattern="[0-9]+([.,][0-9]+)?" class="buy-price-input" style="width: 90px;" placeholder="0,00" value="${priceValue}"> €`
                     + ` <button class="btn btn-sm btn-primary" onclick="updateBuyPrice(${b.id}, this)">OK</button>`
                     + `</td></tr>`;
             });
@@ -2499,7 +2499,7 @@ async function updateBuyPrice(buyId, btn) {
     const row = btn.closest('tr');
     const input = row.querySelector('.buy-price-input');
     const raw = input.value.trim();
-    const unitPrice = raw === '' ? null : parseFloat(raw.replace(',', '.'));
+    const unitPrice = raw === '' ? null : parseFloat(raw.replace(/\s+/g, '').replace(',', '.'));
     
     if (raw !== '' && (isNaN(unitPrice) || unitPrice < 0)) {
         showToast('Prix invalide');
